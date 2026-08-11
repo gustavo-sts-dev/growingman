@@ -1,0 +1,223 @@
+import { MapPin, Clock } from "lucide-react";
+import Link from "next/link";
+import { TenantLogo } from "@/components/TenantLogo";
+import Silk from "@/components/Silk";
+import { type TemplateProps, formatPrice } from "./types";
+
+/**
+ * CONVERSÃO (split) — feito para agendar rápido.
+ * Duas colunas: à esquerda a marca + CTA fixos; à direita a lista de serviços
+ * com botão "Agendar" por item. Pouca rolagem, ação sempre à vista. Poppins.
+ */
+export function SplitTemplate({ tenant, services, barbers }: TemplateProps) {
+  const headline = tenant.page_headline?.trim() || tenant.name;
+  const sub =
+    tenant.page_subheadline?.trim() ||
+    tenant.description ||
+    "Escolha o serviço e reserve em segundos.";
+  const hero = tenant.hero_image_url?.trim() || null;
+  const geo = { fontFamily: "var(--font-heading)" };
+  const border = "color-mix(in srgb, var(--theme-text) 12%, transparent)";
+
+  return (
+    <div
+      style={{ fontFamily: "var(--font-body)" }}
+      className="md:h-screen md:overflow-hidden"
+    >
+      <div className="md:grid md:grid-cols-2 md:h-full">
+        {/* LEFT — brand + CTA (sticky feel) */}
+        <div
+          className="relative flex flex-col justify-between p-8 md:p-12 min-h-[70vh] md:min-h-0"
+          style={{ backgroundColor: "var(--theme-card)" }}
+        >
+          {hero ? (
+            <>
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img
+                src={hero}
+                alt=""
+                aria-hidden
+                className="absolute inset-0 w-full h-full object-cover opacity-25"
+              />
+              <div
+                className="absolute inset-0"
+                style={{
+                  background:
+                    "linear-gradient(to bottom, transparent, var(--theme-card))",
+                }}
+              />
+            </>
+          ) : (
+            /* Sem imagem: fundo de seda animado no painel da marca. */
+            <Silk className="absolute inset-0 opacity-60" />
+          )}
+          <div className="relative z-10 flex items-center gap-3">
+            <TenantLogo
+              logoUrl={tenant.logo_url}
+              className="w-10 h-10 rounded-xl"
+              fallbackBg="var(--theme-button-bg)"
+              fallbackColor="var(--theme-button-text)"
+              alt={tenant.name}
+            />
+            <span
+              className="font-semibold text-lg"
+              style={{ ...geo, color: "var(--theme-title)" }}
+            >
+              {tenant.name}
+            </span>
+          </div>
+          <div className="relative z-10">
+            <h1
+              className="font-extrabold leading-[1.02] mb-5 text-[clamp(2.5rem,6vw,4.5rem)]"
+              style={{
+                ...geo,
+                color: "var(--theme-title)",
+                letterSpacing: "-0.02em",
+                textWrap: "balance",
+              }}
+            >
+              {headline}
+            </h1>
+            <p
+              className="text-base md:text-lg mb-8 max-w-sm"
+              style={{ color: "var(--theme-text)" }}
+            >
+              {sub}
+            </p>
+            <Link
+              href={`/${tenant.slug}/agendar`}
+              className="inline-flex items-center justify-center w-full sm:w-auto px-8 py-4 rounded-2xl font-bold text-base hover:opacity-90 transition-all"
+              style={{
+                backgroundColor: "var(--theme-button-bg)",
+                color: "var(--theme-button-text)",
+              }}
+            >
+              Agendar horário
+            </Link>
+          </div>
+          <p
+            className="relative z-10 text-xs flex items-center gap-1.5"
+            style={{ color: "var(--theme-text)" }}
+          >
+            <MapPin className="w-3.5 h-3.5" />
+            {tenant.address || "Brasil"}
+          </p>
+        </div>
+
+        {/* RIGHT — service list, own scroll */}
+        <div className="p-8 md:p-12 md:overflow-y-auto">
+          <p
+            className="text-xs uppercase tracking-[0.25em] font-semibold mb-6"
+            style={{ color: "var(--theme-accent)" }}
+          >
+            Reserve agora
+          </p>
+          {services.length === 0 ? (
+            <p style={{ color: "var(--theme-text)" }}>
+              Nenhum serviço cadastrado ainda.
+            </p>
+          ) : (
+            <div className="flex flex-col gap-2.5">
+              {services.map((svc) => (
+                <div
+                  key={svc.id}
+                  className="flex items-center justify-between gap-4 p-4 rounded-2xl border"
+                  style={{
+                    backgroundColor:
+                      "color-mix(in srgb, var(--theme-text) 4%, var(--theme-bg))",
+                    borderColor: border,
+                  }}
+                >
+                  <div className="flex items-center gap-4 min-w-0">
+                    {svc.image_url && (
+                      /* eslint-disable-next-line @next/next/no-img-element */
+                      <img
+                        src={svc.image_url}
+                        alt={svc.name}
+                        className="w-12 h-12 object-cover rounded-xl shrink-0 hidden sm:block"
+                      />
+                    )}
+                    <div className="min-w-0">
+                      <h3
+                        className="font-semibold text-base truncate"
+                        style={{ ...geo, color: "var(--theme-title)" }}
+                      >
+                        {svc.name}
+                      </h3>
+                      <div
+                        className="flex items-center gap-2 mt-0.5 text-xs"
+                        style={{ color: "var(--theme-text)" }}
+                      >
+                        <span className="flex items-center gap-1">
+                          <Clock className="w-3 h-3" />
+                          {svc.duration_minutes}min
+                        </span>
+                        <span>·</span>
+                        <span
+                          className="font-semibold"
+                          style={{ color: "var(--theme-title)" }}
+                        >
+                          {formatPrice(Number(svc.base_price))}
+                        </span>
+                      </div>
+                    </div>
+                  </div>
+                  <Link
+                    href={`/${tenant.slug}/agendar`}
+                    className="shrink-0 px-4 py-2 rounded-xl text-sm font-semibold hover:opacity-90 transition-all"
+                    style={{
+                      backgroundColor: "var(--theme-button-bg)",
+                      color: "var(--theme-button-text)",
+                    }}
+                  >
+                    Agendar
+                  </Link>
+                </div>
+              ))}
+            </div>
+          )}
+
+          {barbers.length > 0 && (
+            <div
+              className="mt-8 pt-6 border-t"
+              style={{ borderColor: border }}
+            >
+              <p
+                className="text-xs uppercase tracking-[0.25em] font-semibold mb-3"
+                style={{ color: "var(--theme-accent)" }}
+              >
+                Equipe
+              </p>
+              <div className="flex flex-wrap gap-2">
+                {barbers.map((b) => (
+                  <div
+                    key={b.id}
+                    className="flex items-center gap-2 px-3 py-1.5 rounded-full text-sm border"
+                    style={{ borderColor: border, color: "var(--theme-title)" }}
+                  >
+                    {b.avatarUrl && (
+                      /* eslint-disable-next-line @next/next/no-img-element */
+                      <img
+                        src={b.avatarUrl}
+                        alt={b.name}
+                        className="w-5 h-5 object-cover rounded-full shrink-0"
+                      />
+                    )}
+                    <span>{b.name}</span>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+
+          <p
+            className="mt-8 text-xs"
+            style={{ color: "var(--theme-text)", opacity: 0.7 }}
+          >
+            Powered by Growingman
+          </p>
+        </div>
+      </div>
+    </div>
+  );
+}
