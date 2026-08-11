@@ -52,6 +52,10 @@ export function formatPrice(price: number): string {
   return new Intl.NumberFormat("pt-BR", { style: "currency", currency: "BRL" }).format(price);
 }
 
+export function bookingHref(tenantSlug: string, serviceId: string): string {
+  return `/${encodeURIComponent(tenantSlug)}/agendar?serviceId=${encodeURIComponent(serviceId)}`;
+}
+
 /** Estatísticas configuradas pelo dono, já filtradas (sem inventar números). */
 export function realStats(tenant: PublicTenant): { label: string; value: string }[] {
   return [

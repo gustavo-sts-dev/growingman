@@ -2,7 +2,7 @@ import { MapPin, Clock } from "lucide-react";
 import Link from "next/link";
 import { TenantLogo } from "@/components/TenantLogo";
 import Silk from "@/components/Silk";
-import { type TemplateProps, formatPrice } from "./types";
+import { bookingHref, type TemplateProps, formatPrice } from "./types";
 
 /**
  * CONVERSÃO (split) — feito para agendar rápido.
@@ -163,8 +163,8 @@ export function SplitTemplate({ tenant, services, barbers }: TemplateProps) {
                     </div>
                   </div>
                   <Link
-                    href={`/${tenant.slug}/agendar`}
-                    className="shrink-0 px-4 py-2 rounded-xl text-sm font-semibold hover:opacity-90 transition-all"
+                    href={bookingHref(tenant.slug, svc.id)}
+                    className="inline-flex min-h-11 shrink-0 items-center justify-center rounded-xl px-4 text-sm font-semibold transition-opacity hover:opacity-90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--theme-accent)] focus-visible:ring-offset-2 focus-visible:ring-offset-[var(--theme-bg)]"
                     style={{
                       backgroundColor: "var(--theme-button-bg)",
                       color: "var(--theme-button-text)",

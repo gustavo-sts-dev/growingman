@@ -54,6 +54,7 @@ interface BookingFlowProps {
   tenant: TenantLite;
   services: ServiceLite[];
   barbers: BarberLite[];
+  initialServiceId?: string;
 }
 
 type SectionType = "service" | "barber" | "datetime" | "user" | "payment";
@@ -132,9 +133,16 @@ function scrollToElement(
   });
 }
 
-export function BookingFlow({ tenant, services, barbers }: BookingFlowProps) {
+export function BookingFlow({
+  tenant,
+  services,
+  barbers,
+  initialServiceId = "",
+}: BookingFlowProps) {
   const router = useRouter();
-  const [activeSection, setActiveSection] = useState<SectionType>("service");
+  const [activeSection, setActiveSection] = useState<SectionType>(
+    initialServiceId ? "barber" : "service",
+  );
   const sectionRefs = useRef<
     Partial<Record<SectionType, HTMLDivElement | null>>
   >({});
@@ -157,7 +165,7 @@ export function BookingFlow({ tenant, services, barbers }: BookingFlowProps) {
   const [knownClient, setKnownClient] = useState<string | null>(null);
 
   const [formData, setFormData] = useState({
-    serviceId: "",
+    serviceId: initialServiceId,
     barberId: "",
     date: "",
     time: "",

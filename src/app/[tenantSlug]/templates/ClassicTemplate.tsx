@@ -9,7 +9,7 @@ import {
 import Link from "next/link";
 import { TenantLogo } from "@/components/TenantLogo";
 import Silk from "@/components/Silk";
-import { type TemplateProps, formatPrice, realStats } from "./types";
+import { bookingHref, type TemplateProps, formatPrice, realStats } from "./types";
 
 /**
  * CLÁSSICO — barbearia premium tradicional.
@@ -164,7 +164,7 @@ export function ClassicTemplate({ tenant, services, barbers }: TemplateProps) {
               {services.map((svc) => (
                 <div
                   key={svc.id}
-                  className="flex items-center justify-between p-5 md:p-6 rounded-2xl border"
+                  className="flex flex-col gap-4 p-5 rounded-2xl border sm:flex-row sm:items-center sm:justify-between md:p-6"
                   style={{
                     backgroundColor: "var(--theme-card)",
                     borderColor: border,
@@ -208,26 +208,27 @@ export function ClassicTemplate({ tenant, services, barbers }: TemplateProps) {
                       </div>
                     </div>
                   </div>
-                  <div className="flex items-center gap-3 sm:gap-4 shrink-0 ml-4">
+                  <div className="flex w-full items-center justify-between gap-3 sm:ml-4 sm:w-auto sm:justify-start sm:gap-4">
                     <p
                       className="font-black text-base sm:text-lg tracking-tight"
                       style={{ ...heading, color: "var(--theme-title)" }}
                     >
                       {formatPrice(Number(svc.base_price))}
                     </p>
-                    <div
-                      className="w-9 h-9 rounded-full border flex items-center justify-center shrink-0"
+                    <Link
+                      href={bookingHref(tenant.slug, svc.id)}
+                      className="inline-flex min-h-11 shrink-0 items-center justify-center gap-1.5 rounded-full px-4 text-sm font-semibold transition-opacity hover:opacity-85 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--theme-accent)] focus-visible:ring-offset-2 focus-visible:ring-offset-[var(--theme-bg)]"
                       style={{
-                        backgroundColor:
-                          "color-mix(in srgb, var(--theme-text) 5%, transparent)",
-                        borderColor: border,
+                        backgroundColor: "var(--theme-button-bg)",
+                        color: "var(--theme-button-text)",
                       }}
                     >
+                      Agendar
                       <ChevronRight
                         className="w-4 h-4"
-                        style={{ color: "var(--theme-text)" }}
+                        aria-hidden="true"
                       />
-                    </div>
+                    </Link>
                   </div>
                 </div>
               ))}

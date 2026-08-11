@@ -8,6 +8,7 @@ import { fontsHref, resolveSitePreset } from "@/lib/site-presets";
 
 interface TenantPageProps {
   params: Promise<{ tenantSlug: string }>;
+  searchParams: Promise<{ serviceId?: string | string[] }>;
 }
 
 async function getTenantData(slug: string) {
@@ -45,14 +46,25 @@ async function getBarbers(tenantId: string) {
   }
 }
 
-export default async function BookingPage({ params }: TenantPageProps) {
-  const resolvedParams = await params;
+export default async function BookingPage({ params, searchParams }: TenantPageProps) {
+  const [resolvedParams, resolvedSearchParams] = await Promise.all([
+    params,
+    searchParams,
+  ]);
   const tenant = await getTenantData(resolvedParams.tenantSlug);
   if (!tenant) notFound();
 
   const services = await getServices(tenant.id);
   const barbers = await getBarbers(tenant.id);
   const preset = resolveSitePreset(tenant.site_preset);
+  const requestedServiceId = Array.isArray(resolvedSearchParams.serviceId)
+    ? resolvedSearchParams.serviceId[0]
+    : resolvedSearchParams.serviceId;
+  const initialServiceId = services.some(
+    (service: { id: string }) => service.id === requestedServiceId,
+  )
+    ? requestedServiceId
+    : undefined;
 
   return (
     <div
@@ -112,6 +124,7 @@ export default async function BookingPage({ params }: TenantPageProps) {
           tenant={tenant}
           services={services}
           barbers={barbers}
+          initialServiceId={initialServiceId}
         />
       </main>
     </div>

@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { type TemplateProps, formatPrice } from "./types";
+import { bookingHref, type TemplateProps, formatPrice } from "./types";
 
 /**
  * MINIMALISTA — silêncio e tipografia.
@@ -107,12 +107,21 @@ export function MinimalTemplate({ tenant, services, barbers }: TemplateProps) {
                       </p>
                     </div>
                   </div>
-                  <span
-                    className="text-base tabular-nums shrink-0 sm:ml-auto"
-                    style={{ ...grotesk, color: "var(--theme-title)" }}
-                  >
-                    {formatPrice(Number(svc.base_price))}
-                  </span>
+                  <div className="flex w-full shrink-0 items-center justify-between gap-4 sm:ml-auto sm:w-auto">
+                    <span
+                      className="text-base tabular-nums"
+                      style={{ ...grotesk, color: "var(--theme-title)" }}
+                    >
+                      {formatPrice(Number(svc.base_price))}
+                    </span>
+                    <Link
+                      href={bookingHref(tenant.slug, svc.id)}
+                      className="inline-flex min-h-11 items-center justify-center border-b px-1 text-[0.7rem] font-medium uppercase tracking-[0.2em] transition-opacity hover:opacity-60 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--theme-accent)]"
+                      style={{ color: "var(--theme-title)", borderColor: line }}
+                    >
+                      Agendar
+                    </Link>
+                  </div>
                 </div>
               ))}
             </div>

@@ -1,7 +1,7 @@
 import Link from "next/link";
 import { TenantLogo } from "@/components/TenantLogo";
 import Silk from "@/components/Silk";
-import { type TemplateProps, formatPrice } from "./types";
+import { bookingHref, type TemplateProps, formatPrice } from "./types";
 
 /**
  * VITRINE (showcase) — imersivo e fotográfico.
@@ -162,12 +162,24 @@ export function ShowcaseTemplate({ tenant, services, barbers }: TemplateProps) {
                       {svc.duration_minutes} min
                     </p>
                   </div>
-                  <p
-                    className="font-bold text-2xl mt-4 relative z-10"
-                    style={{ ...cond, color: "var(--theme-accent)" }}
-                  >
-                    {formatPrice(Number(svc.base_price))}
-                  </p>
+                  <div className="relative z-10 mt-4 flex flex-col items-start gap-3 md:flex-row md:items-end md:justify-between">
+                    <p
+                      className="font-bold text-2xl"
+                      style={{ ...cond, color: "var(--theme-accent)" }}
+                    >
+                      {formatPrice(Number(svc.base_price))}
+                    </p>
+                    <Link
+                      href={bookingHref(tenant.slug, svc.id)}
+                      className="inline-flex min-h-11 w-full items-center justify-center rounded-sm px-4 text-sm font-semibold uppercase tracking-wide transition-opacity hover:opacity-85 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--theme-accent)] focus-visible:ring-offset-2 focus-visible:ring-offset-[var(--theme-card)] md:w-auto"
+                      style={{
+                        backgroundColor: "var(--theme-button-bg)",
+                        color: "var(--theme-button-text)",
+                      }}
+                    >
+                      Agendar
+                    </Link>
+                  </div>
                 </div>
               ))}
             </div>
