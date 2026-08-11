@@ -184,9 +184,19 @@ export default function OnboardingFlow() {
                 <Input id="tenant-name" value={tenantName} onChange={(event) => { const name = event.target.value; setTenantName(name); setTenantSlug(normalizeSlug(name)); }} />
               </Field>
               <Field id="tenant-slug" label="Endereço da agenda">
-                <div className="flex">
-                  <span className="flex h-10 items-center border border-r-0 border-neutral-800 bg-black px-3 text-xs text-neutral-500">{siteHost()}/</span>
-                  <Input id="tenant-slug" className="rounded-l-none" value={tenantSlug} onChange={(event) => setTenantSlug(normalizeSlug(event.target.value))} />
+                <div className="grid w-full min-w-0 sm:grid-cols-[auto_minmax(8rem,1fr)]">
+                  <span
+                    className="flex h-12 min-w-0 items-center overflow-hidden text-ellipsis whitespace-nowrap rounded-t-xl border border-b-0 border-neutral-800 bg-black px-3 text-xs text-neutral-500 sm:rounded-l-xl sm:rounded-tr-none sm:border-b sm:border-r-0"
+                    title={`${siteHost()}/`}
+                  >
+                    {siteHost()}/
+                  </span>
+                  <Input
+                    id="tenant-slug"
+                    className="min-w-0 rounded-t-none sm:rounded-l-none sm:rounded-tr-xl"
+                    value={tenantSlug}
+                    onChange={(event) => setTenantSlug(normalizeSlug(event.target.value))}
+                  />
                 </div>
               </Field>
             </div>
