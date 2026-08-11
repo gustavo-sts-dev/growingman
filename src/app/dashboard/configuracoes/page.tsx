@@ -273,7 +273,7 @@ export default function ConfiguracoesPage() {
                 />
               </div>
             </Field>
-            <Field label="Logo da Barbearia" hint="PNG, JPG, WEBP ou SVG. Máx. 5 MB.">
+            <Field label="Logo da Barbearia" hint="PNG, JPG ou WEBP. Máx. 5 MB.">
               <ImageUpload
                 value={form.logo_url}
                 folder="tenants/logo"

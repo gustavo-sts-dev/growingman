@@ -87,7 +87,7 @@ export default async function TenantPage({ params }: TenantPageProps) {
   return (
     <div className="min-h-screen overflow-x-hidden" style={themeVars}>
       {/* Fontes do preset (Google Fonts). */}
-      <style dangerouslySetInnerHTML={{ __html: `@import url('${fontsHref(preset)}');` }} />
+      <style>{`@import url('${fontsHref(preset)}');`}</style>
 
       {preset.id === "editorial" ? (
         <EditorialTemplate {...templateProps} />

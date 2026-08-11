@@ -12,7 +12,6 @@
  */
 
 import { API_BASE } from "@/lib/config";
-import Cookies from "js-cookie";
 
 let isRefreshing = false;
 let refreshSubscribers: ((success: boolean) => void)[] = [];
@@ -33,14 +32,7 @@ async function tryRefresh(): Promise<boolean> {
 
     if (!res.ok) return false;
 
-    // O backend retorna o novo token no corpo da resposta
-    const data = await res.json().catch(() => null);
-    if (data?.token && typeof window !== "undefined") {
-      Cookies.set("growingman_access_token", data.token, { path: "/" });
-      Cookies.set("growingman_has_refresh_token", "true", { path: "/", expires: 7 });
-    }
-
-    // Backend setou o novo accessToken via Set-Cookie HttpOnly
+    // O backend renova os cookies apenas via Set-Cookie HttpOnly.
     return true;
   } catch {
     return false;

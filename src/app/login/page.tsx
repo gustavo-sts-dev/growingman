@@ -6,7 +6,6 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Scissors, AlertCircle, Loader2 } from "lucide-react";
 import { apiUrl } from "@/lib/config";
-import Cookies from "js-cookie";
 
 export default function LoginPage() {
   const [email, setEmail] = useState("");
@@ -40,15 +39,7 @@ export default function LoginPage() {
         );
       }
 
-      if (!data?.token) {
-        throw new Error("Resposta inválida do servidor (token ausente).");
-      }
-
-      // Salva o access token legível no cliente para o Next.js (proxy.ts)
-      Cookies.set("growingman_access_token", data.token, { path: "/" });
-      Cookies.set("growingman_has_refresh_token", "true", { path: "/", expires: 7 });
-
-      // ✅ Cookies HttpOnly (accessToken, refreshToken) são setados automaticamente
+      // Cookies HttpOnly (accessToken, refreshToken) são setados automaticamente
       // pelo backend no Set-Cookie header. O navegador os recebe e persiste.
       // Navegação completa para o dashboard onde o servidor lerá os cookies.
       window.location.href = "/dashboard";
@@ -119,6 +110,7 @@ export default function LoginPage() {
                 placeholder="seu@email.com"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
+                autoComplete="email"
                 required
                 className="bg-white/5 border-white/10 h-12 rounded-xl focus-visible:ring-1 focus-visible:ring-white"
               />
@@ -141,6 +133,7 @@ export default function LoginPage() {
                 placeholder="••••••••"
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
+                autoComplete="current-password"
                 required
                 className="bg-white/5 border-white/10 h-12 rounded-xl focus-visible:ring-1 focus-visible:ring-white"
               />

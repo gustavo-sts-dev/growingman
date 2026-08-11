@@ -151,6 +151,10 @@ export default function BarbersPage() {
       toast.error("Defina uma senha de acesso para o novo profissional.");
       return;
     }
+    if (formData.password && formData.password.length < 12) {
+      toast.error("A senha deve ter pelo menos 12 caracteres.");
+      return;
+    }
     setSaving(true);
     try {
       const url = editingId ? `/barbers/${editingId}` : "/barbers";
@@ -480,6 +484,8 @@ export default function BarbersPage() {
               <input
                 type="password"
                 value={formData.password}
+                minLength={12}
+                autoComplete="new-password"
                 onChange={(e) =>
                   setFormData({ ...formData, password: e.target.value })
                 }

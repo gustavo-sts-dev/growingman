@@ -26,8 +26,8 @@ function RedefinirSenhaForm() {
       setError("Link inválido ou incompleto. Solicite uma nova recuperação de senha.");
       return;
     }
-    if (password.length < 6) {
-      setError("A senha deve ter pelo menos 6 caracteres.");
+    if (password.length < 12) {
+      setError("A senha deve ter pelo menos 12 caracteres.");
       return;
     }
     if (password !== confirm) {
@@ -100,7 +100,8 @@ function RedefinirSenhaForm() {
             value={password}
             onChange={(e) => setPassword(e.target.value)}
             required
-            minLength={6}
+            minLength={12}
+            autoComplete="new-password"
             className="bg-white/5 border-white/10 h-12 rounded-xl focus-visible:ring-1 focus-visible:ring-white"
           />
         </div>
@@ -113,7 +114,8 @@ function RedefinirSenhaForm() {
             value={confirm}
             onChange={(e) => setConfirm(e.target.value)}
             required
-            minLength={6}
+            minLength={12}
+            autoComplete="new-password"
             className="bg-white/5 border-white/10 h-12 rounded-xl focus-visible:ring-1 focus-visible:ring-white"
           />
         </div>

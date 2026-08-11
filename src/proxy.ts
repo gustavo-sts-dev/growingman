@@ -17,14 +17,9 @@
  *
  * Cookies (nomes REAIS, conferidos no backend em
  * growingman-style-backend/src/modules/auth/controllers/auth.controller.ts):
- *   - `growingman_access_token` — access token LEGÍVEL, setado no cliente via js-cookie
- *     (src/app/login/page.tsx). É o único que o proxy consegue decodificar para
- *     checar expiração.
- *   - `refreshToken` — refresh token HttpOnly, setado pelo BACKEND via Set-Cookie
- *     (login usa credentials:"include"). O proxy roda no servidor, então ENXERGA
- *     o cookie HttpOnly, mas só verifica sua PRESENÇA (não dá para validar o
- *     conteúdo aqui). O backend também seta um `accessToken` HttpOnly próprio,
- *     que o proxy não usa (usamos o `growingman_access_token` legível).
+ *   - `accessToken` e `refreshToken` são HttpOnly e setados pelo backend.
+ *   - O proxy lê esses cookies no servidor sem expô-los ao JavaScript.
+ *   - A autorização definitiva continua sendo feita pelo backend em cada endpoint.
  */
 import { NextResponse } from "next/server";
 import type { NextRequest } from "next/server";
@@ -43,9 +38,8 @@ function isTokenExpired(token: string): boolean {
 }
 
 export function proxy(request: NextRequest) {
-  const accessToken = request.cookies.get("growingman_access_token")?.value;
+  const accessToken = request.cookies.get("accessToken")?.value;
   const refreshToken = request.cookies.get("refreshToken")?.value;
-  const hasRefreshToken = request.cookies.get("growingman_has_refresh_token")?.value;
 
   const isDashboard = request.nextUrl.pathname.startsWith("/dashboard");
   const isLogin = request.nextUrl.pathname === "/login";
@@ -60,9 +54,9 @@ export function proxy(request: NextRequest) {
     // Access token ausente/expirado, mas tem refresh token → deixa passar.
     // Comportamento TOLERANTE proposital: o `apiFetch` no cliente renova o
     // token automaticamente ao tomar 401 (src/lib/api.ts → tryRefresh). Barrar
-    // aqui quebraria o fluxo mobile documentado (o access token legível pode
-    // demorar a "aparecer" logo após o login e causaria loop de volta ao /login).
-    if (refreshToken || hasRefreshToken) {
+    // aqui quebraria o fluxo quando o access token expirou, mas o refresh token
+    // HttpOnly ainda pode renovar a sessão na primeira chamada da API.
+    if (refreshToken) {
       return NextResponse.next();
     }
 

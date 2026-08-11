@@ -16,7 +16,7 @@ interface PresignResponse {
   key: string;
 }
 
-const ALLOWED = ["image/jpeg", "image/png", "image/webp", "image/svg+xml"];
+const ALLOWED = ["image/jpeg", "image/png", "image/webp"];
 const MAX_BYTES = 5 * 1024 * 1024; // 5 MB
 
 /**
@@ -25,7 +25,7 @@ const MAX_BYTES = 5 * 1024 * 1024; // 5 MB
  */
 export async function uploadImage(file: File, folder: UploadFolder): Promise<string> {
   if (!ALLOWED.includes(file.type)) {
-    throw new Error("Formato inválido. Use JPG, PNG, WEBP ou SVG.");
+    throw new Error("Formato inválido. Use JPG, PNG ou WEBP.");
   }
   if (file.size > MAX_BYTES) {
     throw new Error("Imagem muito grande (máx. 5 MB).");

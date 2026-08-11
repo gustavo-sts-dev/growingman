@@ -4,6 +4,7 @@ import Link from "next/link";
 import { BookingFlow } from "./BookingFlow";
 import { apiUrl } from "@/lib/config";
 import { TenantLogo } from "@/components/TenantLogo";
+import { fontsHref, resolveSitePreset } from "@/lib/site-presets";
 
 interface TenantPageProps {
   params: Promise<{ tenantSlug: string }>;
@@ -51,6 +52,7 @@ export default async function BookingPage({ params }: TenantPageProps) {
 
   const services = await getServices(tenant.id);
   const barbers = await getBarbers(tenant.id);
+  const preset = resolveSitePreset(tenant.site_preset);
 
   return (
     <div
@@ -59,9 +61,7 @@ export default async function BookingPage({ params }: TenantPageProps) {
         {
           backgroundColor: tenant.theme_bg || "#080808",
           color: tenant.theme_text || "#A1A1AA",
-          fontFamily: tenant.font_family
-            ? `"${tenant.font_family}", sans-serif`
-            : undefined,
+          fontFamily: `"${preset.fonts.body}", sans-serif`,
           "--theme-bg": tenant.theme_bg || "#080808",
           "--theme-card": tenant.theme_card || "#121212",
           "--theme-text": tenant.theme_text || "#A1A1AA",
@@ -72,13 +72,7 @@ export default async function BookingPage({ params }: TenantPageProps) {
         } as React.CSSProperties
       }
     >
-      {tenant.font_family && (
-        <style
-          dangerouslySetInnerHTML={{
-            __html: `@import url('https://fonts.googleapis.com/css2?family=${tenant.font_family.replace(/\s+/g, "+")}:wght@400;500;600;700;900&display=swap');`,
-          }}
-        />
-      )}
+      <style>{`@import url('${fontsHref(preset)}');`}</style>
 
       {/* Header */}
       <header

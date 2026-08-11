@@ -27,7 +27,26 @@ export default function OnboardingFlow() {
   const [errorMsg, setErrorMsg] = useState("");
   const [pixData, setPixData] = useState<{ qrCodeBase64?: string; qrCodePayload?: string } | null>(null);
 
-  const nextStep = () => setStep((s) => Math.min(s + 1, 3));
+  const nextStep = () => {
+    if (adminName.trim().length < 3) {
+      setErrorMsg("Informe seu nome completo.");
+      return;
+    }
+    if (!/^\S+@\S+\.\S+$/.test(adminEmail)) {
+      setErrorMsg("Informe um e-mail válido.");
+      return;
+    }
+    if (adminCpfCnpj.replace(/\D/g, "").length < 11) {
+      setErrorMsg("Informe um CPF ou CNPJ válido.");
+      return;
+    }
+    if (adminPassword.length < 12) {
+      setErrorMsg("A senha deve ter pelo menos 12 caracteres.");
+      return;
+    }
+    setErrorMsg("");
+    setStep((s) => Math.min(s + 1, 3));
+  };
   const prevStep = () => setStep((s) => Math.max(s - 1, 1));
 
   const handleCreateAccount = async () => {
@@ -61,8 +80,8 @@ export default function OnboardingFlow() {
       
       // Avança para a tela do Pix
       setStep(3);
-    } catch (err: any) {
-      setErrorMsg(err.message);
+    } catch (err: unknown) {
+      setErrorMsg(err instanceof Error ? err.message : "Não foi possível criar a conta.");
     } finally {
       setIsLoading(false);
     }
@@ -118,21 +137,27 @@ export default function OnboardingFlow() {
               <div className="space-y-4">
                 <div>
                   <label className="text-sm font-medium text-neutral-300 mb-1.5 block">Nome Completo</label>
-                  <Input placeholder="João da Silva" value={adminName} onChange={e => setAdminName(e.target.value)} />
+                  <Input placeholder="João da Silva" value={adminName} onChange={e => setAdminName(e.target.value)} autoComplete="name" required />
                 </div>
                 <div>
                   <label className="text-sm font-medium text-neutral-300 mb-1.5 block">Email</label>
-                  <Input type="email" placeholder="joao@exemplo.com" value={adminEmail} onChange={e => setAdminEmail(e.target.value)} />
+                  <Input type="email" placeholder="joao@exemplo.com" value={adminEmail} onChange={e => setAdminEmail(e.target.value)} autoComplete="email" required />
                 </div>
                 <div>
                   <label className="text-sm font-medium text-neutral-300 mb-1.5 block">CPF ou CNPJ</label>
-                  <Input placeholder="000.000.000-00" value={adminCpfCnpj} onChange={e => setAdminCpfCnpj(e.target.value)} />
+                  <Input placeholder="000.000.000-00" value={adminCpfCnpj} onChange={e => setAdminCpfCnpj(e.target.value)} inputMode="numeric" required />
                 </div>
                 <div>
                   <label className="text-sm font-medium text-neutral-300 mb-1.5 block">Senha</label>
-                  <Input type="password" placeholder="••••••••" value={adminPassword} onChange={e => setAdminPassword(e.target.value)} />
+                  <Input type="password" placeholder="••••••••••••" value={adminPassword} onChange={e => setAdminPassword(e.target.value)} minLength={12} autoComplete="new-password" required />
                 </div>
               </div>
+
+              {errorMsg && (
+                <div className="p-3 rounded-lg bg-red-500/10 border border-red-500/20 text-red-400 text-sm">
+                  {errorMsg}
+                </div>
+              )}
 
               <Button className="w-full mt-4 h-12 rounded-xl text-base" onClick={nextStep}>
                 Continuar <ArrowRight className="w-4 h-4 ml-2" />

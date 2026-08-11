@@ -302,8 +302,6 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
               try {
                 await apiPost("/auth/logout");
               } catch {}
-              document.cookie = "growingman_access_token=; path=/; expires=Thu, 01 Jan 1970 00:00:01 GMT;";
-              document.cookie = "growingman_has_refresh_token=; path=/; expires=Thu, 01 Jan 1970 00:00:01 GMT;";
               window.location.href = "/login";
             }}
             className="w-full flex items-center gap-2.5 px-3 py-2.5 rounded-xl text-sm text-red-400/80 hover:text-red-400 hover:bg-red-500/10 font-medium transition-all"
