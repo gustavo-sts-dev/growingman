@@ -1,13 +1,11 @@
 {
-	"scripts": {
-		"dev": "concurrently \"pnpm --filter backend_v2 dev\" \"pnpm --filter frontend_v2 dev\" --names \"backend,frontend\" --prefix-colors \"blue,green\"",
-		"dev:backend": "pnpm --filter backend_v2 dev",
-		"dev:frontend": "pnpm --filter frontend_v2 dev",
-		"build": "concurrently \"pnpm --filter backend_v2 build\" \"pnpm --filter frontend_v2 build\"",
-		"build:backend": "pnpm --filter backend_v2 build",
-		"build:frontend": "pnpm --filter frontend_v2 build"
-	},
-	"devDependencies": {
-		"concurrently": "^9.2.1"
-	}
+  "name": "growingman-deploy",
+  "private": true,
+  "packageManager": "pnpm@10.28.0",
+  "scripts": {
+    "build": "pnpm --dir icon-web build"
+  },
+  "dependencies": {
+    "next": "16.2.9"
+  }
 }
