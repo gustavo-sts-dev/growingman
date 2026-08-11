@@ -1,7 +1,7 @@
 "use client";
 
 import * as React from "react";
-import { CheckCircle2, AlertCircle, Info, X } from "lucide-react";
+import { CheckCircle2, AlertCircle, Info, X, type LucideIcon } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 type ToastType = "success" | "error" | "info";
@@ -29,7 +29,7 @@ export function useToast(): ToastContextValue {
   return ctx;
 }
 
-const ICONS: Record<ToastType, React.ElementType> = {
+const ICONS: Record<ToastType, LucideIcon> = {
   success: CheckCircle2,
   error: AlertCircle,
   info: Info,

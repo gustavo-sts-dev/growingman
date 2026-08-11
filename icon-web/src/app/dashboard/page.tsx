@@ -176,37 +176,41 @@ export default function DashboardPage() {
 
       {/* ── Stats Grid ────────────────────────────────────── */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-        {statCards.map((card) => (
-          <Link
-            key={card.label}
-            href={card.href}
-            className="group"
-          >
-            <div className="relative p-6 rounded-2xl border border-white/[0.06] bg-white/[0.02] hover:bg-white/[0.04] hover:border-white/[0.1] transition-all duration-300 overflow-hidden">
-              {/* bg glow */}
-              <div
-                className={`absolute inset-0 bg-gradient-to-br ${card.color} opacity-60 group-hover:opacity-100 transition-opacity`}
-              />
+        {statCards.map((card) => {
+          const Icon = card.growingman;
 
-              <div className="relative">
-                <div className="flex items-center justify-between mb-4">
-                  <div
-                    className={`w-9 h-9 rounded-xl bg-white/5 border border-white/[0.06] flex items-center justify-center ${card.growingmanColor}`}
-                  >
-                    <card.growingman className="w-4 h-4" />
+          return (
+            <Link
+              key={card.label}
+              href={card.href}
+              className="group"
+            >
+              <div className="relative p-6 rounded-2xl border border-white/[0.06] bg-white/[0.02] hover:bg-white/[0.04] hover:border-white/[0.1] transition-all duration-300 overflow-hidden">
+                {/* bg glow */}
+                <div
+                  className={`absolute inset-0 bg-gradient-to-br ${card.color} opacity-60 group-hover:opacity-100 transition-opacity`}
+                />
+
+                <div className="relative">
+                  <div className="flex items-center justify-between mb-4">
+                    <div
+                      className={`w-9 h-9 rounded-xl bg-white/5 border border-white/[0.06] flex items-center justify-center ${card.growingmanColor}`}
+                    >
+                      <Icon className="w-4 h-4" />
+                    </div>
+                    <ChevronRight className="w-4 h-4 text-neutral-700 group-hover:text-neutral-400 group-hover:translate-x-0.5 transition-all" />
                   </div>
-                  <ChevronRight className="w-4 h-4 text-neutral-700 group-hover:text-neutral-400 group-hover:translate-x-0.5 transition-all" />
+                  <p className="text-neutral-500 text-xs font-medium uppercase tracking-wider mb-1.5">
+                    {card.label}
+                  </p>
+                  <p className="text-3xl font-black tracking-tight text-white">
+                    {card.value}
+                  </p>
                 </div>
-                <p className="text-neutral-500 text-xs font-medium uppercase tracking-wider mb-1.5">
-                  {card.label}
-                </p>
-                <p className="text-3xl font-black tracking-tight text-white">
-                  {card.value}
-                </p>
               </div>
-            </div>
-          </Link>
-        ))}
+            </Link>
+          );
+        })}
       </div>
 
       {/* ── Gráfico de receita (últimos 7 dias) ───────────── */}
@@ -218,22 +222,26 @@ export default function DashboardPage() {
           Acesso Rápido
         </h2>
         <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
-          {quickLinks.map((item) => (
-            <Link
-              key={item.href}
-              href={item.href}
-              className="group flex items-center gap-4 p-4 rounded-2xl border border-white/[0.06] bg-white/[0.02] hover:bg-white/[0.05] hover:border-white/[0.12] transition-all duration-200"
-            >
-              <div className="w-10 h-10 rounded-xl bg-white/5 border border-white/[0.06] flex items-center justify-center text-neutral-400 group-hover:text-white group-hover:bg-white/10 transition-all shrink-0">
-                <item.growingman className="w-4 h-4" />
-              </div>
-              <div className="min-w-0">
-                <p className="font-semibold text-sm text-white">{item.label}</p>
-                <p className="text-xs text-neutral-600 mt-0.5">{item.desc}</p>
-              </div>
-              <ArrowRight className="w-4 h-4 text-neutral-700 ml-auto shrink-0 group-hover:text-neutral-400 group-hover:translate-x-0.5 transition-all" />
-            </Link>
-          ))}
+          {quickLinks.map((item) => {
+            const Icon = item.growingman;
+
+            return (
+              <Link
+                key={item.href}
+                href={item.href}
+                className="group flex items-center gap-4 p-4 rounded-2xl border border-white/[0.06] bg-white/[0.02] hover:bg-white/[0.05] hover:border-white/[0.12] transition-all duration-200"
+              >
+                <div className="w-10 h-10 rounded-xl bg-white/5 border border-white/[0.06] flex items-center justify-center text-neutral-400 group-hover:text-white group-hover:bg-white/10 transition-all shrink-0">
+                  <Icon className="w-4 h-4" />
+                </div>
+                <div className="min-w-0">
+                  <p className="font-semibold text-sm text-white">{item.label}</p>
+                  <p className="text-xs text-neutral-600 mt-0.5">{item.desc}</p>
+                </div>
+                <ArrowRight className="w-4 h-4 text-neutral-700 ml-auto shrink-0 group-hover:text-neutral-400 group-hover:translate-x-0.5 transition-all" />
+              </Link>
+            );
+          })}
         </div>
       </div>
 

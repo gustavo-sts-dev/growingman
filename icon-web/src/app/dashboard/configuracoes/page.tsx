@@ -6,7 +6,7 @@ import { Input } from "@/components/ui/input";
 import {
   Palette, Globe, Shield, Clock, Save, CheckCircle2,
   Scissors, AlertTriangle, Loader2, Percent, LayoutTemplate, Image as ImageGrowingman,
-  CreditCard
+  CreditCard, type LucideIcon
 } from "lucide-react";
 
 import { apiGet, apiPatch, apiDelete } from "@/lib/api";
@@ -18,7 +18,7 @@ import { SITE_PRESETS, resolveSitePreset, type SitePresetId } from "@/lib/site-p
 
 type TabId = "perfil" | "pagina" | "aparencia" | "politicas" | "financeiro";
 
-const TABS: { id: TabId; label: string; growingman: React.ElementType }[] = [
+const TABS: { id: TabId; label: string; growingman: LucideIcon }[] = [
   { id: "perfil",    label: "Perfil do App",  growingman: Globe          },
   { id: "pagina",    label: "Página Pública", growingman: LayoutTemplate },
   { id: "aparencia", label: "Aparência",       growingman: Palette        },
@@ -228,20 +228,24 @@ export default function ConfiguracoesPage() {
 
       {/* Tabs */}
       <div className="flex gap-1 p-1 rounded-xl bg-white/[0.03] border border-white/[0.06] w-full sm:w-fit overflow-x-auto">
-        {TABS.map((tab) => (
-          <button
-            key={tab.id}
-            onClick={() => setActiveTab(tab.id)}
-            className={`flex items-center gap-2 px-3 sm:px-4 py-2 rounded-lg text-sm font-medium transition-all whitespace-nowrap shrink-0 ${
-              activeTab === tab.id
-                ? "bg-white text-black shadow-sm"
-                : "text-neutral-500 hover:text-white"
-            }`}
-          >
-            <tab.growingman className="w-3.5 h-3.5" />
-            {tab.label}
-          </button>
-        ))}
+        {TABS.map((tab) => {
+          const Icon = tab.growingman;
+
+          return (
+            <button
+              key={tab.id}
+              onClick={() => setActiveTab(tab.id)}
+              className={`flex items-center gap-2 px-3 sm:px-4 py-2 rounded-lg text-sm font-medium transition-all whitespace-nowrap shrink-0 ${
+                activeTab === tab.id
+                  ? "bg-white text-black shadow-sm"
+                  : "text-neutral-500 hover:text-white"
+              }`}
+            >
+              <Icon className="w-3.5 h-3.5" />
+              {tab.label}
+            </button>
+          );
+        })}
       </div>
 
       {/* ── ABA: PERFIL ───────────────────────────────────── */}

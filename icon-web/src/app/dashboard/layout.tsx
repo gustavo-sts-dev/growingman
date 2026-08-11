@@ -5,7 +5,8 @@ import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import {
   Scissors, Calendar, Users, Briefcase, BarChart3,
-  Settings, Bell, Search, LogOut, ExternalLink, Zap, DollarSign, Star, Package, Menu, X, TrendingUp, CornerDownLeft
+  Settings, Bell, Search, LogOut, ExternalLink, Zap, DollarSign, Star, Package, Menu, X, TrendingUp, CornerDownLeft,
+  type LucideIcon
 } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { TenantLogo } from "@/components/TenantLogo";
@@ -34,7 +35,7 @@ const settingsItems = [
   { href: "/dashboard/configuracoes", growingman: Settings, label: "Ajustes do App", exact: false },
 ];
 
-function NavLink({ href, growingman: Growingman, label, exact, onNavigate }: { href: string; growingman: React.ElementType; label: string; exact: boolean; onNavigate?: () => void }) {
+function NavLink({ href, growingman: Growingman, label, exact, onNavigate }: { href: string; growingman: LucideIcon; label: string; exact: boolean; onNavigate?: () => void }) {
   const pathname = usePathname();
   const isActive = exact ? pathname === href : pathname.startsWith(href);
 
@@ -108,20 +109,24 @@ function TopbarSearch() {
           {results.length === 0 ? (
             <p className="px-4 py-3 text-sm text-neutral-500">Nenhum módulo encontrado.</p>
           ) : (
-            results.map((item, i) => (
-              <button
-                key={item.href}
-                onClick={() => go(item.href)}
-                onMouseEnter={() => setActive(i)}
-                className={`w-full flex items-center gap-3 px-4 py-2.5 text-sm text-left transition-colors ${
-                  i === active ? "bg-white/8 text-white" : "text-neutral-300 hover:bg-white/5"
-                }`}
-              >
-                <item.growingman className="w-4 h-4 shrink-0 text-neutral-500" />
-                <span className="flex-1">{item.label}</span>
-                {i === active && <CornerDownLeft className="w-3.5 h-3.5 text-neutral-600" />}
-              </button>
-            ))
+            results.map((item, i) => {
+              const Icon = item.growingman;
+
+              return (
+                <button
+                  key={item.href}
+                  onClick={() => go(item.href)}
+                  onMouseEnter={() => setActive(i)}
+                  className={`w-full flex items-center gap-3 px-4 py-2.5 text-sm text-left transition-colors ${
+                    i === active ? "bg-white/8 text-white" : "text-neutral-300 hover:bg-white/5"
+                  }`}
+                >
+                  <Icon className="w-4 h-4 shrink-0 text-neutral-500" />
+                  <span className="flex-1">{item.label}</span>
+                  {i === active && <CornerDownLeft className="w-3.5 h-3.5 text-neutral-600" />}
+                </button>
+              );
+            })
           )}
         </div>
       )}
