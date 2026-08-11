@@ -15,9 +15,9 @@ const outfit = Outfit({
 });
 
 export const metadata: Metadata = {
-  title: "Growingman - A revolução na sua Barbearia",
+  title: "Growingman | Gestão para barbearias",
   description:
-    "Tenha seu próprio aplicativo, agendamentos inteligentes e controle financeiro total. Growingman é a plataforma White-Label definitiva para barbearias premium.",
+    "Agenda online, equipe, clientes, serviços, estoque e financeiro em um só sistema para barbearias.",
 };
 
 export default function RootLayout({
