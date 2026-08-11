@@ -1,295 +1,145 @@
-import Link from "next/link";
-import { Button } from "@/components/ui/button";
-import {
-  ArrowRight,
-  CheckCircle2,
-  Calendar,
-  Scissors,
-  MessageSquare,
-  CreditCard,
-} from "lucide-react";
 import Image from "next/image";
+import Link from "next/link";
+import { ArrowRight, Check, Scissors } from "lucide-react";
+import { Button } from "@/components/ui/button";
+
+const operations = [
+  {
+    number: "01",
+    title: "Agenda pública",
+    text: "O cliente escolhe serviço, profissional, data e horário pelo link da barbearia.",
+  },
+  {
+    number: "02",
+    title: "Rotina da equipe",
+    text: "A agenda reúne atendimentos e bloqueios de horário para cada profissional.",
+  },
+  {
+    number: "03",
+    title: "Gestão do negócio",
+    text: "Serviços, clientes, estoque e movimentações financeiras ficam no mesmo painel.",
+  },
+];
+
+const included = [
+  "Página de agendamento com a marca da barbearia",
+  "Cadastro de serviços, profissionais e clientes",
+  "Agenda e bloqueio de horários",
+  "Painel financeiro e controle de estoque",
+  "Personalização de cores, conteúdo e imagem de capa",
+  "Integração opcional com Mercado Pago para cobranças de clientes",
+];
 
 export default function LandingPage() {
   return (
-    <main className="flex min-h-screen flex-col items-center justify-between overflow-x-hidden relative selection:bg-white/20">
-      {/* Background gradients */}
-      <div className="fixed inset-0 -z-10 bg-black" />
-      <div className="fixed inset-0 -z-10 bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-neutral-900 via-black to-black" />
-      <div className="fixed top-0 left-1/2 -z-10 -translate-x-1/2 w-[80vw] h-[50vh] bg-white/5 blur-[120px] rounded-full pointer-events-none" />
-
-      {/* Navbar */}
-      <header className="w-full max-w-7xl mx-auto px-6 h-20 flex items-center justify-between z-50">
-        <div className="flex items-center gap-2">
-          <div className="rounded-lg overflow-hidden flex items-center justify-center">
-            <Image
-              src={"/logo.png"}
-              width={32}
-              height={32}
-              alt="logomarca"
-              className="rounded-lg"
-            />
+    <main className="min-h-screen bg-black text-white selection:bg-white selection:text-black">
+      <header className="border-b border-neutral-900">
+        <div className="mx-auto flex h-20 max-w-7xl items-center justify-between px-5 sm:px-8">
+          <Link href="/" className="flex items-center gap-3" aria-label="Growingman — página inicial">
+            <Image src="/logo.png" width={34} height={34} alt="" className="rounded-md" priority />
+            <span className="font-heading text-lg font-semibold tracking-tight">Growingman</span>
+          </Link>
+          <nav className="hidden items-center gap-8 text-sm text-neutral-400 md:flex" aria-label="Navegação principal">
+            <Link href="#como-funciona" className="hover:text-white">Como funciona</Link>
+            <Link href="#recursos" className="hover:text-white">Recursos</Link>
+            <Link href="#plano" className="hover:text-white">Plano</Link>
+          </nav>
+          <div className="flex items-center gap-2 sm:gap-4">
+            <Button variant="ghost" asChild className="hidden sm:inline-flex"><Link href="/login">Entrar</Link></Button>
+            <Button asChild><Link href="/onboarding">Criar conta</Link></Button>
           </div>
-          <span className="text-xl font-heading font-bold tracking-tight text-white">
-            Growingman
-          </span>
-        </div>
-        <nav className="hidden md:flex items-center gap-8 text-sm font-medium text-neutral-400">
-          <Link
-            href="#features"
-            className="hover:text-white transition-colors"
-          >
-            Funcionalidades
-          </Link>
-          <Link
-            href="#pricing"
-            className="hover:text-white transition-colors"
-          >
-            Planos
-          </Link>
-        </nav>
-        <div className="flex items-center gap-4">
-          <Link href="/dashboard">
-            <Button
-              variant="ghost"
-              className="hidden sm:inline-flex text-neutral-300"
-            >
-              Entrar
-            </Button>
-          </Link>
-          <Link href="/onboarding">
-            <Button className="rounded-full font-semibold">
-              Começar Agora
-            </Button>
-          </Link>
         </div>
       </header>
 
-      {/* Hero Section */}
-      <section className="w-full max-w-7xl mx-auto px-6 pt-32 pb-20 flex flex-col items-center text-center relative z-10">
-        <div className="inline-flex items-center rounded-full border border-white/10 bg-white/5 px-3 py-1 text-sm font-medium text-neutral-300 mb-8 backdrop-blur-md">
-          <span className="flex h-2 w-2 rounded-full bg-white mr-2"></span>A
-          plataforma premium para barbearias
-        </div>
-        <h1 className="text-5xl md:text-7xl font-heading font-bold tracking-tighter text-transparent bg-clip-text bg-gradient-to-b from-white to-neutral-500 max-w-4xl mb-6 pb-2">
-          Sua barbearia, sua marca. <br /> Automatizada e premium.
-        </h1>
-        <p className="text-lg md:text-xl text-neutral-400 max-w-2xl mb-10 leading-relaxed font-sans">
-          Tenha seu próprio aplicativo White-Label. Agendamentos via WhatsApp
-          com IA, split de pagamentos automático e a experiência que seus
-          clientes merecem.
-        </p>
-        <div className="flex flex-col sm:flex-row items-center gap-4">
-          <Link href="/onboarding">
-            <Button
-              size="lg"
-              className="h-14 px-8 rounded-full text-base font-semibold w-full sm:w-auto shadow-[0_0_40px_rgba(255,255,255,0.2)] hover:shadow-[0_0_60px_rgba(255,255,255,0.3)] transition-all"
-            >
-              Criar minha conta agora <ArrowRight className="ml-2 w-5 h-5" />
-            </Button>
-          </Link>
-          <Button
-            size="lg"
-            variant="outline"
-            className="h-14 px-8 rounded-full text-base font-medium w-full sm:w-auto border-white/10 hover:bg-white/5"
-          >
-            Falar com consultor
-          </Button>
-        </div>
-
-        {/* Mockup Preview Area */}
-        <div className="w-full max-w-5xl mt-24 relative">
-          <div className="absolute inset-0 bg-gradient-to-t from-black via-transparent to-transparent z-10" />
-          <div className="aspect-video w-full rounded-2xl glass-card border border-white/10 overflow-hidden relative flex items-center justify-center bg-black/40">
-            {/* Minimalist Dashboard Mock */}
-            <div className="w-full h-full flex flex-col items-center justify-center p-8 opacity-80">
-              <div className="w-full max-w-3xl flex items-center justify-between mb-8">
-                <div className="flex items-center gap-4">
-                  <div className="w-12 h-12 rounded-full bg-neutral-800" />
-                  <div>
-                    <div className="w-32 h-4 bg-neutral-800 rounded mb-2" />
-                    <div className="w-24 h-3 bg-neutral-900 rounded" />
-                  </div>
-                </div>
-                <div className="flex gap-2">
-                  <div className="w-24 h-8 bg-neutral-800 rounded-lg" />
-                  <div className="w-8 h-8 bg-neutral-800 rounded-lg" />
-                </div>
-              </div>
-              <div className="w-full max-w-3xl grid grid-cols-3 gap-6">
-                {[1, 2, 3].map((i) => (
-                  <div
-                    key={i}
-                    className="h-32 rounded-xl bg-neutral-900/50 border border-white/5 p-4 flex flex-col justify-end"
-                  >
-                    <div className="w-full h-2 bg-neutral-800 rounded mb-2" />
-                    <div className="w-2/3 h-2 bg-neutral-800 rounded" />
-                  </div>
-                ))}
-              </div>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      {/* Features Section */}
-      <section
-        id="features"
-        className="w-full bg-neutral-950 py-32 border-y border-white/5 relative z-10"
-      >
-        <div className="max-w-7xl mx-auto px-6">
-          <div className="flex flex-col items-center text-center mb-20">
-            <h2 className="text-3xl md:text-5xl font-heading font-bold mb-6">
-              Tudo que seu negócio precisa
-            </h2>
-            <p className="text-neutral-400 text-lg max-w-2xl">
-              Desenvolvemos as ferramentas essenciais para você escalar sua
-              barbearia com tecnologia de ponta e zero dor de cabeça.
-            </p>
-          </div>
-
-          <div className="grid md:grid-cols-3 gap-8">
-            <div className="glass-card p-8 rounded-2xl transition-transform hover:-translate-y-1">
-              <div className="w-12 h-12 rounded-xl bg-white/10 flex items-center justify-center mb-6">
-                <Calendar className="w-6 h-6 text-white" />
-              </div>
-              <h3 className="text-xl font-bold mb-3">
-                Agendamentos Inteligentes
-              </h3>
-              <p className="text-neutral-400 leading-relaxed">
-                Seus clientes agendam 24/7 através do seu próprio aplicativo ou
-                link. Reduza as faltas com lembretes automáticos.
-              </p>
-            </div>
-
-            <div className="glass-card p-8 rounded-2xl transition-transform hover:-translate-y-1">
-              <div className="w-12 h-12 rounded-xl bg-white/10 flex items-center justify-center mb-6">
-                <MessageSquare className="w-6 h-6 text-white" />
-              </div>
-              <h3 className="text-xl font-bold mb-3">IA no WhatsApp</h3>
-              <p className="text-neutral-400 leading-relaxed">
-                Um assistente virtual com a sua marca que responde clientes, faz
-                agendamentos e tira dúvidas diretamente no WhatsApp.
-              </p>
-            </div>
-
-            <div className="glass-card p-8 rounded-2xl transition-transform hover:-translate-y-1">
-              <div className="w-12 h-12 rounded-xl bg-white/10 flex items-center justify-center mb-6">
-                <CreditCard className="w-6 h-6 text-white" />
-              </div>
-              <h3 className="text-xl font-bold mb-3">Split de Pagamentos</h3>
-              <p className="text-neutral-400 leading-relaxed">
-                A comissão do barbeiro e a sua parte caem diretamente nas
-                respectivas contas via Pix. Sem necessidade de repasses manuais.
-              </p>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      {/* Pricing Section */}
-      <section
-        id="pricing"
-        className="w-full py-32 relative z-10"
-      >
-        <div className="max-w-7xl mx-auto px-6">
-          <div className="flex flex-col items-center text-center mb-20">
-            <h2 className="text-3xl md:text-5xl font-heading font-bold mb-6">
-              Investimento Simples e Transparente
-            </h2>
-            <p className="text-neutral-400 text-lg max-w-2xl">
-              Escolha o plano ideal para o tamanho da sua barbearia. Sem taxas
-              ocultas, cancele quando quiser.
-            </p>
-          </div>
-
-          <div className="grid md:grid-cols-2 gap-8 max-w-4xl mx-auto">
-            {/* Starter Plan */}
-            <div className="glass-card rounded-3xl p-8 border-white/5 flex flex-col">
-              <h3 className="text-2xl font-bold mb-2">Essencial</h3>
-              <p className="text-neutral-400 mb-6">
-                Para barbearias em crescimento
-              </p>
-              <div className="flex items-baseline gap-2 mb-8">
-                <span className="text-5xl font-bold">R$ 149</span>
-                <span className="text-neutral-500 font-medium">/mês</span>
-              </div>
-              <ul className="space-y-4 mb-8 flex-1">
-                {[
-                  "Até 3 barbeiros",
-                  "Agendamento Online",
-                  "Lembretes via WhatsApp",
-                  "Dashboard Financeiro",
-                  "Suporte via Email",
-                ].map((feature, i) => (
-                  <li
-                    key={i}
-                    className="flex items-center gap-3 text-neutral-300"
-                  >
-                    <CheckCircle2 className="w-5 h-5 text-white" />
-                    {feature}
-                  </li>
-                ))}
-              </ul>
-              <Button
-                variant="outline"
-                className="w-full h-12 rounded-xl border-white/20 text-white hover:bg-white/10"
-              >
-                Começar Teste Grátis
-              </Button>
-            </div>
-
-            {/* Premium Plan */}
-            <div className="glass-card rounded-3xl p-8 border-white/20 relative flex flex-col shadow-[0_0_50px_rgba(255,255,255,0.05)] bg-white/5">
-              <div className="absolute top-0 right-8 -translate-y-1/2 px-3 py-1 bg-white text-black text-xs font-bold rounded-full uppercase tracking-wider">
-                Recomendado
-              </div>
-              <h3 className="text-2xl font-bold mb-2">Growingman Premium</h3>
-              <p className="text-neutral-400 mb-6">Para líderes de mercado</p>
-              <div className="flex items-baseline gap-2 mb-8">
-                <span className="text-5xl font-bold">R$ 299</span>
-                <span className="text-neutral-500 font-medium">/mês</span>
-              </div>
-              <ul className="space-y-4 mb-8 flex-1">
-                {[
-                  "Barbeiros Ilimitados",
-                  "App White-Label Customizado",
-                  "Atendimento IA Completo",
-                  "Split de Pagamento Pix",
-                  "Suporte Prioritário VIP",
-                  "Relatórios Avançados",
-                ].map((feature, i) => (
-                  <li
-                    key={i}
-                    className="flex items-center gap-3 text-neutral-300"
-                  >
-                    <CheckCircle2 className="w-5 h-5 text-white" />
-                    {feature}
-                  </li>
-                ))}
-              </ul>
-              <Link href="/onboarding">
-                <Button className="w-full h-12 rounded-xl text-base font-semibold shadow-[0_0_20px_rgba(255,255,255,0.2)]">
-                  Assinar Premium
-                </Button>
-              </Link>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      {/* Footer */}
-      <footer className="w-full border-t border-white/5 py-12 z-10">
-        <div className="max-w-7xl mx-auto px-6 flex flex-col md:flex-row justify-between items-center gap-6">
-          <div className="flex items-center gap-2">
-            <Scissors className="w-5 h-5 text-white/50" />
-            <span className="font-heading font-bold text-white/50">
-              Growingman SaaS
-            </span>
-          </div>
-          <p className="text-neutral-500 text-sm">
-            © 2026 Growingman. Todos os direitos reservados.
+      <section className="mx-auto grid max-w-7xl gap-14 px-5 pb-20 pt-16 sm:px-8 md:pb-28 md:pt-24 lg:grid-cols-[1.35fr_0.65fr] lg:items-end">
+        <div>
+          <p className="mb-8 font-mono text-xs uppercase tracking-[0.22em] text-neutral-500">Sistema para barbearias</p>
+          <h1 className="max-w-4xl font-heading text-5xl font-semibold leading-[0.98] tracking-[-0.045em] sm:text-6xl md:text-8xl">
+            A agenda e a operação da sua barbearia no mesmo lugar.
+          </h1>
+          <p className="mt-8 max-w-2xl text-lg leading-8 text-neutral-400 md:text-xl">
+            Publique horários, receba agendamentos e acompanhe a rotina da equipe sem depender de planilhas ou mensagens espalhadas.
           </p>
+          <div className="mt-10 flex flex-col items-start gap-4 sm:flex-row sm:items-center">
+            <Button size="lg" asChild className="h-13 px-6">
+              <Link href="/onboarding">Criar conta e gerar Pix <ArrowRight className="ml-2 size-4" /></Link>
+            </Button>
+            <span className="text-sm text-neutral-500">Plano único de R$ 299 por mês</span>
+          </div>
+        </div>
+
+        <aside className="border-l border-neutral-800 pl-6 lg:mb-2" aria-label="Resumo do produto">
+          <p className="font-mono text-xs uppercase tracking-[0.18em] text-neutral-500">Do link ao atendimento</p>
+          <dl className="mt-7 space-y-6">
+            <div><dt className="text-sm text-neutral-500">Cliente</dt><dd className="mt-1 text-lg">Agenda pelo navegador</dd></div>
+            <div><dt className="text-sm text-neutral-500">Equipe</dt><dd className="mt-1 text-lg">Consulta a própria rotina</dd></div>
+            <div><dt className="text-sm text-neutral-500">Gestor</dt><dd className="mt-1 text-lg">Acompanha a operação</dd></div>
+          </dl>
+        </aside>
+      </section>
+
+      <section id="como-funciona" className="border-y border-neutral-900 bg-neutral-950">
+        <div className="mx-auto max-w-7xl px-5 py-20 sm:px-8 md:py-28">
+          <div className="grid gap-10 lg:grid-cols-[0.65fr_1.35fr]">
+            <header>
+              <p className="font-mono text-xs uppercase tracking-[0.2em] text-neutral-500">Como funciona</p>
+              <h2 className="mt-5 max-w-sm font-heading text-3xl font-semibold tracking-tight md:text-5xl">Uma rotina clara, do agendamento ao fechamento.</h2>
+            </header>
+            <ol className="border-t border-neutral-800">
+              {operations.map((item) => (
+                <li key={item.number} className="grid gap-4 border-b border-neutral-800 py-7 sm:grid-cols-[4rem_12rem_1fr] sm:items-start">
+                  <span className="font-mono text-sm text-neutral-600">{item.number}</span>
+                  <h3 className="text-lg font-medium">{item.title}</h3>
+                  <p className="max-w-xl leading-7 text-neutral-400">{item.text}</p>
+                </li>
+              ))}
+            </ol>
+          </div>
+        </div>
+      </section>
+
+      <section id="recursos" className="mx-auto max-w-7xl px-5 py-20 sm:px-8 md:py-28">
+        <div className="grid gap-12 lg:grid-cols-2 lg:gap-24">
+          <div>
+            <p className="font-mono text-xs uppercase tracking-[0.2em] text-neutral-500">O que está incluído</p>
+            <h2 className="mt-5 max-w-lg font-heading text-3xl font-semibold tracking-tight md:text-5xl">Ferramentas para o trabalho que acontece todos os dias.</h2>
+          </div>
+          <ul className="border-t border-neutral-800">
+            {included.map((item) => (
+              <li key={item} className="flex gap-4 border-b border-neutral-800 py-5 text-neutral-300">
+                <Check className="mt-0.5 size-4 shrink-0 text-white" aria-hidden="true" />
+                <span>{item}</span>
+              </li>
+            ))}
+          </ul>
+        </div>
+      </section>
+
+      <section id="plano" className="border-t border-neutral-900">
+        <div className="mx-auto grid max-w-7xl gap-12 px-5 py-20 sm:px-8 md:py-28 lg:grid-cols-[1fr_1fr] lg:items-start">
+          <header>
+            <p className="font-mono text-xs uppercase tracking-[0.2em] text-neutral-500">Assinatura</p>
+            <h2 className="mt-5 font-heading text-4xl font-semibold tracking-tight md:text-6xl">Um plano para toda a operação.</h2>
+            <p className="mt-6 max-w-xl text-lg leading-8 text-neutral-400">Você informa os dados da barbearia, gera a cobrança Pix e recebe o acesso ao painel.</p>
+          </header>
+
+          <div className="border-y border-neutral-700 py-7">
+            <div className="flex items-end justify-between gap-6">
+              <div><p className="text-sm text-neutral-500">Growingman Premium</p><p className="mt-2 text-2xl font-medium">Operação completa</p></div>
+              <p className="text-right"><strong className="text-4xl font-semibold">R$ 299</strong><span className="block text-sm text-neutral-500">por mês</span></p>
+            </div>
+            <div className="mt-8 border-t border-neutral-800 pt-6">
+              <Button size="lg" asChild className="h-13 w-full sm:w-auto"><Link href="/onboarding">Começar cadastro <ArrowRight className="ml-2 size-4" /></Link></Button>
+              <p className="mt-4 text-xs leading-5 text-neutral-500">A cobrança inicial é gerada via Pix pelo Asaas e vence em 3 dias.</p>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <footer className="border-t border-neutral-900">
+        <div className="mx-auto flex max-w-7xl flex-col gap-4 px-5 py-10 text-sm text-neutral-500 sm:flex-row sm:items-center sm:justify-between sm:px-8">
+          <div className="flex items-center gap-2"><Scissors className="size-4" /><span>Growingman</span></div>
+          <p>© 2026 Growingman. Todos os direitos reservados.</p>
         </div>
       </footer>
     </main>
