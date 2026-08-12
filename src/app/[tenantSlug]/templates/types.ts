@@ -23,6 +23,7 @@ export interface PublicTenant {
   stat_clients?: string | null;
   stat_rating?: string | null;
   stat_experience?: string | null;
+  site_layout?: unknown;
   [key: string]: unknown;
 }
 

@@ -2,6 +2,11 @@ import { MapPin, Clock } from "lucide-react";
 import Link from "next/link";
 import { TenantLogo } from "@/components/TenantLogo";
 import Silk from "@/components/Silk";
+import {
+  isSiteSectionVisible,
+  normalizeSiteLayout,
+  siteSectionOrder,
+} from "@/lib/site-layout";
 import { bookingHref, type TemplateProps, formatPrice } from "./types";
 
 /**
@@ -18,6 +23,15 @@ export function SplitTemplate({ tenant, services, barbers }: TemplateProps) {
   const hero = tenant.hero_image_url?.trim() || null;
   const geo = { fontFamily: "var(--font-heading)" };
   const border = "color-mix(in srgb, var(--theme-text) 12%, transparent)";
+  const layout = normalizeSiteLayout(tenant.site_layout, "split", {
+    team: tenant.show_team,
+  });
+  const heroCentered = layout.hero.alignment === "center";
+  const heroHeight = layout.hero.mobileHeight === "screen" ? "min-h-[100svh]" : "min-h-[72svh]";
+  const rightOrder = Math.min(
+    siteSectionOrder(layout, "services"),
+    siteSectionOrder(layout, "team"),
+  );
 
   return (
     <div
@@ -27,8 +41,11 @@ export function SplitTemplate({ tenant, services, barbers }: TemplateProps) {
       <div className="md:grid md:grid-cols-2 md:h-full">
         {/* LEFT — brand + CTA (sticky feel) */}
         <div
-          className="relative flex min-h-[100svh] flex-col p-5 sm:p-8 md:min-h-0 md:p-12"
-          style={{ backgroundColor: "var(--theme-card)" }}
+          className={`relative order-[var(--mobile-order)] flex flex-col p-5 sm:p-8 md:order-none md:min-h-0 md:p-12 ${heroHeight}`}
+          style={{
+            backgroundColor: "var(--theme-card)",
+            "--mobile-order": siteSectionOrder(layout, "hero"),
+          } as React.CSSProperties}
         >
           {hero ? (
             <>
@@ -38,6 +55,7 @@ export function SplitTemplate({ tenant, services, barbers }: TemplateProps) {
                 alt=""
                 aria-hidden
                 className="absolute inset-0 w-full h-full object-cover opacity-25"
+                style={{ objectPosition: layout.hero.imagePosition }}
               />
               <div
                 className="absolute inset-0"
@@ -66,7 +84,7 @@ export function SplitTemplate({ tenant, services, barbers }: TemplateProps) {
               {tenant.name}
             </span>
           </div>
-          <div className="relative z-10 mt-[clamp(4rem,14svh,7rem)] md:mt-auto">
+          <div className={`relative z-10 mt-[clamp(4rem,14svh,7rem)] md:mt-auto ${heroCentered ? "text-center" : ""}`}>
             <h1
               className="mb-4 break-words text-[clamp(2.35rem,12vw,3.5rem)] font-extrabold leading-[1.02] md:mb-5 md:text-[clamp(2.5rem,6vw,4.5rem)]"
               style={{
@@ -79,7 +97,7 @@ export function SplitTemplate({ tenant, services, barbers }: TemplateProps) {
               {headline}
             </h1>
             <p
-              className="mb-6 max-w-sm text-base leading-relaxed md:mb-8 md:text-lg"
+              className={`mb-6 max-w-sm text-base leading-relaxed md:mb-8 md:text-lg ${heroCentered ? "mx-auto" : ""}`}
               style={{ color: "var(--theme-text)" }}
             >
               {sub}
@@ -105,7 +123,11 @@ export function SplitTemplate({ tenant, services, barbers }: TemplateProps) {
         </div>
 
         {/* RIGHT — service list, own scroll */}
-        <div className="p-8 md:p-12 md:overflow-y-auto">
+        <div
+          className="order-[var(--mobile-order)] flex flex-col p-8 md:order-none md:overflow-y-auto md:p-12"
+          style={{ "--mobile-order": rightOrder } as React.CSSProperties}
+        >
+          <div style={{ order: siteSectionOrder(layout, "services") }}>
           <p
             className="text-xs uppercase tracking-[0.25em] font-semibold mb-6"
             style={{ color: "var(--theme-accent)" }}
@@ -176,11 +198,12 @@ export function SplitTemplate({ tenant, services, barbers }: TemplateProps) {
               ))}
             </div>
           )}
+          </div>
 
-          {barbers.length > 0 && (
+          {isSiteSectionVisible(layout, "team") && barbers.length > 0 && (
             <div
               className="mt-8 pt-6 border-t"
-              style={{ borderColor: border }}
+              style={{ borderColor: border, order: siteSectionOrder(layout, "team") }}
             >
               <p
                 className="text-xs uppercase tracking-[0.25em] font-semibold mb-3"
@@ -212,7 +235,7 @@ export function SplitTemplate({ tenant, services, barbers }: TemplateProps) {
 
           <p
             className="mt-8 text-xs"
-            style={{ color: "var(--theme-text)", opacity: 0.7 }}
+            style={{ color: "var(--theme-text)", opacity: 0.7, order: 100 }}
           >
             Powered by Growingman
           </p>

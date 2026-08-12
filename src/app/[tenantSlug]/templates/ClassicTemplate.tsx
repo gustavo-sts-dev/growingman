@@ -9,6 +9,11 @@ import {
 import Link from "next/link";
 import { TenantLogo } from "@/components/TenantLogo";
 import Silk from "@/components/Silk";
+import {
+  isSiteSectionVisible,
+  normalizeSiteLayout,
+  siteSectionOrder,
+} from "@/lib/site-layout";
 import { bookingHref, type TemplateProps, formatPrice, realStats } from "./types";
 
 /**
@@ -26,11 +31,20 @@ export function ClassicTemplate({ tenant, services, barbers }: TemplateProps) {
 
   const heading = { fontFamily: "var(--font-heading)" };
   const border = "color-mix(in srgb, var(--theme-text) 12%, transparent)";
+  const layout = normalizeSiteLayout(tenant.site_layout, "classic", {
+    stats: tenant.show_stats,
+    team: tenant.show_team,
+  });
+  const heroCentered = layout.hero.alignment === "center";
+  const heroHeight = layout.hero.mobileHeight === "screen" ? "min-h-[100svh]" : "min-h-[72svh]";
 
   return (
-    <div style={{ fontFamily: "var(--font-body)" }}>
+    <div className="flex flex-col" style={{ fontFamily: "var(--font-body)" }}>
       {/* HERO */}
-      <section className="relative flex min-h-[100svh] flex-col overflow-hidden md:min-h-[88vh]">
+      <section
+        className={`relative flex flex-col overflow-hidden md:min-h-[88vh] ${heroHeight}`}
+        style={{ order: siteSectionOrder(layout, "hero") }}
+      >
         {/* Fundo animado de seda (discreto) atrás do hero. */}
         <Silk className="absolute inset-0 opacity-70" />
         <nav className="relative z-10 flex items-center justify-between px-5 pt-5 md:px-12 md:pt-7">
@@ -58,7 +72,7 @@ export function ClassicTemplate({ tenant, services, barbers }: TemplateProps) {
           </div>
         </nav>
 
-        <div className="relative z-10 flex flex-1 flex-col items-center justify-start px-5 pb-12 pt-[clamp(4.5rem,13svh,7rem)] text-center md:justify-center md:px-6 md:py-16">
+        <div className={`relative z-10 flex flex-1 flex-col justify-start px-5 pb-12 pt-[clamp(4.5rem,13svh,7rem)] md:justify-center md:px-6 md:py-16 ${heroCentered ? "items-center text-center" : "items-start text-left md:px-12"}`}>
           <div
             className="mb-5 inline-flex items-center gap-2 rounded-full px-3 py-1.5 text-xs font-medium md:mb-8"
             style={{
@@ -98,10 +112,11 @@ export function ClassicTemplate({ tenant, services, barbers }: TemplateProps) {
       </section>
 
       {/* STATS */}
-      {stats.length > 0 && (
+      {isSiteSectionVisible(layout, "stats") && stats.length > 0 && (
         <div
           className="py-6 border-y"
           style={{
+            order: siteSectionOrder(layout, "stats"),
             borderColor: border,
             backgroundColor:
               "color-mix(in srgb, var(--theme-text) 2%, transparent)",
@@ -138,6 +153,7 @@ export function ClassicTemplate({ tenant, services, barbers }: TemplateProps) {
         id="servicos"
         className="py-24 px-6"
         style={{
+          order: siteSectionOrder(layout, "services"),
           background:
             "linear-gradient(to bottom, color-mix(in srgb, var(--theme-text) 3%, transparent), transparent)",
         }}
@@ -238,10 +254,11 @@ export function ClassicTemplate({ tenant, services, barbers }: TemplateProps) {
       </section>
 
       {/* TEAM */}
-      {barbers.length > 0 && (
+      {isSiteSectionVisible(layout, "team") && barbers.length > 0 && (
         <section
           id="equipe"
           className="py-24 px-6"
+          style={{ order: siteSectionOrder(layout, "team") }}
         >
           <div className="max-w-5xl mx-auto">
             <p
@@ -315,6 +332,8 @@ export function ClassicTemplate({ tenant, services, barbers }: TemplateProps) {
         tenant={tenant}
         heading={heading}
         border={border}
+        showCta={isSiteSectionVisible(layout, "cta")}
+        ctaOrder={siteSectionOrder(layout, "cta")}
       />
     </div>
   );
@@ -324,14 +343,18 @@ function ClassicFooter({
   tenant,
   heading,
   border,
+  showCta,
+  ctaOrder,
 }: {
   tenant: TemplateProps["tenant"];
   heading: React.CSSProperties;
   border: string;
+  showCta: boolean;
+  ctaOrder: number;
 }) {
   return (
     <>
-      <section className="py-24 px-6">
+      {showCta && <section className="py-24 px-6" style={{ order: ctaOrder }}>
         <div
           className="max-w-3xl mx-auto text-center p-12 rounded-3xl border"
           style={{ backgroundColor: "var(--theme-card)", borderColor: border }}
@@ -358,10 +381,10 @@ function ClassicFooter({
             <CalendarGrowingman className="w-5 h-5" /> Agendar Horário
           </Link>
         </div>
-      </section>
+      </section>}
       <footer
         className="border-t py-8 px-6"
-        style={{ borderColor: border }}
+        style={{ borderColor: border, order: 100 }}
       >
         <div
           className="max-w-5xl mx-auto flex items-center justify-between text-sm"

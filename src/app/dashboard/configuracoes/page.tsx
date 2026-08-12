@@ -13,8 +13,10 @@ import { apiGet, apiPatch, apiDelete } from "@/lib/api";
 import { siteHost } from "@/lib/config";
 import { useToast } from "@/components/ui/toast";
 import { ImageUpload } from "@/components/ui/image-upload";
+import { SiteLayoutEditor } from "@/components/SiteLayoutEditor";
 import type { Tenant } from "@/lib/types";
 import { SITE_PRESETS, resolveSitePreset, type SitePresetId } from "@/lib/site-presets";
+import { defaultSiteLayout, normalizeSiteLayout } from "@/lib/site-layout";
 
 type TabId = "perfil" | "pagina" | "aparencia" | "politicas" | "financeiro";
 
@@ -85,6 +87,7 @@ export default function ConfiguracoesPage() {
     stat_clients:             "",
     stat_rating:              "",
     stat_experience:          "",
+    site_layout:              defaultSiteLayout("classic"),
     // Pagamentos online (Mercado Pago). Campo de escrita-única: o backend nunca
     // devolve o token salvo, então este valor começa e permanece vazio até o dono
     // colar um novo. Enviado no PATCH apenas quando preenchido (ver handleSave).
@@ -136,6 +139,7 @@ export default function ConfiguracoesPage() {
       .then((data) => {
         if (!data) return;
         setTenant(data);
+        const preset = resolveSitePreset(data.site_preset);
         setForm((f) => ({
           ...f,
           name:                     data.name               ?? "",
@@ -161,6 +165,10 @@ export default function ConfiguracoesPage() {
           stat_clients:             data.stat_clients ?? "",
           stat_rating:              data.stat_rating ?? "",
           stat_experience:          data.stat_experience ?? "",
+          site_layout:              normalizeSiteLayout(data.site_layout, preset.id, {
+            stats: data.show_stats,
+            team: data.show_team,
+          }),
         }));
       })
       .catch(console.error);
@@ -183,7 +191,7 @@ export default function ConfiguracoesPage() {
       const updated = await apiPatch<Tenant>("/tenants/my", form);
       setTenant(updated);
       setSaved(true);
-      toast.success("Alterações salvas com sucesso.");
+      toast.success(activeTab === "pagina" ? "Página publicada com sucesso." : "Alterações salvas com sucesso.");
       setTimeout(() => setSaved(false), 3000);
     } catch (err) {
       toast.error(err instanceof Error ? err.message : "Erro de rede ao salvar.");
@@ -193,7 +201,7 @@ export default function ConfiguracoesPage() {
   };
 
   return (
-    <div className="max-w-3xl mx-auto space-y-6 sm:space-y-8">
+    <div className={`${activeTab === "pagina" ? "max-w-6xl" : "max-w-3xl"} mx-auto space-y-6 sm:space-y-8`}>
       {/* Header */}
       <div>
         <p className="text-xs uppercase tracking-[0.18em] text-neutral-600 font-semibold mb-1.5">Configurações</p>
@@ -331,7 +339,13 @@ export default function ConfiguracoesPage() {
                   <button
                     key={preset.id}
                     type="button"
-                    onClick={() => set("site_preset", preset.id)}
+                    onClick={() => {
+                      setForm((current) => ({
+                        ...current,
+                        site_preset: preset.id,
+                        site_layout: defaultSiteLayout(preset.id),
+                      }));
+                    }}
                     className={`group rounded-xl border overflow-hidden text-left transition-all ${
                       active ? "border-white/40 ring-1 ring-white/20" : "border-white/[0.08] hover:border-white/20"
                     }`}
@@ -380,6 +394,27 @@ export default function ConfiguracoesPage() {
               )}
             </FieldGroup>
           )}
+
+          <SiteLayoutEditor
+            presetId={activePreset.id}
+            value={form.site_layout}
+            onChange={(siteLayout) => set("site_layout", siteLayout)}
+            preview={{
+              name: form.name,
+              headline: form.page_headline,
+              subheadline: form.page_subheadline,
+              imageUrl: form.hero_image_url,
+              colors: {
+                background: form.theme_bg,
+                card: form.theme_card,
+                text: form.theme_text,
+                title: form.theme_title,
+                button: form.theme_button_bg,
+                buttonText: form.theme_button_text,
+                accent: form.theme_accent,
+              },
+            }}
+          />
 
           {activePreset.sections.includes("stats") && (
             <FieldGroup title="Números de Destaque">
@@ -626,7 +661,12 @@ export default function ConfiguracoesPage() {
       )}
 
       {/* Save button */}
-      <div className="flex items-center justify-end pt-2 border-t border-white/[0.05]">
+      <div className="flex items-center justify-between gap-4 pt-2 border-t border-white/[0.05]">
+        {activeTab === "pagina" && (
+          <p className="text-xs text-neutral-600">
+            A prévia só fica pública depois de publicar.
+          </p>
+        )}
         <Button
           onClick={handleSave}
           disabled={saving || saved}
@@ -637,11 +677,11 @@ export default function ConfiguracoesPage() {
           }`}
         >
           {saving ? (
-            <><Loader2 className="w-4 h-4 mr-2 animate-spin" /> Salvando...</>
+            <><Loader2 className="w-4 h-4 mr-2 animate-spin" /> {activeTab === "pagina" ? "Publicando..." : "Salvando..."}</>
           ) : saved ? (
-            <><CheckCircle2 className="w-4 h-4 mr-2" /> Salvo!</>
+            <><CheckCircle2 className="w-4 h-4 mr-2" /> {activeTab === "pagina" ? "Publicado!" : "Salvo!"}</>
           ) : (
-            <><Save className="w-4 h-4 mr-2" /> Salvar Alterações</>
+            <><Save className="w-4 h-4 mr-2" /> {activeTab === "pagina" ? "Publicar página" : "Salvar Alterações"}</>
           )}
         </Button>
       </div>

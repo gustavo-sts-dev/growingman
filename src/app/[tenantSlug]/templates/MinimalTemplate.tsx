@@ -1,4 +1,9 @@
 import Link from "next/link";
+import {
+  isSiteSectionVisible,
+  normalizeSiteLayout,
+  siteSectionOrder,
+} from "@/lib/site-layout";
 import { bookingHref, type TemplateProps, formatPrice } from "./types";
 
 /**
@@ -15,12 +20,20 @@ export function MinimalTemplate({ tenant, services, barbers }: TemplateProps) {
     "Corte e barba, sem excessos.";
   const grotesk = { fontFamily: "var(--font-heading)" };
   const line = "color-mix(in srgb, var(--theme-text) 18%, transparent)";
+  const layout = normalizeSiteLayout(tenant.site_layout, "minimal", {
+    team: tenant.show_team,
+  });
+  const heroCentered = layout.hero.alignment === "center";
+  const heroHeight = layout.hero.mobileHeight === "screen" ? "min-h-[100svh]" : "min-h-[82svh]";
 
   return (
     <div style={{ fontFamily: "var(--font-body)" }}>
-      <div className="mx-auto max-w-2xl px-5 sm:px-6">
+      <div className="mx-auto flex max-w-2xl flex-col px-5 sm:px-6">
         {/* HERO — pure type */}
-        <section className="flex min-h-[82svh] flex-col justify-start pb-16 pt-[clamp(7rem,18svh,10rem)] md:min-h-[80vh] md:justify-center md:py-24">
+        <section
+          className={`flex flex-col justify-start pb-16 pt-[clamp(7rem,18svh,10rem)] md:min-h-[80vh] md:justify-center md:py-24 ${heroHeight} ${heroCentered ? "items-center text-center" : ""}`}
+          style={{ order: siteSectionOrder(layout, "hero") }}
+        >
           <p
             className="mb-7 break-words text-[0.7rem] uppercase tracking-[0.35em] sm:tracking-[0.5em] md:mb-10"
             style={{ color: "var(--theme-text)" }}
@@ -48,7 +61,7 @@ export function MinimalTemplate({ tenant, services, barbers }: TemplateProps) {
           </p>
           <Link
             href={`/${tenant.slug}/agendar`}
-            className="inline-flex min-h-11 items-center self-start border-b pb-1.5 text-sm uppercase tracking-[0.25em] transition-opacity hover:opacity-60 sm:tracking-[0.3em]"
+            className={`inline-flex min-h-11 items-center border-b pb-1.5 text-sm uppercase tracking-[0.25em] transition-opacity hover:opacity-60 sm:tracking-[0.3em] ${heroCentered ? "self-center" : "self-start"}`}
             style={{ color: "var(--theme-title)", borderColor: line }}
           >
             Agendar
@@ -59,7 +72,7 @@ export function MinimalTemplate({ tenant, services, barbers }: TemplateProps) {
         <section
           id="servicos"
           className="py-16 border-t"
-          style={{ borderColor: line }}
+          style={{ borderColor: line, order: siteSectionOrder(layout, "services") }}
         >
           <p
             className="text-[0.7rem] uppercase tracking-[0.4em] mb-10"
@@ -129,11 +142,11 @@ export function MinimalTemplate({ tenant, services, barbers }: TemplateProps) {
         </section>
 
         {/* TEAM — plain list */}
-        {barbers.length > 0 && (
+        {isSiteSectionVisible(layout, "team") && barbers.length > 0 && (
           <section
             id="equipe"
             className="py-16 border-t"
-            style={{ borderColor: line }}
+            style={{ borderColor: line, order: siteSectionOrder(layout, "team") }}
           >
             <p
               className="text-[0.7rem] uppercase tracking-[0.4em] mb-10"
@@ -172,9 +185,9 @@ export function MinimalTemplate({ tenant, services, barbers }: TemplateProps) {
         )}
 
         {/* CTA */}
-        <section
+        {isSiteSectionVisible(layout, "cta") && <section
           className="py-24 border-t text-center"
-          style={{ borderColor: line }}
+          style={{ borderColor: line, order: siteSectionOrder(layout, "cta") }}
         >
           <Link
             href={`/${tenant.slug}/agendar`}
@@ -188,11 +201,11 @@ export function MinimalTemplate({ tenant, services, barbers }: TemplateProps) {
           >
             Marcar horário →
           </Link>
-        </section>
+        </section>}
 
         <footer
           className="py-8 border-t flex items-center justify-between text-[0.7rem] uppercase tracking-[0.2em]"
-          style={{ borderColor: line, color: "var(--theme-text)" }}
+          style={{ borderColor: line, color: "var(--theme-text)", order: 100 }}
         >
           <span style={{ color: "var(--theme-title)" }}>{tenant.name}</span>
           <span>Growingman</span>

@@ -1,6 +1,11 @@
 import Link from "next/link";
 import { TenantLogo } from "@/components/TenantLogo";
 import Silk from "@/components/Silk";
+import {
+  isSiteSectionVisible,
+  normalizeSiteLayout,
+  siteSectionOrder,
+} from "@/lib/site-layout";
 import { bookingHref, type TemplateProps, formatPrice } from "./types";
 
 /**
@@ -23,12 +28,20 @@ export function ShowcaseTemplate({ tenant, services, barbers }: TemplateProps) {
     letterSpacing: "0.01em",
   } as React.CSSProperties;
   const border = "color-mix(in srgb, var(--theme-text) 12%, transparent)";
+  const layout = normalizeSiteLayout(tenant.site_layout, "showcase", {
+    team: tenant.show_team,
+  });
+  const heroCentered = layout.hero.alignment === "center";
+  const mobileHeroHeight = layout.hero.mobileHeight === "screen"
+    ? "min-h-[100svh]"
+    : hero ? "min-h-[70svh]" : "min-h-[64svh]";
 
   return (
-    <div style={{ fontFamily: "var(--font-body)" }}>
+    <div className="flex flex-col" style={{ fontFamily: "var(--font-body)" }}>
       {/* HERO — com imagem ganha altura; sem imagem, o Silk precisa de espaço p/ respirar. */}
       <section
-        className={`relative flex flex-col overflow-hidden md:justify-end ${hero ? "min-h-[70svh] md:min-h-[70vh]" : "min-h-[64svh] md:min-h-[60vh]"}`}
+        className={`relative flex flex-col overflow-hidden md:justify-end ${mobileHeroHeight} ${hero ? "md:min-h-[70vh]" : "md:min-h-[60vh]"}`}
+        style={{ order: siteSectionOrder(layout, "hero") }}
       >
         {hero ? (
           <>
@@ -38,6 +51,7 @@ export function ShowcaseTemplate({ tenant, services, barbers }: TemplateProps) {
               alt=""
               aria-hidden
               className="absolute inset-0 h-full w-full object-cover object-center"
+              style={{ objectPosition: layout.hero.imagePosition }}
             />
             <div
               className="absolute inset-0"
@@ -79,7 +93,7 @@ export function ShowcaseTemplate({ tenant, services, barbers }: TemplateProps) {
           </Link>
         </nav>
 
-        <div className="relative z-10 mt-auto max-w-5xl px-5 pb-[clamp(7rem,18svh,9rem)] pt-28 md:mt-0 md:px-12 md:pb-36 md:pt-0">
+        <div className={`relative z-10 mt-auto max-w-5xl px-5 pb-[clamp(7rem,18svh,9rem)] pt-28 md:mt-0 md:px-12 md:pb-36 md:pt-0 ${heroCentered ? "mx-auto text-center" : ""}`}>
           <p
             className="mb-4 text-xs uppercase tracking-[0.32em] md:mb-5 md:tracking-[0.4em]"
             style={{ color: "var(--theme-accent)" }}
@@ -93,7 +107,7 @@ export function ShowcaseTemplate({ tenant, services, barbers }: TemplateProps) {
             {headline}
           </h1>
           <p
-            className="max-w-xl text-base leading-relaxed md:text-2xl md:leading-normal"
+            className={`max-w-xl text-base leading-relaxed md:text-2xl md:leading-normal ${heroCentered ? "mx-auto" : ""}`}
             style={{ color: "var(--theme-text)" }}
           >
             {sub}
@@ -106,6 +120,7 @@ export function ShowcaseTemplate({ tenant, services, barbers }: TemplateProps) {
         id="servicos"
         className="px-6 md:px-12 py-20"
         style={{
+          order: siteSectionOrder(layout, "services"),
           backgroundColor:
             "color-mix(in srgb, var(--theme-text) 3%, var(--theme-bg))",
         }}
@@ -188,10 +203,11 @@ export function ShowcaseTemplate({ tenant, services, barbers }: TemplateProps) {
       </section>
 
       {/* TEAM — photo tiles */}
-      {barbers.length > 0 && (
+      {isSiteSectionVisible(layout, "team") && barbers.length > 0 && (
         <section
           id="equipe"
           className="px-6 md:px-12 py-20"
+          style={{ order: siteSectionOrder(layout, "team") }}
         >
           <div className="max-w-6xl mx-auto">
             <h2
@@ -239,9 +255,9 @@ export function ShowcaseTemplate({ tenant, services, barbers }: TemplateProps) {
       )}
 
       {/* CTA band */}
-      <section
+      {isSiteSectionVisible(layout, "cta") && <section
         className="px-6 md:px-12 py-24 text-center"
-        style={{ backgroundColor: "var(--theme-accent)" }}
+        style={{ backgroundColor: "var(--theme-accent)", order: siteSectionOrder(layout, "cta") }}
       >
         <h2
           className="uppercase font-bold text-4xl md:text-6xl mb-6"
@@ -259,10 +275,10 @@ export function ShowcaseTemplate({ tenant, services, barbers }: TemplateProps) {
         >
           Agendar Agora
         </Link>
-      </section>
+      </section>}
       <footer
         className="px-6 md:px-12 py-6 flex items-center justify-between text-xs uppercase tracking-widest"
-        style={{ color: "var(--theme-text)" }}
+        style={{ color: "var(--theme-text)", order: 100 }}
       >
         <span style={{ ...cond, color: "var(--theme-title)" }}>
           {tenant.name}

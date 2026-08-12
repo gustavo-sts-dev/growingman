@@ -116,6 +116,7 @@ export interface Tenant {
   stat_clients: string | null;
   stat_rating: string | null;
   stat_experience: string | null;
+  site_layout: import("@/lib/site-layout").SiteLayoutConfig | null;
 
   // Pagamentos online (Mercado Pago). O backend NUNCA devolve o token cru:
   // expõe apenas `mp_connected` (derivado) para indicar se há credencial salva.

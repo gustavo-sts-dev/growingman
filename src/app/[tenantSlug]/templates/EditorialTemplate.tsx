@@ -1,5 +1,10 @@
 import Link from "next/link";
 import { TenantLogo } from "@/components/TenantLogo";
+import {
+  isSiteSectionVisible,
+  normalizeSiteLayout,
+  siteSectionOrder,
+} from "@/lib/site-layout";
 import { bookingHref, type TemplateProps, formatPrice } from "./types";
 
 /**
@@ -21,9 +26,13 @@ export function EditorialTemplate({
 
   const serif = { fontFamily: "var(--font-heading)" };
   const line = "color-mix(in srgb, var(--theme-text) 22%, transparent)";
+  const layout = normalizeSiteLayout(tenant.site_layout, "editorial", {
+    team: tenant.show_team,
+  });
+  const heroCentered = layout.hero.alignment === "center";
 
   return (
-    <div style={{ fontFamily: "var(--font-body)" }}>
+    <div className="flex flex-col" style={{ fontFamily: "var(--font-body)" }}>
       {/* top rule + masthead */}
       <div
         className="border-b"
@@ -55,11 +64,14 @@ export function EditorialTemplate({
       </div>
 
       {/* HERO — editorial split */}
-      <section className="mx-auto max-w-6xl px-5 pb-14 pt-10 md:px-10 md:pb-20 md:pt-24">
+      <section
+        className={`mx-auto w-full max-w-6xl px-5 pb-14 pt-10 md:px-10 md:pb-20 md:pt-24 ${layout.hero.mobileHeight === "screen" ? "min-h-[100svh]" : ""}`}
+        style={{ order: siteSectionOrder(layout, "hero") }}
+      >
         <div
           className={`grid items-end gap-10 md:gap-12 ${hero ? "md:grid-cols-[1.3fr_1fr]" : "md:grid-cols-1"}`}
         >
-          <div>
+          <div className={heroCentered ? "text-center" : ""}>
             <p
               className="mb-5 text-xs uppercase tracking-[0.32em] md:mb-8 md:tracking-[0.4em]"
               style={{ color: "var(--theme-accent)" }}
@@ -105,6 +117,7 @@ export function EditorialTemplate({
                 src={hero}
                 alt={tenant.name}
                 className="w-full h-full object-cover grayscale hover:grayscale-0 transition-all duration-700"
+                style={{ objectPosition: layout.hero.imagePosition }}
               />
             </div>
           )}
@@ -115,7 +128,7 @@ export function EditorialTemplate({
       <section
         id="servicos"
         className="border-t"
-        style={{ borderColor: line }}
+        style={{ borderColor: line, order: siteSectionOrder(layout, "services") }}
       >
         <div className="max-w-6xl mx-auto px-6 md:px-10 py-20">
           <div className="grid md:grid-cols-[240px_1fr] gap-10">
@@ -208,11 +221,11 @@ export function EditorialTemplate({
       </section>
 
       {/* TEAM — editorial credits */}
-      {barbers.length > 0 && (
+      {isSiteSectionVisible(layout, "team") && barbers.length > 0 && (
         <section
           id="equipe"
           className="border-t"
-          style={{ borderColor: line }}
+          style={{ borderColor: line, order: siteSectionOrder(layout, "team") }}
         >
           <div className="max-w-6xl mx-auto px-6 md:px-10 py-20">
             <h2
@@ -268,9 +281,9 @@ export function EditorialTemplate({
       )}
 
       {/* CTA */}
-      <section
+      {isSiteSectionVisible(layout, "cta") && <section
         className="border-t border-b"
-        style={{ borderColor: line }}
+        style={{ borderColor: line, order: siteSectionOrder(layout, "cta") }}
       >
         <div className="max-w-6xl mx-auto px-6 md:px-10 py-24 text-center">
           <h2
@@ -292,10 +305,10 @@ export function EditorialTemplate({
             Agendar →
           </Link>
         </div>
-      </section>
+      </section>}
       <footer
         className="max-w-6xl mx-auto px-6 md:px-10 py-6 flex items-center justify-between text-xs uppercase tracking-[0.2em]"
-        style={{ color: "var(--theme-text)" }}
+        style={{ color: "var(--theme-text)", order: 100 }}
       >
         <span style={{ color: "var(--theme-title)" }}>{tenant.name}</span>
         <span>Powered by Growingman</span>
