@@ -185,7 +185,6 @@ export interface Barber {
   phone: string;
   specialties?: string[];
   commissionPercentage?: number;
-  asaasWalletId?: string | null;
   avatarUrl?: string | null;
   workSchedule?: WorkSchedule;
   isActive: boolean;
@@ -199,7 +198,6 @@ export interface CreateBarberInput {
   specialties?: string[];
   avatarUrl?: string | null;
   commissionPercentage?: number;
-  asaasWalletId?: string;
   workSchedule?: WorkSchedule;
 }
 

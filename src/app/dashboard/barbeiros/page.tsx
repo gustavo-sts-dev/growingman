@@ -101,7 +101,6 @@ export default function BarbersPage() {
     email: "",
     phone: "",
     commissionPercentage: 0,
-    asaasWalletId: "",
     password: "",
     isActive: true,
     avatarUrl: null as string | null,
@@ -121,7 +120,6 @@ export default function BarbersPage() {
         commissionPercentage: b.commissionPercentage
           ? Number(b.commissionPercentage)
           : 0,
-        asaasWalletId: b.asaasWalletId || "",
         password: "",
         isActive: b.isActive !== false,
         avatarUrl: b.avatarUrl || null,
@@ -133,7 +131,6 @@ export default function BarbersPage() {
         email: "",
         phone: "",
         commissionPercentage: 0,
-        asaasWalletId: "",
         password: "",
         isActive: true,
         avatarUrl: null,
@@ -172,10 +169,6 @@ export default function BarbersPage() {
         formData.commissionPercentage !== 0
       ) {
         payload.commissionPercentage = formData.commissionPercentage;
-      }
-
-      if (formData.asaasWalletId) {
-        payload.asaasWalletId = formData.asaasWalletId;
       }
 
       if (!editingId || formData.password) {
@@ -467,6 +460,9 @@ export default function BarbersPage() {
               </label>
               <input
                 type="number"
+                min={0}
+                max={100}
+                step="0.01"
                 value={formData.commissionPercentage}
                 onChange={(e) =>
                   setFormData({
@@ -476,6 +472,9 @@ export default function BarbersPage() {
                 }
                 className="w-full h-10 px-3 bg-white/[0.02] border border-white/10 rounded-xl text-sm"
               />
+              <p className="mt-1.5 text-xs leading-5 text-neutral-500">
+                Calculada sobre o valor bruto e registrada em Comissões &amp; Vales.
+              </p>
             </div>
             <div>
               <label className="block text-sm text-neutral-400 mb-1">
@@ -497,20 +496,6 @@ export default function BarbersPage() {
                 className="w-full h-10 px-3 bg-white/[0.02] border border-white/10 rounded-xl text-sm"
               />
             </div>
-          </div>
-          <div>
-            <label className="block text-sm text-neutral-400 mb-1">
-              Asaas Wallet ID (Split Automático)
-            </label>
-            <input
-              type="text"
-              value={formData.asaasWalletId}
-              onChange={(e) =>
-                setFormData({ ...formData, asaasWalletId: e.target.value })
-              }
-              placeholder="Ex: wal_XXXXXXXXXXXX"
-              className="w-full h-10 px-3 bg-white/[0.02] border border-white/10 rounded-xl text-sm"
-            />
           </div>
           <div className="flex items-center justify-between py-2 border-y border-white/10">
             <div>
