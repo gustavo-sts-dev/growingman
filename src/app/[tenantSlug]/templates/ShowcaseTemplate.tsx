@@ -28,7 +28,7 @@ export function ShowcaseTemplate({ tenant, services, barbers }: TemplateProps) {
     <div style={{ fontFamily: "var(--font-body)" }}>
       {/* HERO — com imagem ganha altura; sem imagem, o Silk precisa de espaço p/ respirar. */}
       <section
-        className={`relative flex flex-col justify-end overflow-hidden ${hero ? "min-h-[70vh]" : "min-h-[60vh]"}`}
+        className={`relative flex flex-col overflow-hidden md:justify-end ${hero ? "min-h-[70svh] md:min-h-[70vh]" : "min-h-[64svh] md:min-h-[60vh]"}`}
       >
         {hero ? (
           <>
@@ -37,7 +37,7 @@ export function ShowcaseTemplate({ tenant, services, barbers }: TemplateProps) {
               src={hero}
               alt=""
               aria-hidden
-              className="absolute inset-0 w-full h-full object-cover"
+              className="absolute inset-0 h-full w-full object-cover object-center"
             />
             <div
               className="absolute inset-0"
@@ -51,17 +51,17 @@ export function ShowcaseTemplate({ tenant, services, barbers }: TemplateProps) {
           <Silk className="absolute inset-0" />
         )}
 
-        <nav className="relative z-10 px-6 md:px-12 pt-7 flex items-center justify-between mb-4">
-          <div className="flex items-center gap-2.5">
+        <nav className="absolute inset-x-0 top-0 z-20 flex items-center justify-between px-5 py-5 md:relative md:inset-auto md:z-10 md:mb-4 md:px-12 md:pb-0 md:pt-7">
+          <div className="flex min-w-0 items-center gap-2.5">
             <TenantLogo
               logoUrl={tenant.logo_url}
-              className="w-10 h-10 rounded-lg"
+              className="h-9 w-9 rounded-lg md:h-10 md:w-10"
               fallbackBg="var(--theme-button-bg)"
               fallbackColor="var(--theme-button-text)"
               alt={tenant.name}
             />
             <span
-              className="font-semibold text-lg uppercase tracking-wide"
+              className="truncate text-base font-semibold uppercase tracking-wide md:text-lg"
               style={{ ...cond, color: "var(--theme-title)" }}
             >
               {tenant.name}
@@ -69,7 +69,7 @@ export function ShowcaseTemplate({ tenant, services, barbers }: TemplateProps) {
           </div>
           <Link
             href={`/${tenant.slug}/agendar`}
-            className="px-5 py-2.5 rounded-sm text-xs font-semibold uppercase tracking-widest"
+            className="ml-3 inline-flex min-h-11 shrink-0 items-center rounded-sm px-4 py-2.5 text-xs font-semibold uppercase tracking-widest md:px-5"
             style={{
               backgroundColor: "var(--theme-button-bg)",
               color: "var(--theme-button-text)",
@@ -79,21 +79,21 @@ export function ShowcaseTemplate({ tenant, services, barbers }: TemplateProps) {
           </Link>
         </nav>
 
-        <div className="relative z-10 max-w-5xl px-6 pb-24 md:px-12 md:pb-36">
+        <div className="relative z-10 mt-auto max-w-5xl px-5 pb-[clamp(7rem,18svh,9rem)] pt-28 md:mt-0 md:px-12 md:pb-36 md:pt-0">
           <p
-            className="text-xs uppercase tracking-[0.4em] mb-5"
+            className="mb-4 text-xs uppercase tracking-[0.32em] md:mb-5 md:tracking-[0.4em]"
             style={{ color: "var(--theme-accent)" }}
           >
             Barbearia
           </p>
           <h1
-            className="uppercase font-bold leading-[0.9] mb-6 text-[clamp(3rem,10vw,7rem)] break-words"
+            className="mb-5 break-words text-[clamp(2.75rem,13vw,4.5rem)] font-bold uppercase leading-[0.9] md:mb-6 md:text-[clamp(3rem,10vw,7rem)]"
             style={{ ...cond, color: "var(--theme-title)" }}
           >
             {headline}
           </h1>
           <p
-            className="text-lg md:text-2xl max-w-xl"
+            className="max-w-xl text-base leading-relaxed md:text-2xl md:leading-normal"
             style={{ color: "var(--theme-text)" }}
           >
             {sub}

@@ -18,17 +18,17 @@ export function MinimalTemplate({ tenant, services, barbers }: TemplateProps) {
 
   return (
     <div style={{ fontFamily: "var(--font-body)" }}>
-      <div className="max-w-2xl mx-auto px-6">
+      <div className="mx-auto max-w-2xl px-5 sm:px-6">
         {/* HERO — pure type */}
-        <section className="min-h-[80vh] flex flex-col justify-center py-24">
+        <section className="flex min-h-[82svh] flex-col justify-start pb-16 pt-[clamp(7rem,18svh,10rem)] md:min-h-[80vh] md:justify-center md:py-24">
           <p
-            className="text-[0.7rem] uppercase tracking-[0.5em] mb-10"
+            className="mb-7 break-words text-[0.7rem] uppercase tracking-[0.35em] sm:tracking-[0.5em] md:mb-10"
             style={{ color: "var(--theme-text)" }}
           >
             {tenant.address || "Barbearia"}
           </p>
           <h1
-            className="mb-8 text-[clamp(2rem,7vw,4rem)]"
+            className="mb-6 break-words text-[clamp(2rem,10vw,3rem)] md:mb-8 md:text-[clamp(2rem,7vw,4rem)]"
             style={{
               ...grotesk,
               color: "var(--theme-title)",
@@ -41,14 +41,14 @@ export function MinimalTemplate({ tenant, services, barbers }: TemplateProps) {
             {headline}
           </h1>
           <p
-            className="text-base leading-relaxed max-w-sm mb-12"
+            className="mb-9 max-w-sm text-base leading-relaxed md:mb-12"
             style={{ color: "var(--theme-text)" }}
           >
             {sub}
           </p>
           <Link
             href={`/${tenant.slug}/agendar`}
-            className="text-sm uppercase tracking-[0.3em] self-start pb-1.5 border-b transition-opacity hover:opacity-60"
+            className="inline-flex min-h-11 items-center self-start border-b pb-1.5 text-sm uppercase tracking-[0.25em] transition-opacity hover:opacity-60 sm:tracking-[0.3em]"
             style={{ color: "var(--theme-title)", borderColor: line }}
           >
             Agendar

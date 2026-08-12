@@ -30,10 +30,10 @@ export function ClassicTemplate({ tenant, services, barbers }: TemplateProps) {
   return (
     <div style={{ fontFamily: "var(--font-body)" }}>
       {/* HERO */}
-      <section className="relative min-h-[88vh] flex flex-col overflow-hidden">
+      <section className="relative flex min-h-[100svh] flex-col overflow-hidden md:min-h-[88vh]">
         {/* Fundo animado de seda (discreto) atrás do hero. */}
         <Silk className="absolute inset-0 opacity-70" />
-        <nav className="relative z-10 px-6 md:px-12 pt-7 flex items-center justify-between">
+        <nav className="relative z-10 flex items-center justify-between px-5 pt-5 md:px-12 md:pt-7">
           <div className="flex items-center gap-2.5">
             <TenantLogo
               logoUrl={tenant.logo_url}
@@ -50,17 +50,17 @@ export function ClassicTemplate({ tenant, services, barbers }: TemplateProps) {
             </span>
           </div>
           <div
-            className="flex items-center gap-2 text-sm"
+            className="flex min-w-0 max-w-[44vw] items-center gap-2 text-sm sm:max-w-none"
             style={{ color: "var(--theme-text)" }}
           >
-            <MapPin className="w-3.5 h-3.5" />
-            <span>{tenant.address || "Brasil"}</span>
+            <MapPin className="h-3.5 w-3.5 shrink-0" />
+            <span className="truncate">{tenant.address || "Brasil"}</span>
           </div>
         </nav>
 
-        <div className="relative z-10 flex-1 flex flex-col items-center justify-center text-center px-6 py-16">
+        <div className="relative z-10 flex flex-1 flex-col items-center justify-start px-5 pb-12 pt-[clamp(4.5rem,13svh,7rem)] text-center md:justify-center md:px-6 md:py-16">
           <div
-            className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full text-xs font-medium mb-8"
+            className="mb-5 inline-flex items-center gap-2 rounded-full px-3 py-1.5 text-xs font-medium md:mb-8"
             style={{
               border: `1px solid ${border}`,
               color: "var(--theme-text)",
@@ -73,20 +73,20 @@ export function ClassicTemplate({ tenant, services, barbers }: TemplateProps) {
             Agendamento online disponível
           </div>
           <h1
-            className="font-black tracking-[-0.03em] leading-[0.92] mb-6 text-[clamp(3.2rem,11vw,8rem)]"
+            className="mb-5 break-words text-[clamp(2.75rem,14vw,4rem)] font-black leading-[0.92] tracking-[-0.03em] md:mb-6 md:text-[clamp(3.2rem,11vw,8rem)]"
             style={{ ...heading, color: "var(--theme-title)" }}
           >
             {headline}
           </h1>
           <p
-            className="text-lg md:text-xl mb-10 leading-relaxed max-w-lg"
+            className="mb-8 max-w-lg text-base leading-relaxed md:mb-10 md:text-xl"
             style={{ color: "var(--theme-text)" }}
           >
             {sub}
           </p>
           <Link
             href={`/${tenant.slug}/agendar`}
-            className="inline-flex items-center gap-2.5 px-8 py-4 rounded-full font-bold text-sm hover:opacity-90 transition-all shadow-xl"
+            className="inline-flex w-full max-w-xs items-center justify-center gap-2.5 rounded-full px-8 py-4 text-sm font-bold shadow-xl transition-all hover:opacity-90 sm:w-auto"
             style={{
               backgroundColor: "var(--theme-button-bg)",
               color: "var(--theme-button-text)",

@@ -29,8 +29,8 @@ export function EditorialTemplate({
         className="border-b"
         style={{ borderColor: line }}
       >
-        <div className="max-w-6xl mx-auto px-6 md:px-10 py-5 flex items-center justify-between">
-          <div className="flex items-center gap-3">
+        <div className="mx-auto flex max-w-6xl items-center justify-between px-5 py-4 md:px-10 md:py-5">
+          <div className="flex min-w-0 items-center gap-3">
             <TenantLogo
               logoUrl={tenant.logo_url}
               className="w-8 h-8 rounded-full"
@@ -39,7 +39,7 @@ export function EditorialTemplate({
               alt={tenant.name}
             />
             <span
-              className="text-sm uppercase tracking-[0.35em]"
+              className="truncate text-sm uppercase tracking-[0.25em] sm:tracking-[0.35em]"
               style={{ color: "var(--theme-title)" }}
             >
               {tenant.name}
@@ -55,19 +55,19 @@ export function EditorialTemplate({
       </div>
 
       {/* HERO — editorial split */}
-      <section className="max-w-6xl mx-auto px-6 md:px-10 pt-16 md:pt-24 pb-20">
+      <section className="mx-auto max-w-6xl px-5 pb-14 pt-10 md:px-10 md:pb-20 md:pt-24">
         <div
-          className={`grid gap-12 ${hero ? "md:grid-cols-[1.3fr_1fr]" : "md:grid-cols-1"} items-end`}
+          className={`grid items-end gap-10 md:gap-12 ${hero ? "md:grid-cols-[1.3fr_1fr]" : "md:grid-cols-1"}`}
         >
           <div>
             <p
-              className="text-xs uppercase tracking-[0.4em] mb-8"
+              className="mb-5 text-xs uppercase tracking-[0.32em] md:mb-8 md:tracking-[0.4em]"
               style={{ color: "var(--theme-accent)" }}
             >
               O Estúdio — Est.
             </p>
             <h1
-              className="italic leading-[0.92] mb-8 text-[clamp(3rem,9vw,7.5rem)]"
+              className="mb-6 break-words text-[clamp(2.75rem,13vw,4.5rem)] italic leading-[0.94] md:mb-8 md:text-[clamp(3rem,9vw,7.5rem)] md:leading-[0.92]"
               style={{
                 ...serif,
                 color: "var(--theme-title)",
@@ -79,14 +79,14 @@ export function EditorialTemplate({
               {headline}
             </h1>
             <p
-              className="text-base md:text-lg leading-relaxed max-w-md mb-8"
+              className="mb-6 max-w-md text-base leading-relaxed md:mb-8 md:text-lg"
               style={{ color: "var(--theme-text)" }}
             >
               {sub}
             </p>
             <Link
               href={`/${tenant.slug}/agendar`}
-              className="inline-flex items-center -mx-1 px-1 py-3 text-sm uppercase tracking-[0.25em] border-b transition-opacity hover:opacity-70"
+              className="-mx-1 inline-flex min-h-11 items-center border-b px-1 py-3 text-sm uppercase tracking-[0.2em] transition-opacity hover:opacity-70 sm:tracking-[0.25em]"
               style={{
                 color: "var(--theme-title)",
                 borderColor: "var(--theme-title)",
@@ -97,7 +97,7 @@ export function EditorialTemplate({
           </div>
           {hero && (
             <div
-              className="w-full aspect-[3/4] overflow-hidden"
+              className="aspect-[4/3] w-full overflow-hidden md:aspect-[3/4]"
               style={{ border: `1px solid ${line}` }}
             >
               {/* eslint-disable-next-line @next/next/no-img-element */}

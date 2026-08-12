@@ -27,7 +27,7 @@ export function SplitTemplate({ tenant, services, barbers }: TemplateProps) {
       <div className="md:grid md:grid-cols-2 md:h-full">
         {/* LEFT — brand + CTA (sticky feel) */}
         <div
-          className="relative flex flex-col justify-between p-8 md:p-12 min-h-[70vh] md:min-h-0"
+          className="relative flex min-h-[100svh] flex-col p-5 sm:p-8 md:min-h-0 md:p-12"
           style={{ backgroundColor: "var(--theme-card)" }}
         >
           {hero ? (
@@ -51,7 +51,7 @@ export function SplitTemplate({ tenant, services, barbers }: TemplateProps) {
             /* Sem imagem: fundo de seda animado no painel da marca. */
             <Silk className="absolute inset-0 opacity-60" />
           )}
-          <div className="relative z-10 flex items-center gap-3">
+          <div className="relative z-10 flex min-w-0 items-center gap-3">
             <TenantLogo
               logoUrl={tenant.logo_url}
               className="w-10 h-10 rounded-xl"
@@ -60,15 +60,15 @@ export function SplitTemplate({ tenant, services, barbers }: TemplateProps) {
               alt={tenant.name}
             />
             <span
-              className="font-semibold text-lg"
+              className="truncate text-lg font-semibold"
               style={{ ...geo, color: "var(--theme-title)" }}
             >
               {tenant.name}
             </span>
           </div>
-          <div className="relative z-10">
+          <div className="relative z-10 mt-[clamp(4rem,14svh,7rem)] md:mt-auto">
             <h1
-              className="font-extrabold leading-[1.02] mb-5 text-[clamp(2.5rem,6vw,4.5rem)]"
+              className="mb-4 break-words text-[clamp(2.35rem,12vw,3.5rem)] font-extrabold leading-[1.02] md:mb-5 md:text-[clamp(2.5rem,6vw,4.5rem)]"
               style={{
                 ...geo,
                 color: "var(--theme-title)",
@@ -79,14 +79,14 @@ export function SplitTemplate({ tenant, services, barbers }: TemplateProps) {
               {headline}
             </h1>
             <p
-              className="text-base md:text-lg mb-8 max-w-sm"
+              className="mb-6 max-w-sm text-base leading-relaxed md:mb-8 md:text-lg"
               style={{ color: "var(--theme-text)" }}
             >
               {sub}
             </p>
             <Link
               href={`/${tenant.slug}/agendar`}
-              className="inline-flex items-center justify-center w-full sm:w-auto px-8 py-4 rounded-2xl font-bold text-base hover:opacity-90 transition-all"
+              className="inline-flex min-h-12 w-full items-center justify-center rounded-2xl px-8 py-4 text-base font-bold transition-all hover:opacity-90 sm:w-auto"
               style={{
                 backgroundColor: "var(--theme-button-bg)",
                 color: "var(--theme-button-text)",
@@ -96,7 +96,7 @@ export function SplitTemplate({ tenant, services, barbers }: TemplateProps) {
             </Link>
           </div>
           <p
-            className="relative z-10 text-xs flex items-center gap-1.5"
+            className="relative z-10 mt-auto flex items-center gap-1.5 pt-8 text-xs"
             style={{ color: "var(--theme-text)" }}
           >
             <MapPin className="w-3.5 h-3.5" />
