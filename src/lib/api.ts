@@ -71,7 +71,7 @@ export async function apiFetch(
         await fetch(`${API_BASE}/auth/logout`, { method: "POST", credentials: "include" });
       } catch {}
       if (typeof window !== "undefined") {
-        window.location.href = "/login";
+        window.location.replace("/login");
       }
       // Retorna a resposta 401 original para não travar o caller
       return response;
@@ -146,4 +146,18 @@ export async function apiDelete<T = unknown>(path: string, init?: RequestInit): 
   const res = await apiFetch(path, { ...init, method: "DELETE" });
   if (!res.ok) await throwApiError(res);
   return res.json();
+}
+
+/**
+ * Encerra a sessão sem passar pelo refresh automático do `apiFetch`.
+ *
+ * Logout precisa ser idempotente: mesmo se a sessão já expirou ou a API
+ * estiver indisponível, a rota do Next remove os cookies deste domínio.
+ */
+export async function logoutSession(): Promise<void> {
+  await fetch("/api/auth/logout", {
+    method: "POST",
+    credentials: "include",
+    cache: "no-store",
+  });
 }

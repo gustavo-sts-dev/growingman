@@ -10,7 +10,7 @@ import {
 } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { TenantLogo } from "@/components/TenantLogo";
-import { apiGet, apiPost } from "@/lib/api";
+import { apiGet, logoutSession } from "@/lib/api";
 import type { AuthUser, Tenant } from "@/lib/types";
 
 const navItems = [
@@ -182,7 +182,21 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
   const [logoUrl, setLogoUrl] = React.useState<string | null>(null);
   const [user, setUser] = React.useState<AuthUser | null>(null);
   const [mobileOpen, setMobileOpen] = React.useState(false);
+  const [isLoggingOut, setIsLoggingOut] = React.useState(false);
   const closeMobile = () => setMobileOpen(false);
+
+  const handleLogout = async () => {
+    if (isLoggingOut) return;
+
+    setIsLoggingOut(true);
+    try {
+      await logoutSession();
+    } finally {
+      // Navegação completa impede que estado/cache autenticado do dashboard
+      // sobreviva à troca de sessão.
+      window.location.replace("/login");
+    }
+  };
 
   React.useEffect(() => {
     apiGet<Tenant>("/tenants/my")
@@ -298,16 +312,14 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
           </div>
 
           <button
-            onClick={async () => {
-              try {
-                await apiPost("/auth/logout");
-              } catch {}
-              window.location.href = "/login";
-            }}
-            className="w-full flex items-center gap-2.5 px-3 py-2.5 rounded-xl text-sm text-red-400/80 hover:text-red-400 hover:bg-red-500/10 font-medium transition-all"
+            type="button"
+            onClick={handleLogout}
+            disabled={isLoggingOut}
+            aria-busy={isLoggingOut}
+            className="w-full flex items-center gap-2.5 px-3 py-2.5 rounded-xl text-sm text-red-400/80 hover:text-red-400 hover:bg-red-500/10 font-medium transition-all disabled:cursor-wait disabled:opacity-60"
           >
             <LogOut className="w-4 h-4" />
-            Sair da Conta
+            {isLoggingOut ? "Saindo..." : "Sair da Conta"}
           </button>
         </div>
       </aside>
