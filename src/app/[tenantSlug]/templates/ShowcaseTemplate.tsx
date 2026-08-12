@@ -79,7 +79,7 @@ export function ShowcaseTemplate({ tenant, services, barbers }: TemplateProps) {
           </Link>
         </nav>
 
-        <div className="relative z-10 px-6 md:px-12 pb-16 md:pb-24 max-w-5xl">
+        <div className="relative z-10 max-w-5xl px-6 pb-24 md:px-12 md:pb-36">
           <p
             className="text-xs uppercase tracking-[0.4em] mb-5"
             style={{ color: "var(--theme-accent)" }}
