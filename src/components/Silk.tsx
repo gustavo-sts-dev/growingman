@@ -29,14 +29,15 @@ const parseCssColor = (raw: string): string | null => {
 };
 
 /**
- * Garante que a cor produza um padrão visível.
+ * Levanta o tom só o suficiente para o padrão aparecer.
  *
- * O shader faz `uColor * pattern`, com pattern entre ~0.2 e 1.0 — ou seja, ele
- * só ESCURECE. Uma cor escura (o caso de temas como Ônix, de fundo #080808)
- * vira preto uniforme e o Silk desaparece. Aqui o tom é clareado até um piso de
- * luminância, preservando o matiz da marca.
+ * O shader faz `uColor * pattern` — multiplicação, então ele só ESCURECE. Um
+ * fundo quase preto (#080808) vira preto uniforme e o Silk some. O piso aqui é
+ * BAIXO de propósito: o Silk é textura de fundo, e precisa ficar perto da
+ * luminância do fundo para não competir com o texto que o tema desenhou para
+ * ele. Piso alto transforma o fundo em primeiro plano e o título vira silhueta.
  */
-const ensureVisible = (hex: string, minLuminance = 0.45): string => {
+const ensureVisible = (hex: string, minLuminance = 0.1): string => {
   const [r, g, b] = hexToNormalizedRGB(hex);
   const luminance = 0.2126 * r + 0.7152 * g + 0.0722 * b;
   if (luminance >= minLuminance) return hex;
@@ -109,11 +110,15 @@ void main() {
 
   tex.y += 0.03 * sin(8.0 * tex.x - tOffset);
 
-  float pattern = 0.6 +
-                  0.4 * sin(5.0 * (tex.x + tex.y +
-                                   cos(3.0 * tex.x + 5.0 * tex.y) +
-                                   0.02 * tOffset) +
-                           sin(20.0 * (tex.x + tex.y - 0.1 * tOffset)));
+  float wave = sin(5.0 * (tex.x + tex.y +
+                          cos(3.0 * tex.x + 5.0 * tex.y) +
+                          0.02 * tOffset) +
+                   sin(20.0 * (tex.x + tex.y - 0.1 * tOffset)));
+
+  // A modulação original era fixa em 0.4 — o padrão variava de 0.2 a 1.0 do tom,
+  // profundo demais para uma textura de fundo: as ondas escuras brigavam com o
+  // texto por cima. uContrast deixa a profundidade sob controle do template.
+  float pattern = 1.0 - uContrast * (0.5 - 0.5 * wave);
 
   vec4 col = vec4(uColor, 1.0) * vec4(pattern) - rnd / 15.0 * uNoiseIntensity;
   col.a = 1.0;
