@@ -41,7 +41,10 @@ export function ShowcaseTemplate({ tenant, services, barbers }: TemplateProps) {
       {/* HERO — com imagem ganha altura; sem imagem, o Silk precisa de espaço p/ respirar. */}
       <section
         className={`relative flex flex-col overflow-hidden md:justify-end ${mobileHeroHeight} ${hero ? "md:min-h-[70vh]" : "md:min-h-[60vh]"}`}
-        style={{ order: siteSectionOrder(layout, "hero") }}
+        style={{
+          order: siteSectionOrder(layout, "hero"),
+          backgroundColor: "var(--theme-bg)",
+        }}
       >
         {hero ? (
           <>

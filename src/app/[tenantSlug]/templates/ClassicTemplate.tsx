@@ -43,7 +43,10 @@ export function ClassicTemplate({ tenant, services, barbers }: TemplateProps) {
       {/* HERO */}
       <section
         className={`relative flex flex-col overflow-hidden md:min-h-[88vh] ${heroHeight}`}
-        style={{ order: siteSectionOrder(layout, "hero") }}
+        style={{
+          order: siteSectionOrder(layout, "hero"),
+          backgroundColor: "var(--theme-bg)",
+        }}
       >
         {/* Fundo animado de seda (discreto) atrás do hero. */}
         <Silk className="absolute inset-0 opacity-70" />
