@@ -22,14 +22,6 @@ export interface SiteLayoutConfig {
   };
 }
 
-export const SITE_SECTION_LABELS: Record<SiteSectionId, string> = {
-  hero: "Topo",
-  stats: "Números",
-  services: "Serviços",
-  team: "Equipe",
-  cta: "Chamada final",
-};
-
 const PRESET_SECTIONS: Record<SitePresetId, SiteSectionId[]> = {
   classic: ["hero", "stats", "services", "team", "cta"],
   editorial: ["hero", "services", "team", "cta"],

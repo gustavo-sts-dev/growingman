@@ -42,6 +42,8 @@ export default function OnboardingFlow() {
   const [copied, setCopied] = useState(false);
   const [pixData, setPixData] = useState<PixPayment | null>(null);
   const [billingRequired, setBillingRequired] = useState(true);
+  /** Preenchido quando a barbearia pegou uma das vagas de cortesia de lançamento. */
+  const [trial, setTrial] = useState<{ months: number; endsAt: string } | null>(null);
 
   const validateOwner = () => {
     const documentLength = adminCpfCnpj.replace(/\D/g, "").length;
@@ -99,6 +101,13 @@ export default function OnboardingFlow() {
       // ausência de QR Code cairia no erro logo abaixo.
       if (data?.billingRequired === false) {
         setBillingRequired(false);
+        // Duas razões distintas para não haver cobrança: cortesia de lançamento
+        // (produção) ou a flag de ambiente desligada (dev). O texto muda.
+        setTrial(
+          data?.trialMonths && data?.trialEndsAt
+            ? { months: data.trialMonths, endsAt: data.trialEndsAt }
+            : null,
+        );
         setStep(3);
         return;
       }
@@ -293,9 +302,17 @@ export default function OnboardingFlow() {
           {step === 3 && !billingRequired && (
             <div className="space-y-6">
               <StepHeader
-                eyebrow="Conta criada"
-                title="Barbearia cadastrada"
-                text="A cobrança da assinatura está desativada neste ambiente, então o acesso já está liberado."
+                eyebrow={trial ? "Cortesia de lançamento" : "Conta criada"}
+                title={
+                  trial ? `${trial.months} meses por nossa conta` : "Barbearia cadastrada"
+                }
+                text={
+                  trial
+                    ? `Você pegou uma das vagas de lançamento. Nada a pagar até ${new Date(
+                        trial.endsAt,
+                      ).toLocaleDateString("pt-BR")} — o painel já está liberado.`
+                    : "A cobrança da assinatura está desativada neste ambiente, então o acesso já está liberado."
+                }
               />
 
               <div className="flex items-center gap-3.5 rounded-[1.15rem] border border-[#e4e0d8] bg-[#faf9f6] p-4 sm:p-5">

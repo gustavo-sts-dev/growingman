@@ -13,7 +13,6 @@ import { apiGet, apiPatch, apiDelete } from "@/lib/api";
 import { siteHost } from "@/lib/config";
 import { useToast } from "@/components/ui/toast";
 import { ImageUpload } from "@/components/ui/image-upload";
-import { SiteLayoutEditor } from "@/components/SiteLayoutEditor";
 import type { AuthUser, Tenant } from "@/lib/types";
 import { SITE_PRESETS, resolveSitePreset, type SitePresetId } from "@/lib/site-presets";
 import { defaultSiteLayout, normalizeSiteLayout } from "@/lib/site-layout";
@@ -39,12 +38,72 @@ type ThemeColors = {
   theme_accent: string;
 };
 
-const COLOR_PRESETS: { label: string; colors: ThemeColors }[] = [
-  { label: "Dark Minimal", colors: { theme_bg: "#080808", theme_card: "#121212", theme_text: "#A1A1AA", theme_title: "#FFFFFF", theme_button_bg: "#FFFFFF", theme_button_text: "#000000", theme_accent: "#FFFFFF" } },
-  { label: "Gold Luxury",  colors: { theme_bg: "#0A0A0A", theme_card: "#111111", theme_text: "#9CA3AF", theme_title: "#D4AF37", theme_button_bg: "#D4AF37", theme_button_text: "#000000", theme_accent: "#D4AF37" } },
-  { label: "Light Clean",  colors: { theme_bg: "#F8FAFC", theme_card: "#FFFFFF", theme_text: "#475569", theme_title: "#0F172A", theme_button_bg: "#0F172A", theme_button_text: "#FFFFFF", theme_accent: "#3B82F6" } },
-  { label: "Neon Cyber",   colors: { theme_bg: "#050511", theme_card: "#090919", theme_text: "#94A3B8", theme_title: "#E0E7FF", theme_button_bg: "#8B5CF6", theme_button_text: "#FFFFFF", theme_accent: "#10B981" } },
+/**
+ * Paletas prontas da página pública, agrupadas por estilo.
+ *
+ * Cada paleta define as sete cores de uma vez porque combinações soltas quase
+ * sempre quebram contraste — fundo claro com texto claro, botão que some no
+ * card. Aqui os pares já nascem legíveis; o ajuste fino continua disponível em
+ * "Cores Detalhadas", para quem quiser divergir por conta própria.
+ */
+type ColorPresetGroup = {
+  style: string;
+  hint: string;
+  presets: { label: string; colors: ThemeColors }[];
+};
+
+const COLOR_PRESET_GROUPS: ColorPresetGroup[] = [
+  {
+    style: "Escuro",
+    hint: "Fundo preto, contraste alto. Combina com foto e com letra grande.",
+    presets: [
+      { label: "Ônix",       colors: { theme_bg: "#080808", theme_card: "#121212", theme_text: "#A1A1AA", theme_title: "#FFFFFF", theme_button_bg: "#FFFFFF", theme_button_text: "#000000", theme_accent: "#FFFFFF" } },
+      { label: "Grafite",    colors: { theme_bg: "#17181A", theme_card: "#202225", theme_text: "#A8ADB4", theme_title: "#F5F6F7", theme_button_bg: "#E6E8EA", theme_button_text: "#17181A", theme_accent: "#8B96A5" } },
+      { label: "Meia-noite", colors: { theme_bg: "#0B1120", theme_card: "#131C31", theme_text: "#94A3B8", theme_title: "#F1F5F9", theme_button_bg: "#38BDF8", theme_button_text: "#04121F", theme_accent: "#38BDF8" } },
+      { label: "Carvão",     colors: { theme_bg: "#1A1A1A", theme_card: "#242424", theme_text: "#A3A3A3", theme_title: "#FAFAFA", theme_button_bg: "#C2410C", theme_button_text: "#FFFFFF", theme_accent: "#F97316" } },
+    ],
+  },
+  {
+    style: "Luxo",
+    hint: "Tons metálicos e quentes sobre escuro. Cara de barbearia premium.",
+    presets: [
+      { label: "Ouro",      colors: { theme_bg: "#0A0A0A", theme_card: "#111111", theme_text: "#9CA3AF", theme_title: "#D4AF37", theme_button_bg: "#D4AF37", theme_button_text: "#000000", theme_accent: "#D4AF37" } },
+      { label: "Bronze",    colors: { theme_bg: "#12100E", theme_card: "#1C1917", theme_text: "#A8A29E", theme_title: "#E7D3B7", theme_button_bg: "#B08D57", theme_button_text: "#14110E", theme_accent: "#B08D57" } },
+      { label: "Champanhe", colors: { theme_bg: "#14110D", theme_card: "#1F1A14", theme_text: "#B0A79A", theme_title: "#F3E5CE", theme_button_bg: "#E8D5AE", theme_button_text: "#1A150F", theme_accent: "#C9A961" } },
+      { label: "Bordô",     colors: { theme_bg: "#140A0D", theme_card: "#1F1013", theme_text: "#B9A2A7", theme_title: "#F5E9EB", theme_button_bg: "#8C1F2B", theme_button_text: "#FFFFFF", theme_accent: "#B2313F" } },
+    ],
+  },
+  {
+    style: "Claro",
+    hint: "Fundo claro e leitura fácil. Bom para quem tem poucas fotos.",
+    presets: [
+      { label: "Neve",  colors: { theme_bg: "#F8FAFC", theme_card: "#FFFFFF", theme_text: "#475569", theme_title: "#0F172A", theme_button_bg: "#0F172A", theme_button_text: "#FFFFFF", theme_accent: "#3B82F6" } },
+      { label: "Areia", colors: { theme_bg: "#F5F1EA", theme_card: "#FFFFFF", theme_text: "#6B6355", theme_title: "#26211A", theme_button_bg: "#26211A", theme_button_text: "#F5F1EA", theme_accent: "#A6784B" } },
+      { label: "Linho", colors: { theme_bg: "#F7F5F2", theme_card: "#FFFFFF", theme_text: "#5C5750", theme_title: "#1C1A17", theme_button_bg: "#2F2A24", theme_button_text: "#FFFFFF", theme_accent: "#8A7B6A" } },
+      { label: "Névoa", colors: { theme_bg: "#F1F5F9", theme_card: "#FFFFFF", theme_text: "#4B5563", theme_title: "#111827", theme_button_bg: "#334155", theme_button_text: "#FFFFFF", theme_accent: "#0EA5E9" } },
+    ],
+  },
+  {
+    style: "Vibrante",
+    hint: "Acento saturado sobre escuro. Chama atenção no botão de agendar.",
+    presets: [
+      { label: "Cyber",      colors: { theme_bg: "#050511", theme_card: "#090919", theme_text: "#94A3B8", theme_title: "#E0E7FF", theme_button_bg: "#8B5CF6", theme_button_text: "#FFFFFF", theme_accent: "#10B981" } },
+      { label: "Elétrico",   colors: { theme_bg: "#0A0A0F", theme_card: "#14141F", theme_text: "#9CA3AF", theme_title: "#FFFFFF", theme_button_bg: "#2563EB", theme_button_text: "#FFFFFF", theme_accent: "#22D3EE" } },
+      { label: "Pôr do sol", colors: { theme_bg: "#1A0F14", theme_card: "#241419", theme_text: "#B79FA5", theme_title: "#FFF1E6", theme_button_bg: "#F97316", theme_button_text: "#1A0F14", theme_accent: "#FB7185" } },
+      { label: "Menta",      colors: { theme_bg: "#06120F", theme_card: "#0C1D18", theme_text: "#93AFA6", theme_title: "#ECFDF5", theme_button_bg: "#10B981", theme_button_text: "#04120D", theme_accent: "#34D399" } },
+    ],
+  },
 ];
+
+const THEME_COLOR_KEYS = [
+  "theme_bg",
+  "theme_card",
+  "theme_text",
+  "theme_title",
+  "theme_button_bg",
+  "theme_button_text",
+  "theme_accent",
+] as const;
 
 export default function ConfiguracoesPage() {
   const toast = useToast();
@@ -400,27 +459,6 @@ export default function ConfiguracoesPage() {
             </FieldGroup>
           )}
 
-          <SiteLayoutEditor
-            presetId={activePreset.id}
-            value={form.site_layout}
-            onChange={(siteLayout) => set("site_layout", siteLayout)}
-            preview={{
-              name: form.name,
-              headline: form.page_headline,
-              subheadline: form.page_subheadline,
-              imageUrl: form.hero_image_url,
-              colors: {
-                background: form.theme_bg,
-                card: form.theme_card,
-                text: form.theme_text,
-                title: form.theme_title,
-                button: form.theme_button_bg,
-                buttonText: form.theme_button_text,
-                accent: form.theme_accent,
-              },
-            }}
-          />
-
           {activePreset.sections.includes("stats") && (
             <FieldGroup title="Números de Destaque">
               <p className="text-sm text-neutral-400 mb-1">Personalize os valores da barra de destaques. Deixe em branco para usar o padrão.</p>
@@ -443,22 +481,45 @@ export default function ConfiguracoesPage() {
       {/* ── ABA: APARÊNCIA ────────────────────────────────── */}
       {activeTab === "aparencia" && (
         <div className="space-y-5">
-          <FieldGroup title="Presets de Design">
-            <p className="text-sm text-neutral-400 mb-3">Escolha uma combinação pronta ou crie a sua própria abaixo.</p>
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
-              {COLOR_PRESETS.map(p => (
-                <button
-                  key={p.label}
-                  onClick={() => applyPreset(p.colors)}
-                  className="flex flex-col items-start p-3 rounded-xl border border-white/[0.08] hover:bg-white/[0.04] transition-all text-left"
-                >
-                  <div className="flex gap-1 mb-2">
-                    <span className="w-4 h-4 rounded-full border border-white/10" style={{ background: p.colors.theme_bg }}></span>
-                    <span className="w-4 h-4 rounded-full border border-white/10" style={{ background: p.colors.theme_button_bg }}></span>
-                    <span className="w-4 h-4 rounded-full border border-white/10" style={{ background: p.colors.theme_accent }}></span>
+          <FieldGroup title="Paletas Prontas">
+            <p className="text-sm text-neutral-400 mb-5">Escolha uma combinação pronta ou ajuste as cores uma a uma abaixo.</p>
+            <div className="space-y-6">
+              {COLOR_PRESET_GROUPS.map(group => (
+                <div key={group.style}>
+                  <div className="mb-3">
+                    <h4 className="text-[11px] font-semibold uppercase tracking-[0.15em] text-neutral-400">{group.style}</h4>
+                    <p className="text-xs text-neutral-600 mt-0.5 leading-relaxed">{group.hint}</p>
                   </div>
-                  <span className="text-xs font-medium text-white">{p.label}</span>
-                </button>
+                  <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+                    {group.presets.map(p => {
+                      const active = THEME_COLOR_KEYS.every(key => form[key] === p.colors[key]);
+
+                      return (
+                        <button
+                          key={p.label}
+                          onClick={() => applyPreset(p.colors)}
+                          aria-pressed={active}
+                          className={`relative flex flex-col items-start p-3 rounded-xl border transition-all text-left ${
+                            active
+                              ? "border-white/40 bg-white/[0.06]"
+                              : "border-white/[0.08] hover:bg-white/[0.04] hover:border-white/20"
+                          }`}
+                        >
+                          {active && (
+                            <CheckCircle2 className="w-3.5 h-3.5 text-white absolute top-2.5 right-2.5" aria-hidden="true" />
+                          )}
+                          {/* Amostra na ordem em que aparecem na página: fundo, botão, destaque. */}
+                          <div className="flex gap-1 mb-2">
+                            <span className="w-4 h-4 rounded-full border border-white/10" style={{ background: p.colors.theme_bg }} />
+                            <span className="w-4 h-4 rounded-full border border-white/10" style={{ background: p.colors.theme_button_bg }} />
+                            <span className="w-4 h-4 rounded-full border border-white/10" style={{ background: p.colors.theme_accent }} />
+                          </div>
+                          <span className={`text-xs font-medium ${active ? "text-white" : "text-neutral-300"}`}>{p.label}</span>
+                        </button>
+                      );
+                    })}
+                  </div>
+                </div>
               ))}
             </div>
           </FieldGroup>
