@@ -57,7 +57,7 @@ export function Hero() {
               className="gm-rise mt-5 text-[0.75rem] text-white/70 sm:mt-6 sm:text-[0.8rem]"
               style={{ animationDelay: "240ms" }}
             >
-              Plano único · R$ 299 por mês
+              A partir de R$ 110 por mês · R$ 15 por profissional
             </p>
           </div>
 

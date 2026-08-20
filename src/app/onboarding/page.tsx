@@ -262,17 +262,17 @@ export default function OnboardingFlow() {
                     <p className="text-[0.65rem] font-semibold uppercase tracking-[0.22em] text-[#6f6b64]">
                       Growingman Premium
                     </p>
-                    <p className="mt-1.5 text-[0.85rem] text-[#6f6b64]">Plano único mensal</p>
+                    <p className="mt-1.5 text-[0.85rem] text-[#6f6b64]">Base mensal · R$ 15 por profissional</p>
                   </div>
                   <p className="shrink-0 font-heading text-[1.6rem] font-semibold leading-none tracking-[-0.04em] text-[#0d0c0a]">
-                    R$ 299
+                    R$ 110
                     <span className="ml-1 text-[0.85rem] font-medium tracking-normal text-[#6f6b64]">
                       /mês
                     </span>
                   </p>
                 </div>
                 <p className="mt-3 border-t border-[#eae7e0] pt-3 text-[0.78rem] leading-5 text-[#8a857c]">
-                  A cobrança Pix vence em 3 dias.
+                  A primeira fatura é só a base, porque a barbearia ainda não tem profissional cadastrado. A cobrança Pix vence em 3 dias.
                 </p>
               </div>
 

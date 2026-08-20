@@ -14,9 +14,9 @@ const stats = [
     text: "Cinco layouts prontos para a página pública. Cores, textos e imagem de capa são ajustados no próprio painel.",
   },
   {
-    value: "R$ 299",
-    label: "Plano único mensal",
-    text: "Todos os módulos liberados: agenda, equipe, clientes, serviços, estoque e financeiro. Sem pacote extra.",
+    value: "R$ 110",
+    label: "Base mensal",
+    text: "Todos os módulos liberados, mais R$ 15 por profissional ativo. Uma barbearia paga pelo tamanho que tem.",
   },
 ];
 

@@ -43,12 +43,12 @@ export function Pricing() {
                 </p>
                 <p className="mt-6 flex flex-wrap items-end gap-x-2 sm:mt-8">
                   <span className="font-heading text-[clamp(2.6rem,6vw,4.25rem)] font-semibold leading-none tracking-[-0.05em]">
-                    R$ 299
+                    R$ 110
                   </span>
-                  <span className="pb-1.5 text-[0.9rem] text-white/75 sm:pb-2 sm:text-[0.95rem]">/mês</span>
+                  <span className="pb-1.5 text-[0.9rem] text-white/75 sm:pb-2 sm:text-[0.95rem]">/mês + R$ 15 por profissional</span>
                 </p>
                 <p className="mt-4 max-w-xs text-[0.88rem] leading-6 text-white/85 sm:text-[0.92rem] sm:leading-7">
-                  Sem cobrança por agendamento e sem módulo vendido à parte.
+                  A base cobre a barbearia inteira; cada profissional ativo soma R$ 15. Sem cobrança por agendamento e sem módulo à parte.
                 </p>
 
                 <div className="mt-8 lg:mt-auto lg:pt-10">
