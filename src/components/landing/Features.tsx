@@ -24,7 +24,7 @@ const features = [
 export function Features() {
   return (
     <section id="recursos" className={`relative scroll-mt-24 ${sectionPad}`}>
-      <div aria-hidden="true" className="pointer-events-none absolute inset-0 overflow-hidden">
+      <div aria-hidden="true" className="pointer-events-none absolute inset-0">
         <div className="absolute top-1/4 -left-32 size-[26rem] rounded-full bg-[#0d0c0a]/[0.08] blur-[130px]" />
       </div>
 

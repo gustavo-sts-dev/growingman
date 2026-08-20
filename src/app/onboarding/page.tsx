@@ -15,7 +15,10 @@ type PixPayment = {
   qrCodePayload: string;
 };
 
-const steps = ["Responsável", "Barbearia", "Pagamento"];
+const STEP_LABELS = ["Responsável", "Barbearia", "Pagamento"];
+
+/** Fora de produção o backend dispensa a cobrança — a última etapa vira confirmação. */
+const STEP_LABELS_SEM_COBRANCA = ["Responsável", "Barbearia", "Conclusão"];
 
 function normalizeSlug(value: string) {
   return value
@@ -38,6 +41,7 @@ export default function OnboardingFlow() {
   const [errorMsg, setErrorMsg] = useState("");
   const [copied, setCopied] = useState(false);
   const [pixData, setPixData] = useState<PixPayment | null>(null);
+  const [billingRequired, setBillingRequired] = useState(true);
 
   const validateOwner = () => {
     const documentLength = adminCpfCnpj.replace(/\D/g, "").length;
@@ -90,6 +94,15 @@ export default function OnboardingFlow() {
         throw new Error(data?.message || "Não foi possível criar a cobrança.");
       }
 
+      // Fora de produção o backend cria a conta sem gerar cobrança. Este flag
+      // distingue "cobrança dispensada" de "cobrança que falhou" — sem ele, a
+      // ausência de QR Code cairia no erro logo abaixo.
+      if (data?.billingRequired === false) {
+        setBillingRequired(false);
+        setStep(3);
+        return;
+      }
+
       const payment = data?.payment as Partial<PixPayment> | undefined;
       if (
         !payment?.paymentId ||
@@ -118,7 +131,10 @@ export default function OnboardingFlow() {
 
   return (
     <div className="mx-auto w-full max-w-xl">
-      <Stepper current={step} />
+      <Stepper
+        current={step}
+        labels={billingRequired ? STEP_LABELS : STEP_LABELS_SEM_COBRANCA}
+      />
 
       {/* Borda em gradiente: o mesmo destaque do cartão de plano da landing */}
       <div className="mt-8 rounded-[1.6rem] bg-[linear-gradient(160deg,#c9c3b6_0%,#e4e0d8_45%,rgba(228,224,216,0)_100%)] p-px shadow-[0_40px_90px_-55px_rgba(13,12,10,0.75)] sm:mt-10 sm:rounded-[1.85rem]">
@@ -274,7 +290,41 @@ export default function OnboardingFlow() {
             </div>
           )}
 
-          {step === 3 && pixData && (
+          {step === 3 && !billingRequired && (
+            <div className="space-y-6">
+              <StepHeader
+                eyebrow="Conta criada"
+                title="Barbearia cadastrada"
+                text="A cobrança da assinatura está desativada neste ambiente, então o acesso já está liberado."
+              />
+
+              <div className="flex items-center gap-3.5 rounded-[1.15rem] border border-[#e4e0d8] bg-[#faf9f6] p-4 sm:p-5">
+                <span
+                  aria-hidden="true"
+                  className="grid size-9 shrink-0 place-items-center rounded-full bg-[#0d0c0a] text-white"
+                >
+                  <Check className="size-4" strokeWidth={3} />
+                </span>
+                <p className="min-w-0 text-[0.9rem] leading-6 text-[#3a3733]">
+                  Página pública em{" "}
+                  <span className="font-semibold break-all text-[#0d0c0a]">
+                    {siteHost()}/{tenantSlug}
+                  </span>
+                </p>
+              </div>
+
+              <p className="border-t border-[#eae7e0] pt-6 text-[0.9rem] leading-6 text-[#6f6b64]">
+                Entre com o e-mail e a senha cadastrados para abrir o painel.
+              </p>
+
+              <Link href="/login" className={`${btn.primary} w-full`}>
+                Ir para entrar
+                <ArrowRight className="size-3.5" aria-hidden="true" />
+              </Link>
+            </div>
+          )}
+
+          {step === 3 && billingRequired && pixData && (
             <div className="space-y-6">
               <StepHeader
                 eyebrow="Cobrança gerada"
@@ -351,10 +401,10 @@ function StepHeader({ eyebrow, title, text }: { eyebrow: string; title: string; 
 }
 
 /** Etapas com o mesmo selo numerado da seção "Como funciona". */
-function Stepper({ current }: { current: number }) {
+function Stepper({ current, labels }: { current: number; labels: string[] }) {
   return (
     <ol className="flex items-start gap-2 sm:gap-3" aria-label="Etapas do cadastro">
-      {steps.map((label, index) => {
+      {labels.map((label, index) => {
         const number = index + 1;
         const active = current === number;
         const complete = current > number;
@@ -383,7 +433,7 @@ function Stepper({ current }: { current: number }) {
               <span
                 aria-hidden="true"
                 className={`h-px flex-1 ${
-                  index === steps.length - 1 ? "opacity-0" : current > number ? "bg-[#b3ada0]" : "bg-[#e4e0d8]"
+                  index === labels.length - 1 ? "opacity-0" : current > number ? "bg-[#b3ada0]" : "bg-[#e4e0d8]"
                 }`}
               />
             </div>

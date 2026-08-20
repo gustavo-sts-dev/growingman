@@ -61,12 +61,12 @@ export default function LoginPage() {
   };
 
   return (
-    <div className="gm min-h-screen overflow-x-hidden antialiased">
+    <div className="gm min-h-screen overflow-x-clip antialiased">
       <BrandHeader actionHref="/onboarding" actionLabel="Criar conta" />
 
       <main className="relative px-3 pb-16 pt-6 sm:px-6 sm:pb-24 sm:pt-10">
         {/* Halos desfocados: a mesma profundidade do herói da landing */}
-        <div aria-hidden="true" className="pointer-events-none absolute inset-0 overflow-hidden">
+        <div aria-hidden="true" className="pointer-events-none absolute inset-0">
           <div className="absolute -top-24 left-1/2 h-[26rem] w-[46rem] -translate-x-1/2 rounded-full bg-[#0d0c0a]/[0.09] blur-[130px]" />
           <div className="absolute top-52 -left-20 size-72 rounded-full bg-[#c9c3b6]/50 blur-[110px]" />
         </div>

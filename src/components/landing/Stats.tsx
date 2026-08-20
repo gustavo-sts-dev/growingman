@@ -25,7 +25,7 @@ const chips = [CalendarDays, Users, Wallet];
 export function Stats() {
   return (
     <section className={`relative ${sectionPad}`}>
-      <div aria-hidden="true" className="pointer-events-none absolute inset-x-0 top-1/3 flex justify-center overflow-hidden">
+      <div aria-hidden="true" className="pointer-events-none absolute inset-x-0 top-1/3 flex justify-center">
         <div className="size-[34rem] rounded-full bg-[#0d0c0a]/[0.07] blur-[140px]" />
       </div>
 

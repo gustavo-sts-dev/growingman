@@ -13,7 +13,7 @@ export function Hero() {
   return (
     <section className="relative px-3 pt-8 sm:px-6 sm:pt-14">
       {/* Halos desfocados: profundidade atrás do cartão, sem competir com o texto */}
-      <div aria-hidden="true" className="pointer-events-none absolute inset-0 overflow-hidden">
+      <div aria-hidden="true" className="pointer-events-none absolute inset-0">
         <div className="absolute -top-24 left-1/2 h-[30rem] w-[52rem] -translate-x-1/2 rounded-full bg-[#0d0c0a]/[0.10] blur-[130px]" />
         <div className="absolute top-40 -left-20 size-80 rounded-full bg-[#c9c3b6]/50 blur-[110px]" />
         <div className="absolute top-56 -right-16 size-80 rounded-full bg-[#6f6b64]/25 blur-[110px]" />

@@ -16,7 +16,7 @@ export function Pricing() {
     <section id="plano" className={`relative scroll-mt-24 ${sectionPad}`}>
       <div
         aria-hidden="true"
-        className="pointer-events-none absolute inset-x-0 top-10 flex justify-center overflow-hidden"
+        className="pointer-events-none absolute inset-x-0 top-10 flex justify-center"
       >
         <div className="size-[38rem] rounded-full bg-[#0d0c0a]/[0.08] blur-[150px]" />
       </div>
