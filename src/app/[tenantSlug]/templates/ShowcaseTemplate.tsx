@@ -67,6 +67,7 @@ export function ShowcaseTemplate({ tenant, services, barbers }: TemplateProps) {
         ) : (
           <Silk
             color={typeof tenant.theme_card === "string" ? tenant.theme_card : undefined}
+            colorDark={typeof tenant.theme_bg === "string" ? tenant.theme_bg : undefined}
             className="absolute inset-0"
           />
         )}

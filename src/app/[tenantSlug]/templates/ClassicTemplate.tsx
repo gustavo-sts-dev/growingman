@@ -53,6 +53,7 @@ export function ClassicTemplate({ tenant, services, barbers }: TemplateProps) {
             do fundo, então a seda acompanha o tema sem virar primeiro plano. */}
         <Silk
           color={typeof tenant.theme_card === "string" ? tenant.theme_card : undefined}
+          colorDark={typeof tenant.theme_bg === "string" ? tenant.theme_bg : undefined}
           className="absolute inset-0 opacity-70"
         />
         <nav className="relative z-10 flex items-center justify-between px-5 pt-5 md:px-12 md:pt-7">

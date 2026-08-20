@@ -15,6 +15,16 @@ const hexToNormalizedRGB = (hex: string): NormalizedRGB => {
   return [r, g, b];
 };
 
+/** Escurece um hex por um fator, preservando o matiz. */
+const scaleHex = (hex: string, factor: number): string =>
+  `#${hexToNormalizedRGB(hex)
+    .map((channel) =>
+      Math.round(255 * Math.min(1, Math.max(0, channel * factor)))
+        .toString(16)
+        .padStart(2, '0'),
+    )
+    .join('')}`;
+
 interface UniformValue<T = number | Color> {
   value: T;
 }
@@ -24,6 +34,7 @@ interface SilkUniforms {
   uScale: UniformValue<number>;
   uNoiseIntensity: UniformValue<number>;
   uColor: UniformValue<Color>;
+  uColorDark: UniformValue<Color>;
   uRotation: UniformValue<number>;
   uTime: UniformValue<number>;
   [uniform: string]: IUniform;
@@ -46,6 +57,7 @@ varying vec3 vPosition;
 
 uniform float uTime;
 uniform vec3  uColor;
+uniform vec3  uColorDark;
 uniform float uSpeed;
 uniform float uScale;
 uniform float uRotation;
@@ -74,13 +86,18 @@ void main() {
 
   tex.y += 0.03 * sin(8.0 * tex.x - tOffset);
 
-  float pattern = 0.6 +
-                  0.4 * sin(5.0 * (tex.x + tex.y +
-                                   cos(3.0 * tex.x + 5.0 * tex.y) +
-                                   0.02 * tOffset) +
-                           sin(20.0 * (tex.x + tex.y - 0.1 * tOffset)));
+  float wave = sin(5.0 * (tex.x + tex.y +
+                          cos(3.0 * tex.x + 5.0 * tex.y) +
+                          0.02 * tOffset) +
+                   sin(20.0 * (tex.x + tex.y - 0.1 * tOffset)));
 
-  vec4 col = vec4(uColor, 1.0) * vec4(pattern) - rnd / 15.0 * uNoiseIntensity;
+  // Interpola entre as duas cores em vez de multiplicar uma só. Multiplicar
+  // apenas escurece, então o tom das dobras ficava preso ao da crista — e num
+  // fundo escuro tudo colapsava em preto. Com duas cores, cada extremo é
+  // escolhido pelo tema.
+  vec3 base = mix(uColorDark, uColor, 0.5 + 0.5 * wave);
+
+  vec4 col = vec4(base, 1.0) - rnd / 15.0 * uNoiseIntensity;
   col.a = 1.0;
   gl_FragColor = col;
 }
@@ -122,7 +139,10 @@ SilkPlane.displayName = 'SilkPlane';
 export interface SilkProps {
   speed?: number;
   scale?: number;
+  /** Cor das cristas (as dobras iluminadas da seda). */
   color?: string;
+  /** Cor dos vales. Sem ela, usa `color` escurecida — o visual de antes. */
+  colorDark?: string;
   noiseIntensity?: number;
   rotation?: number;
   className?: string;
@@ -133,6 +153,7 @@ const Silk: React.FC<SilkProps> = ({
   speed = 5,
   scale = 1,
   color = '#7B7481',
+  colorDark,
   noiseIntensity = 1.5,
   rotation = 0,
   className,
@@ -146,10 +167,12 @@ const Silk: React.FC<SilkProps> = ({
       uScale: { value: scale },
       uNoiseIntensity: { value: noiseIntensity },
       uColor: { value: new Color(...hexToNormalizedRGB(color)) },
+      // 0.2 era o piso da multiplicação antiga: sem colorDark, o visual não muda.
+      uColorDark: { value: new Color(...hexToNormalizedRGB(colorDark ?? scaleHex(color, 0.2))) },
       uRotation: { value: rotation },
       uTime: { value: 0 }
     }),
-    [speed, scale, noiseIntensity, color, rotation]
+    [speed, scale, noiseIntensity, color, colorDark, rotation]
   );
 
   return (
