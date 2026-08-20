@@ -5,13 +5,35 @@ const apiBase = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3333/api";
 const apiOrigin = new URL(apiBase).origin;
 const isDevelopment = process.env.NODE_ENV === "development";
 
+/** Origem de uma URL vinda do ambiente, tolerando ausência ou valor inválido. */
+function originOrEmpty(value: string | undefined): string {
+  if (!value) return "";
+  try {
+    return new URL(value).origin;
+  } catch {
+    return "";
+  }
+}
+
+// O storage de objetos usa DUAS origens distintas, e cada uma cai numa diretiva
+// diferente da CSP:
+//  - upload: o navegador envia direto ao bucket via presigned URL (connect-src);
+//  - leitura: as imagens são servidas pelo domínio público do bucket (img-src).
+// Ficam em env porque mudam por ambiente (MinIO local, R2 em produção) e o
+// endpoint do R2 carrega o ID da conta.
+const storageUploadOrigin = originOrEmpty(process.env.NEXT_PUBLIC_STORAGE_UPLOAD_URL);
+const storagePublicOrigin = originOrEmpty(process.env.NEXT_PUBLIC_STORAGE_PUBLIC_URL);
+
+/** Junta fontes ignorando as vazias, para não gerar diretiva com espaço duplo. */
+const sources = (...values: string[]) => values.filter(Boolean).join(" ");
+
 const contentSecurityPolicy = [
   "default-src 'self'",
   `script-src 'self' 'unsafe-inline'${isDevelopment ? " 'unsafe-eval'" : ""}`,
   "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com",
   "font-src 'self' data: https://fonts.gstatic.com",
-  `img-src 'self' data: blob: ${apiOrigin}`,
-  `connect-src 'self' ${apiOrigin}${isDevelopment ? " ws: wss:" : ""}`,
+  `img-src ${sources("'self'", "data:", "blob:", apiOrigin, storagePublicOrigin)}`,
+  `connect-src ${sources("'self'", apiOrigin, storageUploadOrigin, isDevelopment ? "ws: wss:" : "")}`,
   "object-src 'none'",
   "base-uri 'self'",
   "form-action 'self'",
