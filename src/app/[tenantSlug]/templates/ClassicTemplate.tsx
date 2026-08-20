@@ -48,8 +48,13 @@ export function ClassicTemplate({ tenant, services, barbers }: TemplateProps) {
           backgroundColor: "var(--theme-bg)",
         }}
       >
-        {/* Fundo animado de seda (discreto) atrás do hero. */}
-        <Silk className="absolute inset-0 opacity-70" />
+        {/* Fundo animado de seda (discreto) atrás do hero. A cor vai como hex
+            porque o shader não resolve CSS var; `theme_card` é o tom logo acima
+            do fundo, então a seda acompanha o tema sem virar primeiro plano. */}
+        <Silk
+          color={typeof tenant.theme_card === "string" ? tenant.theme_card : undefined}
+          className="absolute inset-0 opacity-70"
+        />
         <nav className="relative z-10 flex items-center justify-between px-5 pt-5 md:px-12 md:pt-7">
           <div className="flex items-center gap-2.5">
             <TenantLogo
