@@ -54,7 +54,7 @@ export function ClassicTemplate({ tenant, services, barbers }: TemplateProps) {
         <Silk
           color={typeof tenant.theme_card === "string" ? tenant.theme_card : undefined}
           colorDark={typeof tenant.theme_bg === "string" ? tenant.theme_bg : undefined}
-          className="absolute inset-0 opacity-70"
+          className="absolute inset-0"
         />
         <nav className="relative z-10 flex items-center justify-between px-5 pt-5 md:px-12 md:pt-7">
           <div className="flex items-center gap-2.5">
