@@ -2,10 +2,16 @@
 
 import { useState } from "react";
 import Link from "next/link";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Scissors, AlertCircle, Loader2 } from "lucide-react";
+import { ArrowRight, CalendarDays, Loader2, Users, Wallet } from "lucide-react";
+import { BrandHeader, Field, FormAlert, TextInput, btn } from "@/components/brand/ui";
 import { apiUrl } from "@/lib/config";
+
+/** Os mesmos três módulos anunciados no selo do herói da landing. */
+const modules = [
+  { Icon: CalendarDays, label: "Agenda pública e bloqueios de horário" },
+  { Icon: Users, label: "Equipe, clientes e serviços cadastrados" },
+  { Icon: Wallet, label: "Financeiro, estoque e fechamento do mês" },
+];
 
 export default function LoginPage() {
   const [email, setEmail] = useState("");
@@ -55,117 +61,128 @@ export default function LoginPage() {
   };
 
   return (
-    <div className="min-h-screen bg-black text-white flex flex-col md:flex-row">
-      {/* Lado Esquerdo - Imagem / Branding */}
-      <div className="hidden md:flex flex-1 relative bg-zinc-900 border-r border-white/10 items-center justify-center overflow-hidden">
-        <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_center,_var(--tw-gradient-stops))] from-zinc-800/50 via-zinc-900/50 to-black"></div>
-        <div className="relative z-10 flex flex-col items-center max-w-lg text-center p-12">
-          <div className="w-20 h-20 bg-white rounded-2xl flex items-center justify-center mb-8 shadow-2xl shadow-white/10">
-            <Scissors className="w-10 h-10 text-black" />
-          </div>
-          <h1 className="text-4xl font-bold mb-6 tracking-tight">
-            O futuro da sua barbearia.
-          </h1>
-          <p className="text-zinc-400 text-lg">
-            Acesse o Growingman para gerenciar sua agenda, pagamentos e muito
-            mais em uma interface feita para a excelência.
-          </p>
-        </div>
-      </div>
+    <div className="gm min-h-screen overflow-x-hidden antialiased">
+      <BrandHeader actionHref="/onboarding" actionLabel="Criar conta" />
 
-      {/* Lado Direito - Formulário */}
-      <div className="flex-1 flex flex-col justify-center p-8 sm:p-12 md:p-24 relative">
-        <div className="absolute top-8 left-8 md:hidden flex items-center gap-3">
-          <div className="w-10 h-10 bg-white rounded-xl flex items-center justify-center">
-            <Scissors className="w-5 h-5 text-black" />
-          </div>
-          <span className="font-bold text-xl tracking-tighter">ICON</span>
+      <main className="relative px-3 pb-16 pt-6 sm:px-6 sm:pb-24 sm:pt-10">
+        {/* Halos desfocados: a mesma profundidade do herói da landing */}
+        <div aria-hidden="true" className="pointer-events-none absolute inset-0 overflow-hidden">
+          <div className="absolute -top-24 left-1/2 h-[26rem] w-[46rem] -translate-x-1/2 rounded-full bg-[#0d0c0a]/[0.09] blur-[130px]" />
+          <div className="absolute top-52 -left-20 size-72 rounded-full bg-[#c9c3b6]/50 blur-[110px]" />
         </div>
 
-        <div className="w-full max-w-md mx-auto mt-12 md:mt-0">
-          <div className="mb-10">
-            <h2 className="text-3xl font-bold mb-3">Bem-vindo de volta</h2>
-            <p className="text-zinc-400">
-              Insira suas credenciais para acessar o painel.
-            </p>
-          </div>
-
-          {error && (
-            <div className="mb-6 p-4 rounded-xl bg-red-500/10 border border-red-500/20 text-red-400 flex items-start gap-3">
-              <AlertCircle className="w-5 h-5 flex-shrink-0 mt-0.5" />
-              <p className="text-sm">{error}</p>
-            </div>
-          )}
-
-          <form
-            onSubmit={handleLogin}
-            className="space-y-6"
-          >
-            <div className="space-y-2">
-              <label className="text-sm font-medium text-zinc-300">
-                E-mail
-              </label>
-              <Input
-                type="email"
-                placeholder="seu@email.com"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                autoComplete="email"
-                required
-                className="bg-white/5 border-white/10 h-12 rounded-xl focus-visible:ring-1 focus-visible:ring-white"
-              />
+        <div className="relative mx-auto grid w-full max-w-[1180px] items-stretch gap-3 lg:grid-cols-[1.05fr_0.95fr] lg:gap-5">
+          {/* Painel de marca: mesma malha, véu e granulação do cartão do herói */}
+          <section className="gm-mesh gm-scrim gm-grain relative hidden overflow-hidden rounded-[2rem] p-10 lg:flex lg:flex-col lg:justify-between xl:p-12">
+            <div className="relative z-10">
+              <p className="text-[0.68rem] font-semibold uppercase tracking-[0.24em] text-white/65">
+                Painel Growingman
+              </p>
+              <h1 className="mt-6 max-w-md text-balance font-heading text-[clamp(2rem,3vw,2.9rem)] font-semibold leading-[1.06] tracking-[-0.035em] text-white">
+                A agenda e a operação da sua barbearia{" "}
+                <span className="bg-[linear-gradient(100deg,#ffffff_10%,#e4e0d8_55%,#b3ada0_100%)] bg-clip-text text-transparent">
+                  no mesmo lugar
+                </span>
+              </h1>
             </div>
 
-            <div className="space-y-2">
-              <div className="flex items-center justify-between">
-                <label className="text-sm font-medium text-zinc-300">
-                  Senha
-                </label>
-                <Link
-                  href="/recuperar-senha"
-                  className="text-sm text-zinc-400 hover:text-white transition-colors"
+            <ul className="relative z-10 mt-12 space-y-3">
+              {modules.map(({ Icon, label }) => (
+                <li
+                  key={label}
+                  className="flex items-center gap-3.5 rounded-[1.15rem] border border-white/15 bg-white/[0.07] p-4 backdrop-blur-xl"
                 >
-                  Esqueceu a senha?
+                  <span
+                    aria-hidden="true"
+                    className="grid size-9 shrink-0 place-items-center rounded-xl bg-white/15 text-white ring-1 ring-white/25"
+                  >
+                    <Icon className="size-4" />
+                  </span>
+                  <span className="text-[0.92rem] leading-6 text-white/80">{label}</span>
+                </li>
+              ))}
+            </ul>
+          </section>
+
+          {/* Formulário */}
+          <section className="rounded-[1.6rem] border border-[#e4e0d8] bg-white p-6 shadow-[0_40px_90px_-55px_rgba(13,12,10,0.75)] sm:rounded-[2rem] sm:p-10 lg:p-12">
+            <div className="mx-auto flex h-full max-w-md flex-col justify-center">
+              <p className="text-[0.65rem] font-semibold uppercase tracking-[0.22em] text-[#6f6b64] sm:text-[0.68rem]">
+                Acesso
+              </p>
+              <h2 className="mt-3 text-balance font-heading text-[clamp(1.6rem,3.4vw,2.2rem)] font-semibold leading-[1.1] tracking-[-0.03em] text-[#0d0c0a]">
+                Bem-vindo de volta
+              </h2>
+              <p className="mt-3 text-[0.92rem] leading-6 text-[#6f6b64] sm:text-[0.95rem]">
+                Entre com o e-mail e a senha cadastrados para abrir o painel da barbearia.
+              </p>
+
+              <form onSubmit={handleLogin} className="mt-8 space-y-4">
+                <Field id="login-email" label="E-mail">
+                  <TextInput
+                    id="login-email"
+                    type="email"
+                    placeholder="voce@barbearia.com.br"
+                    value={email}
+                    onChange={(e) => setEmail(e.target.value)}
+                    autoComplete="email"
+                    required
+                  />
+                </Field>
+
+                <div>
+                  <div className="mb-1.5 flex items-baseline justify-between gap-3">
+                    <label htmlFor="login-password" className="text-[0.85rem] font-medium text-[#3a3733]">
+                      Senha
+                    </label>
+                    <Link
+                      href="/recuperar-senha"
+                      className="rounded text-[0.78rem] text-[#6f6b64] underline-offset-4 transition-colors hover:text-[#0d0c0a] hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#0d0c0a]"
+                    >
+                      Esqueceu a senha?
+                    </Link>
+                  </div>
+                  <TextInput
+                    id="login-password"
+                    type="password"
+                    placeholder="••••••••••••"
+                    value={password}
+                    onChange={(e) => setPassword(e.target.value)}
+                    autoComplete="current-password"
+                    required
+                  />
+                </div>
+
+                <FormAlert message={error} />
+
+                <button type="submit" disabled={loading} className={`${btn.primary} w-full`}>
+                  {loading ? (
+                    <>
+                      <Loader2 className="size-4 animate-spin" aria-hidden="true" />
+                      Entrando…
+                    </>
+                  ) : (
+                    <>
+                      Entrar no painel
+                      <ArrowRight className="size-3.5" aria-hidden="true" />
+                    </>
+                  )}
+                </button>
+              </form>
+
+              <p className="mt-8 border-t border-[#eae7e0] pt-6 text-[0.88rem] text-[#6f6b64]">
+                Ainda não tem conta?{" "}
+                <Link
+                  href="/onboarding"
+                  className="rounded font-semibold text-[#0d0c0a] underline-offset-4 hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#0d0c0a]"
+                >
+                  Cadastre sua barbearia
                 </Link>
-              </div>
-              <Input
-                type="password"
-                placeholder="••••••••"
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                autoComplete="current-password"
-                required
-                className="bg-white/5 border-white/10 h-12 rounded-xl focus-visible:ring-1 focus-visible:ring-white"
-              />
+              </p>
             </div>
-
-            <Button
-              type="submit"
-              disabled={loading}
-              className="w-full h-12 rounded-xl bg-white text-black hover:bg-zinc-200 text-base font-semibold transition-all mt-4"
-            >
-              {loading ? (
-                <>
-                  <Loader2 className="w-5 h-5 mr-2 animate-spin" />
-                  Entrando...
-                </>
-              ) : (
-                "Entrar no Dashboard"
-              )}
-            </Button>
-          </form>
-
-          <p className="mt-8 text-center text-zinc-500 text-sm">
-            Não tem uma conta?{" "}
-            <Link
-              href="/onboarding"
-              className="text-white font-medium hover:underline"
-            >
-              Crie sua barbearia
-            </Link>
-          </p>
+          </section>
         </div>
-      </div>
+      </main>
     </div>
   );
 }

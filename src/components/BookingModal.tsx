@@ -5,18 +5,27 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import {
   Calendar as CalendarGrowingman,
-  Clock,
-  Scissors,
-  User,
   X,
   CheckCircle2,
 } from "lucide-react";
 import { apiUrl } from "@/lib/config";
 
+interface BookingServiceOption {
+  id: string;
+  name: string;
+  duration_minutes: number;
+  base_price: string | number;
+}
+
+interface BookingBarberOption {
+  id: string;
+  name: string;
+}
+
 interface BookingModalProps {
   tenantId: string;
-  services: any[];
-  barbers: any[];
+  services: BookingServiceOption[];
+  barbers: BookingBarberOption[];
   heroMode?: boolean;
 }
 
@@ -68,7 +77,6 @@ export function BookingModal({
       const payload = {
         ...formData,
         tenantId,
-        payNow: false,
       };
 
       const res = await fetch(apiUrl("/bookings"), {
@@ -82,7 +90,7 @@ export function BookingModal({
       } else {
         alert("Erro ao realizar agendamento");
       }
-    } catch (err) {
+    } catch {
       alert("Erro de rede");
     } finally {
       setLoading(false);

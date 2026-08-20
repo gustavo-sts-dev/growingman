@@ -4,10 +4,12 @@ import { useCallback, useEffect, useMemo, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Modal } from "@/components/ui/modal";
 import { useToast } from "@/components/ui/toast";
-import { apiGet, apiPost, apiPatch } from "@/lib/api";
+import { apiDelete, apiGet, apiPost, apiPatch } from "@/lib/api";
 import { formatCurrency, onlyDigits } from "@/lib/format";
 import {
   type BookingStatus,
+  type BlockedSlot,
+  type UserRole,
   normalizeBookingStatus,
   BOOKING_STATUS_LABEL,
 } from "@/lib/types";
@@ -23,6 +25,9 @@ import {
   X,
   CheckCheck,
   Ban,
+  CalendarOff,
+  LockKeyhole,
+  Trash2,
 } from "lucide-react";
 
 interface Barber {
@@ -54,7 +59,7 @@ interface AgendaBooking {
     catalog_item: { name: string };
     barber_profile: { id: string; user: { id: string } };
   }>;
-  // Um Payment APPROVED = corte já pago online (PIX no agendamento).
+  // Um Payment APPROVED = cobrança do atendimento já quitada online.
   payments?: Array<{ status: string }>;
 }
 
@@ -93,6 +98,16 @@ const TIME_SLOTS = [
 
 type ViewMode = "grid" | "list";
 type StatusFilter = "all" | BookingStatus;
+type BlockReason = "lunch" | "break" | "meeting" | "personal" | "maintenance" | "other";
+
+const BLOCK_REASONS: Array<{ value: BlockReason; label: string }> = [
+  { value: "lunch", label: "Almoço" },
+  { value: "break", label: "Pausa" },
+  { value: "meeting", label: "Reunião" },
+  { value: "personal", label: "Compromisso pessoal" },
+  { value: "maintenance", label: "Manutenção" },
+  { value: "other", label: "Outro" },
+];
 
 const STATUS_FILTERS: { key: StatusFilter; label: string }[] = [
   { key: "all", label: "Todos" },
@@ -131,6 +146,16 @@ function slotOf(iso: string): string {
   return SLOT_TIME_FMT.format(new Date(iso));
 }
 
+function timeToMinutes(time: string): number {
+  const [hours, minutes] = time.split(":").map(Number);
+  return hours * 60 + minutes;
+}
+
+function defaultEndTime(startTime: string): string {
+  const total = Math.min(timeToMinutes(startTime) + 30, 23 * 60 + 59);
+  return `${String(Math.floor(total / 60)).padStart(2, "0")}:${String(total % 60).padStart(2, "0")}`;
+}
+
 export default function AgendaPage() {
   const toast = useToast();
   const [selectedDate, setSelectedDate] = useState(
@@ -140,11 +165,12 @@ export default function AgendaPage() {
   const [services, setServices] = useState<Service[]>([]);
   const [clients, setClients] = useState<Client[]>([]);
   const [bookings, setBookings] = useState<AgendaBooking[]>([]);
+  const [blockedSlots, setBlockedSlots] = useState<BlockedSlot[]>([]);
   const [availability, setAvailability] = useState<Record<string, string[]>>(
     {},
   );
   const [loading, setLoading] = useState(true);
-  const [role, setRole] = useState<string | null>(null);
+  const [role, setRole] = useState<UserRole | null>(null);
 
   // Visualização e filtros
   const [viewMode, setViewMode] = useState<ViewMode>("grid");
@@ -163,6 +189,20 @@ export default function AgendaPage() {
   });
   const [saving, setSaving] = useState(false);
 
+  // Bloqueios: ação disponível somente para o dono e para o próprio barbeiro.
+  const [isBlockModalOpen, setIsBlockModalOpen] = useState(false);
+  const [selectedBlock, setSelectedBlock] = useState<BlockedSlot | null>(null);
+  const [blockSaving, setBlockSaving] = useState(false);
+  const [blockDeleting, setBlockDeleting] = useState(false);
+  const [blockForm, setBlockForm] = useState({
+    barberId: "",
+    date: selectedDate,
+    startTime: "12:00",
+    endTime: "13:00",
+    reason: "personal" as BlockReason,
+    description: "",
+  });
+
   // Modal de detalhe/ação de status
   const [detailBooking, setDetailBooking] = useState<AgendaBooking | null>(
     null,
@@ -171,17 +211,18 @@ export default function AgendaPage() {
 
   // Checkout: concluir um atendimento exige informar como o cliente pagou — é o
   // que lança a receita no caixa e registra a comissão do barbeiro. Corte já pago
-  // online (PIX no agendamento) dispensa: o webhook já lançou a receita.
+  // online antes do fechamento dispensa: o webhook já lançou a receita.
   const [checkoutBooking, setCheckoutBooking] = useState<AgendaBooking | null>(
     null,
   );
   const [checkoutSaving, setCheckoutSaving] = useState(false);
+  const canManageBlocks = role === "TENANT_ADMIN" || role === "BARBER";
 
   const fetchInitialData = useCallback(async () => {
     setLoading(true);
     try {
       const [me, barbersData, servicesData, clientsData] = await Promise.all([
-        apiGet<{ id: string; role: string }>("/auth/me").catch(() => null),
+        apiGet<{ id: string; role: UserRole }>("/auth/me").catch(() => null),
         apiGet<Barber[]>("/barbers").catch(() => []),
         apiGet<Service[]>("/services").catch(() => []),
         apiGet<{ clients: Client[] }>("/crm/clients").catch(() => ({
@@ -238,6 +279,26 @@ export default function AgendaPage() {
     setAvailability(avail);
   }, [barbers, selectedDate]);
 
+  const fetchBlockedSlots = useCallback(async () => {
+    if (!canManageBlocks || barbers.length === 0) {
+      setBlockedSlots([]);
+      return;
+    }
+
+    const results = await Promise.all(
+      barbers.map(async (barber) => {
+        try {
+          return await apiGet<BlockedSlot[]>(
+            `/bookings/blocked-slots?barberId=${barber.id}&date=${selectedDate}`,
+          );
+        } catch {
+          return [];
+        }
+      }),
+    );
+    setBlockedSlots(results.flat());
+  }, [barbers, canManageBlocks, selectedDate]);
+
   // Busca inicial e refetch ao trocar de data são sincronizações legítimas com a
   // API externa (caso de uso válido de effect). O setLoading síncrono dispara a
   // regra do lint, que desabilitamos pontualmente aqui.
@@ -251,8 +312,9 @@ export default function AgendaPage() {
       // eslint-disable-next-line react-hooks/set-state-in-effect
       void fetchBookings();
       void fetchAvailability();
+      void fetchBlockedSlots();
     }
-  }, [selectedDate, barbers.length, fetchBookings, fetchAvailability]);
+  }, [selectedDate, barbers.length, fetchBookings, fetchAvailability, fetchBlockedSlots]);
 
   // Barbeiros visíveis conforme o filtro
   const visibleBarbers = useMemo(
@@ -317,6 +379,77 @@ export default function AgendaPage() {
       );
     } finally {
       setSaving(false);
+    }
+  };
+
+  const openBlockModal = (barberId?: string, startTime = "12:00") => {
+    const defaultBarberId =
+      role === "BARBER"
+        ? (barbers[0]?.id ?? "")
+        : (barberId ?? (barberFilter !== "all" ? barberFilter : barbers[0]?.id) ?? "");
+
+    setBlockForm({
+      barberId: defaultBarberId,
+      date: selectedDate,
+      startTime,
+      endTime: defaultEndTime(startTime),
+      reason: "personal",
+      description: "",
+    });
+    setIsBlockModalOpen(true);
+  };
+
+  const handleCreateBlock = async () => {
+    if (!blockForm.barberId || !blockForm.date || !blockForm.startTime || !blockForm.endTime) {
+      toast.error("Preencha profissional, data e período do bloqueio.");
+      return;
+    }
+    if (timeToMinutes(blockForm.startTime) >= timeToMinutes(blockForm.endTime)) {
+      toast.error("O horário final deve ser depois do horário inicial.");
+      return;
+    }
+
+    setBlockSaving(true);
+    try {
+      await apiPost("/bookings/blocked-slots", {
+        barberId: blockForm.barberId,
+        date: blockForm.date,
+        startTime: blockForm.startTime,
+        endTime: blockForm.endTime,
+        reason: blockForm.reason,
+        description: blockForm.description.trim() || undefined,
+        isRecurring: false,
+        recurringDays: [],
+      });
+      toast.success("Horário bloqueado na agenda.");
+      setIsBlockModalOpen(false);
+
+      if (blockForm.date !== selectedDate) {
+        setSelectedDate(blockForm.date);
+      } else {
+        void fetchBlockedSlots();
+        void fetchAvailability();
+      }
+    } catch (error) {
+      toast.error(error instanceof Error ? error.message : "Erro ao bloquear horário.");
+    } finally {
+      setBlockSaving(false);
+    }
+  };
+
+  const handleDeleteBlock = async () => {
+    if (!selectedBlock) return;
+    setBlockDeleting(true);
+    try {
+      await apiDelete(`/bookings/blocked-slots/${selectedBlock.id}`);
+      toast.success("Horário liberado na agenda.");
+      setSelectedBlock(null);
+      void fetchBlockedSlots();
+      void fetchAvailability();
+    } catch (error) {
+      toast.error(error instanceof Error ? error.message : "Erro ao liberar horário.");
+    } finally {
+      setBlockDeleting(false);
     }
   };
 
@@ -390,6 +523,22 @@ export default function AgendaPage() {
   const isSlotAvailable = (barberId: string, time: string) =>
     availability[barberId]?.includes(time) ?? false;
 
+  const getBlockAtSlot = (barberId: string, time: string) =>
+    blockedSlots.find(
+      (slot) =>
+        slot.barberId === barberId &&
+        timeToMinutes(time) >= timeToMinutes(slot.startTime) &&
+        timeToMinutes(time) < timeToMinutes(slot.endTime),
+    );
+
+  const filteredBlocks = useMemo(
+    () =>
+      blockedSlots
+        .filter((slot) => barberFilter === "all" || slot.barberId === barberFilter)
+        .sort((a, b) => a.startTime.localeCompare(b.startTime)),
+    [barberFilter, blockedSlots],
+  );
+
   // Lista cronológica filtrada (para a visão lista)
   const listBookings = useMemo(() => {
     return bookings
@@ -417,12 +566,24 @@ export default function AgendaPage() {
             Visualize e gerencie os agendamentos por barbeiro e horário.
           </p>
         </div>
-        <Button
-          onClick={() => setIsModalOpen(true)}
-          className="h-9 px-4 rounded-xl text-sm font-semibold bg-white text-black hover:bg-zinc-100 shrink-0"
-        >
-          <Calendar className="w-4 h-4 mr-1.5" /> Novo Agendamento
-        </Button>
+        <div className="flex flex-col-reverse sm:flex-row gap-2 shrink-0">
+          {canManageBlocks && (
+            <Button
+              onClick={() => openBlockModal()}
+              variant="outline"
+              disabled={barbers.length === 0}
+              className="h-9 px-4 rounded-xl text-sm font-semibold border-white/10"
+            >
+              <CalendarOff className="w-4 h-4 mr-1.5" /> Bloquear horário
+            </Button>
+          )}
+          <Button
+            onClick={() => setIsModalOpen(true)}
+            className="h-9 px-4 rounded-xl text-sm font-semibold bg-white text-black hover:bg-zinc-100"
+          >
+            <Calendar className="w-4 h-4 mr-1.5" /> Novo Agendamento
+          </Button>
+        </div>
       </div>
 
       {/* Toolbar: data + visão + filtros */}
@@ -580,6 +741,7 @@ export default function AgendaPage() {
                     </td>
                     {visibleBarbers.map((barber) => {
                       const booking = getBookingAtSlot(barber.id, time);
+                      const block = getBlockAtSlot(barber.id, time);
                       const available = isSlotAvailable(barber.id, time);
 
                       if (booking) {
@@ -614,6 +776,24 @@ export default function AgendaPage() {
                         );
                       }
 
+                      if (block) {
+                        return (
+                          <td key={barber.id} className="px-2 py-2">
+                            <button
+                              onClick={() => setSelectedBlock(block)}
+                              className="w-full p-2 rounded-lg border border-amber-500/15 bg-amber-500/[0.06] text-left hover:bg-amber-500/10 transition-colors"
+                            >
+                              <p className="text-xs font-semibold text-amber-300 truncate">
+                                Bloqueado
+                              </p>
+                              <p className="text-[10px] text-neutral-500 truncate">
+                                {block.reason || `${block.startTime}–${block.endTime}`}
+                              </p>
+                            </button>
+                          </td>
+                        );
+                      }
+
                       return (
                         <td
                           key={barber.id}
@@ -636,7 +816,7 @@ export default function AgendaPage() {
                           ) : (
                             <div className="p-2 rounded-lg bg-white/[0.02] border border-white/[0.04]">
                               <p className="text-xs text-neutral-700 text-center">
-                                Bloqueado
+                                Indisponível
                               </p>
                             </div>
                           )}
@@ -651,7 +831,40 @@ export default function AgendaPage() {
         </div>
       ) : (
         /* ── VISÃO LISTA ────────────────────────────────────── */
-        <div className="rounded-2xl border border-white/[0.06] overflow-hidden">
+        <div className="space-y-3">
+          {filteredBlocks.length > 0 && (
+            <div className="rounded-2xl border border-amber-500/15 overflow-hidden">
+              <div className="px-5 py-3 border-b border-amber-500/10 bg-amber-500/[0.04]">
+                <p className="text-xs font-semibold uppercase tracking-wide text-amber-300">
+                  Horários bloqueados
+                </p>
+              </div>
+              <div className="divide-y divide-white/[0.04]">
+                {filteredBlocks.map((block) => (
+                  <button
+                    key={block.id}
+                    onClick={() => setSelectedBlock(block)}
+                    className="w-full flex items-center gap-4 px-5 py-4 text-left hover:bg-amber-500/[0.04] transition-colors"
+                  >
+                    <div className="flex items-center gap-2 text-sm font-semibold text-amber-300 shrink-0">
+                      <LockKeyhole className="w-3.5 h-3.5" />
+                      {block.startTime}–{block.endTime}
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <p className="text-sm text-neutral-300 truncate">
+                        {block.reason || "Horário indisponível"}
+                      </p>
+                      <p className="text-xs text-neutral-600 truncate">
+                        {barbers.find((barber) => barber.id === block.barberId)?.name}
+                      </p>
+                    </div>
+                  </button>
+                ))}
+              </div>
+            </div>
+          )}
+
+          <div className="rounded-2xl border border-white/[0.06] overflow-hidden">
           {listBookings.length === 0 ? (
             <div className="py-16 text-center text-neutral-500 text-sm">
               Nenhum agendamento para os filtros selecionados.
@@ -688,8 +901,168 @@ export default function AgendaPage() {
               })}
             </div>
           )}
+          </div>
         </div>
       )}
+
+      {/* Bloqueio pontual — preserva o contexto da data selecionada na agenda. */}
+      <Modal
+        open={isBlockModalOpen}
+        onClose={() => setIsBlockModalOpen(false)}
+        title="Bloquear horário"
+        description="O período deixa de aparecer como disponível para novos agendamentos."
+      >
+        <div className="space-y-4">
+          <div>
+            <label htmlFor="block-barber" className="block text-sm text-neutral-400 mb-1">
+              Profissional
+            </label>
+            <select
+              id="block-barber"
+              value={blockForm.barberId}
+              disabled={role === "BARBER"}
+              onChange={(event) => setBlockForm({ ...blockForm, barberId: event.target.value })}
+              className="w-full h-10 px-3 bg-white/[0.02] border border-white/10 rounded-xl text-sm focus:outline-none focus:border-white/25 disabled:opacity-60 [&>option]:bg-zinc-900 [&>option]:text-white"
+            >
+              <option value="">Selecione...</option>
+              {barbers.map((barber) => (
+                <option key={barber.id} value={barber.id}>
+                  {barber.name}
+                </option>
+              ))}
+            </select>
+          </div>
+
+          <div>
+            <label htmlFor="block-date" className="block text-sm text-neutral-400 mb-1">
+              Data
+            </label>
+            <input
+              id="block-date"
+              type="date"
+              value={blockForm.date}
+              onChange={(event) => setBlockForm({ ...blockForm, date: event.target.value })}
+              className="w-full h-10 px-3 bg-white/[0.02] border border-white/10 rounded-xl text-sm focus:outline-none focus:border-white/25"
+            />
+          </div>
+
+          <div className="grid grid-cols-2 gap-3">
+            <div>
+              <label htmlFor="block-start" className="block text-sm text-neutral-400 mb-1">
+                Início
+              </label>
+              <input
+                id="block-start"
+                type="time"
+                value={blockForm.startTime}
+                onChange={(event) => {
+                  const startTime = event.target.value;
+                  setBlockForm({ ...blockForm, startTime, endTime: defaultEndTime(startTime) });
+                }}
+                className="w-full h-10 px-3 bg-white/[0.02] border border-white/10 rounded-xl text-sm focus:outline-none focus:border-white/25"
+              />
+            </div>
+            <div>
+              <label htmlFor="block-end" className="block text-sm text-neutral-400 mb-1">
+                Fim
+              </label>
+              <input
+                id="block-end"
+                type="time"
+                value={blockForm.endTime}
+                onChange={(event) => setBlockForm({ ...blockForm, endTime: event.target.value })}
+                className="w-full h-10 px-3 bg-white/[0.02] border border-white/10 rounded-xl text-sm focus:outline-none focus:border-white/25"
+              />
+            </div>
+          </div>
+
+          <div>
+            <label htmlFor="block-reason" className="block text-sm text-neutral-400 mb-1">
+              Motivo
+            </label>
+            <select
+              id="block-reason"
+              value={blockForm.reason}
+              onChange={(event) => setBlockForm({ ...blockForm, reason: event.target.value as BlockReason })}
+              className="w-full h-10 px-3 bg-white/[0.02] border border-white/10 rounded-xl text-sm focus:outline-none focus:border-white/25 [&>option]:bg-zinc-900 [&>option]:text-white"
+            >
+              {BLOCK_REASONS.map((reason) => (
+                <option key={reason.value} value={reason.value}>
+                  {reason.label}
+                </option>
+              ))}
+            </select>
+          </div>
+
+          <div>
+            <label htmlFor="block-description" className="block text-sm text-neutral-400 mb-1">
+              Observação <span className="text-neutral-600">(opcional)</span>
+            </label>
+            <input
+              id="block-description"
+              type="text"
+              maxLength={200}
+              value={blockForm.description}
+              onChange={(event) => setBlockForm({ ...blockForm, description: event.target.value })}
+              placeholder="Ex.: consulta médica"
+              className="w-full h-10 px-3 bg-white/[0.02] border border-white/10 rounded-xl text-sm focus:outline-none focus:border-white/25"
+            />
+          </div>
+
+          <div className="flex gap-3 pt-3">
+            <Button
+              variant="outline"
+              className="flex-1 rounded-xl"
+              disabled={blockSaving}
+              onClick={() => setIsBlockModalOpen(false)}
+            >
+              Cancelar
+            </Button>
+            <Button
+              className="flex-1 rounded-xl bg-amber-300 text-black hover:bg-amber-200"
+              disabled={blockSaving}
+              onClick={handleCreateBlock}
+            >
+              {blockSaving ? "Bloqueando..." : "Bloquear período"}
+            </Button>
+          </div>
+        </div>
+      </Modal>
+
+      <Modal
+        open={!!selectedBlock}
+        onClose={() => setSelectedBlock(null)}
+        title="Horário bloqueado"
+        description="Revise o período antes de liberar a agenda novamente."
+      >
+        {selectedBlock && (
+          <div className="space-y-4">
+            <div className="space-y-2">
+              <DetailRow
+                label="Profissional"
+                value={barbers.find((barber) => barber.id === selectedBlock.barberId)?.name ?? "—"}
+              />
+              <DetailRow label="Data" value={selectedDate.split("-").reverse().join("/")} />
+              <DetailRow label="Período" value={`${selectedBlock.startTime}–${selectedBlock.endTime}`} />
+              <DetailRow label="Motivo" value={selectedBlock.reason || "Não informado"} />
+            </div>
+            <div className="pt-4 border-t border-white/[0.06]">
+              <p className="text-xs text-neutral-500 mb-3">
+                Ao liberar, este período volta a aceitar novos agendamentos imediatamente.
+              </p>
+              <Button
+                variant="outline"
+                disabled={blockDeleting}
+                onClick={handleDeleteBlock}
+                className="w-full rounded-xl border-red-500/20 text-red-400 hover:bg-red-500/10"
+              >
+                <Trash2 className="w-4 h-4 mr-2" />
+                {blockDeleting ? "Liberando..." : "Liberar horário"}
+              </Button>
+            </div>
+          </div>
+        )}
+      </Modal>
 
       {/* Modal Novo Agendamento */}
       <Modal

@@ -1,19 +1,19 @@
-import Image from "next/image";
-import Link from "next/link";
+import { BrandHeader } from "@/components/brand/ui";
 
 export default function OnboardingLayout({ children }: { children: React.ReactNode }) {
   return (
-    <div className="flex min-h-screen flex-col bg-black text-white">
-      <header className="border-b border-neutral-900">
-        <div className="mx-auto flex h-18 w-full max-w-6xl items-center justify-between px-5 sm:px-8">
-          <Link href="/" className="flex items-center gap-3" aria-label="Growingman — página inicial">
-            <Image src="/logo.png" width={32} height={32} alt="" className="rounded-md" />
-            <span className="font-heading text-lg font-semibold tracking-tight">Growingman</span>
-          </Link>
-          <Link href="/login" className="text-sm text-neutral-400 hover:text-white">Já tenho conta</Link>
+    <div className="gm flex min-h-screen flex-col overflow-x-hidden antialiased">
+      <BrandHeader actionHref="/login" actionLabel="Já tenho conta" />
+
+      <main className="relative flex flex-1 items-start px-3 pb-16 pt-8 sm:px-6 sm:pb-24 sm:pt-12">
+        {/* Halos desfocados: a mesma profundidade do herói da landing */}
+        <div aria-hidden="true" className="pointer-events-none absolute inset-0 overflow-hidden">
+          <div className="absolute -top-28 left-1/2 h-[26rem] w-[46rem] -translate-x-1/2 rounded-full bg-[#0d0c0a]/[0.09] blur-[130px]" />
+          <div className="absolute top-64 -right-20 size-72 rounded-full bg-[#c9c3b6]/50 blur-[110px]" />
         </div>
-      </header>
-      <main className="flex flex-1 items-center px-5 py-12 sm:px-8">{children}</main>
+
+        <div className="relative w-full">{children}</div>
+      </main>
     </div>
   );
 }

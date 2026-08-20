@@ -242,8 +242,6 @@ export interface CreateBookingInput {
   date: string;
   time: string;
   notes?: string;
-  payNow?: boolean;
-  customerCpf?: string;
 }
 
 export interface UpdateBookingStatusInput {
@@ -254,10 +252,12 @@ export interface UpdateBookingStatusInput {
 export interface BlockedSlot {
   id: string;
   barberId: string;
-  date: string;
+  date: string | null;
   startTime: string;
   endTime: string;
-  reason?: string | null;
+  isRecurring: boolean;
+  recurringDays: number[];
+  reason: string | null;
 }
 
 // ──────────────────────────────────────────────────────────

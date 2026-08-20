@@ -10,11 +10,8 @@ import {
   CheckCircle,
   Check,
   Loader2,
-  CreditCard,
   AlertCircle,
   ChevronDown,
-  QrCode,
-  Store,
   MessageCircle,
 } from "lucide-react";
 import { useRouter } from "next/navigation";
@@ -22,8 +19,6 @@ import { apiUrl } from "@/lib/config";
 import {
   formatPhone,
   isValidPhone,
-  formatCpf,
-  isValidCpf,
   onlyDigits,
 } from "@/lib/format";
 
@@ -45,11 +40,6 @@ interface BarberLite {
   phone?: string | null;
   avatarUrl?: string | null;
 }
-interface PixPayment {
-  encodedImage: string;
-  payload: string;
-}
-
 interface BookingFlowProps {
   tenant: TenantLite;
   services: ServiceLite[];
@@ -57,7 +47,7 @@ interface BookingFlowProps {
   initialServiceId?: string;
 }
 
-type SectionType = "service" | "barber" | "datetime" | "user" | "payment";
+type SectionType = "service" | "barber" | "datetime" | "user";
 
 /**
  * Tokens de cor derivados do tema white-label do tenant.
@@ -106,8 +96,6 @@ const T = {
   card: { backgroundColor: "var(--theme-card)" },
 } as const;
 
-type PayMethod = "online" | "local";
-
 /** Resumo imutável do agendamento, capturado no momento da confirmação. */
 interface BookingSummary {
   serviceName: string;
@@ -153,13 +141,10 @@ export function BookingFlow({
   const [loading, setLoading] = useState(false);
   const [loadingHours, setLoadingHours] = useState(false);
   const [availableHours, setAvailableHours] = useState<string[]>([]);
-  const [paymentData, setPaymentData] = useState<PixPayment | null>(null);
-  // Tela final de sucesso (independe de haver PIX ou não).
   const [confirmed, setConfirmed] = useState(false);
   const [bookingSummary, setBookingSummary] = useState<BookingSummary | null>(
     null,
   );
-  const [copied, setCopied] = useState(false);
   const [errorMsg, setErrorMsg] = useState("");
   // Nome do cadastro existente para o telefone digitado (null = cliente novo).
   const [knownClient, setKnownClient] = useState<string | null>(null);
@@ -171,9 +156,6 @@ export function BookingFlow({
     time: "",
     nome: "",
     telefone: "",
-    cpf: "",
-    // Escolha real do cliente: 'local' (padrão) ou 'online' (PIX via Mercado Pago).
-    payMethod: "local" as PayMethod,
   });
 
   const getServiceInfo = (id: string) => services.find((s) => s.id === id);
@@ -204,10 +186,6 @@ export function BookingFlow({
   );
   const isValidUser = isValidName && phoneValid;
 
-  const payOnline = formData.payMethod === "online";
-  // CPF só é exigido no fluxo de pagamento online (PIX).
-  const cpfValid = useMemo(() => isValidCpf(formData.cpf), [formData.cpf]);
-
   const isBaseValid = !!(
     formData.serviceId &&
     formData.barberId &&
@@ -216,11 +194,7 @@ export function BookingFlow({
     isValidUser
   );
 
-  const isFormComplete = useMemo(() => {
-    if (!isBaseValid) return false;
-    if (payOnline) return cpfValid;
-    return true;
-  }, [isBaseValid, payOnline, cpfValid]);
+  const isFormComplete = isBaseValid;
 
   /** Avança o fluxo e sinaliza que a próxima etapa deve entrar no viewport. */
   const advanceToSection = (section: SectionType) => {
@@ -266,6 +240,7 @@ export function BookingFlow({
   // o nome antigo ser usado no agendamento sem nenhum aviso.
   useEffect(() => {
     if (!phoneValid) {
+      // eslint-disable-next-line react-hooks/set-state-in-effect
       setKnownClient(null);
       return;
     }
@@ -360,11 +335,8 @@ export function BookingFlow({
     setLoading(true);
     setErrorMsg("");
 
-    // Só enviamos payNow/CPF quando o cliente escolheu pagar online.
-    const wantsOnline = payOnline;
-
     try {
-      const payload: Record<string, unknown> = {
+      const payload = {
         tenantId: tenant.id,
         serviceId: formData.serviceId,
         barberId: formData.barberId,
@@ -372,13 +344,7 @@ export function BookingFlow({
         time: formData.time,
         customerName: formData.nome.trim(),
         customerPhone: onlyDigits(formData.telefone),
-        payNow: wantsOnline,
       };
-      // CPF só faz parte do payload no fluxo online (backend só valida se presente).
-      if (wantsOnline) {
-        payload.customerCpf = onlyDigits(formData.cpf);
-      }
-
       const res = await fetch(apiUrl("/bookings"), {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -389,43 +355,11 @@ export function BookingFlow({
         const errData = await res.json().catch(() => null);
         const msg: string = errData?.message || "Erro ao confirmar agendamento";
 
-        // Fallback gracioso: o cliente pediu PIX mas o tenant não tem pagamento
-        // online configurado (backend responde 400 nesse caso). Em vez de quebrar,
-        // reenviamos como "pagar no local" e concluímos normalmente.
-        if (wantsOnline && /pagamento.*online|não configurou/i.test(msg)) {
-          const retry = await fetch(apiUrl("/bookings"), {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({
-              ...payload,
-              payNow: false,
-              customerCpf: undefined,
-            }),
-          });
-          if (!retry.ok) {
-            const retryErr = await retry.json().catch(() => null);
-            throw new Error(retryErr?.message || msg);
-          }
-          setFormData((prev) => ({ ...prev, payMethod: "local" }));
-          setBookingSummary(buildSummary());
-          setConfirmed(true);
-          return;
-        }
-
         throw new Error(msg);
       }
 
-      const result = await res.json();
       setBookingSummary(buildSummary());
-
-      // Backend gera PIX apenas quando payNow=true E o tenant tem credencial MP.
-      // Se veio `payment`, mostramos a etapa de QR; senão, concluímos direto.
-      if (result.payment?.encodedImage && result.payment?.payload) {
-        setPaymentData(result.payment);
-        advanceToSection("payment");
-      } else {
-        setConfirmed(true);
-      }
+      setConfirmed(true);
     } catch (err) {
       setErrorMsg(err instanceof Error ? err.message : "Erro desconhecido");
     } finally {
@@ -447,17 +381,6 @@ export function BookingFlow({
       `https://wa.me/${displayPhone}?text=${encodeURIComponent(mensagem)}`,
       "_blank",
     );
-  };
-
-  const copyPixPayload = async () => {
-    if (!paymentData) return;
-    try {
-      await navigator.clipboard.writeText(paymentData.payload);
-      setCopied(true);
-      setTimeout(() => setCopied(false), 2000);
-    } catch {
-      // clipboard pode falhar em contextos sem permissão; ignora silenciosamente.
-    }
   };
 
   const sectionStyle =
@@ -982,129 +905,9 @@ export function BookingFlow({
                 )}
               </div>
 
-              {/* CPF só é solicitado quando o cliente opta por pagar online (PIX). */}
-              {payOnline && (
-                <div>
-                  <label
-                    className="block text-sm font-bold mb-2"
-                    style={T.title}
-                  >
-                    CPF{" "}
-                    <span
-                      className="font-medium"
-                      style={T.textMuted}
-                    >
-                      (para o pagamento PIX)
-                    </span>
-                  </label>
-                  <div className="relative">
-                    <input
-                      type="text"
-                      inputMode="numeric"
-                      value={formData.cpf}
-                      onChange={(e) =>
-                        setFormData({
-                          ...formData,
-                          cpf: formatCpf(e.target.value),
-                        })
-                      }
-                      placeholder="000.000.000-00"
-                      maxLength={14}
-                      className="w-full pl-11 pr-4 py-3 text-base border rounded-xl focus:outline-none transition-all font-medium"
-                      style={T.input}
-                    />
-                    <CreditCard
-                      className="w-5 h-5 absolute left-4 top-3.5 pointer-events-none"
-                      style={T.textMuted}
-                    />
-                  </div>
-                  {formData.cpf.length > 0 && !cpfValid && (
-                    <p className="text-xs mt-1.5 font-medium text-red-400">
-                      CPF inválido.
-                    </p>
-                  )}
-                </div>
-              )}
             </div>
           )}
         </div>
-
-        {/* 5. PAGAMENTO PIX (só quando o backend devolveu uma cobrança) */}
-        {activeSection === "payment" && paymentData && !confirmed && (
-          <div
-            ref={(node) => {
-              sectionRefs.current.payment = node;
-            }}
-            className={`${sectionStyle} scroll-mt-6`}
-            style={{ ...T.surface, ...T.borderStrong }}
-          >
-            <div className="px-6 py-8 flex flex-col items-center text-center">
-              <h4
-                className="text-xl font-bold mb-2"
-                style={T.title}
-              >
-                Pague via PIX
-              </h4>
-              <p
-                className="font-medium text-sm mb-6"
-                style={T.textMuted}
-              >
-                Abra o app do seu banco e escaneie o código abaixo ou copie a
-                chave.
-              </p>
-
-              <div className="p-4 bg-white rounded-xl mb-6">
-                {/* QR code é base64 dinâmico do provedor de pagamento; next/image não se aplica. */}
-                {/* eslint-disable-next-line @next/next/no-img-element */}
-                <img
-                  src={`data:image/png;base64,${paymentData.encodedImage}`}
-                  alt="QR Code Pix"
-                  className="w-48 h-48"
-                />
-              </div>
-
-              <div className="w-full relative mb-6">
-                <label
-                  className="block text-xs font-bold mb-2 uppercase tracking-widest"
-                  style={T.textMuted}
-                >
-                  Pix Copia e Cola
-                </label>
-                <div className="flex gap-2">
-                  <input
-                    type="text"
-                    readOnly
-                    value={paymentData.payload}
-                    className="flex-1 border rounded-xl px-4 py-3 text-sm outline-none"
-                    style={T.input}
-                  />
-                  <button
-                    onClick={copyPixPayload}
-                    className="px-4 border rounded-xl font-bold transition-all text-sm shrink-0"
-                    style={{ ...T.surfaceStrong, ...T.border, ...T.title }}
-                  >
-                    {copied ? "Copiado!" : "Copiar"}
-                  </button>
-                </div>
-              </div>
-
-              <button
-                onClick={() => setConfirmed(true)}
-                className="w-full py-4 rounded-xl font-bold text-lg transition-all hover:opacity-90 active:scale-95"
-                style={T.buttonPrimary}
-              >
-                Já paguei / Verificar
-              </button>
-              <p
-                className="text-xs mt-4 font-medium"
-                style={T.textMuted}
-              >
-                Assim que o pagamento for confirmado, seu horário está
-                garantido.
-              </p>
-            </div>
-          </div>
-        )}
 
         {/* TELA DE CONFIRMAÇÃO (sem pop-up automático, sem timer de navegação) */}
         {confirmed && bookingSummary && (
@@ -1130,9 +933,7 @@ export function BookingFlow({
                 className="font-medium text-sm mb-6"
                 style={T.textMuted}
               >
-                {paymentData
-                  ? "Assim que o pagamento for confirmado, seu horário está garantido."
-                  : "Seu horário foi reservado. Nos vemos em breve!"}
+                Seu horário foi reservado. Nos vemos em breve!
               </p>
 
               <div
@@ -1238,7 +1039,7 @@ export function BookingFlow({
       </div>
 
       {/* FOOTER BUTTON BOX */}
-      {!confirmed && activeSection !== "payment" && (
+      {!confirmed && (
         <div
           ref={checkoutRef}
           className={`mt-8 transition-all duration-500 ${isBaseValid ? "opacity-100 translate-y-0" : "opacity-0 translate-y-4 pointer-events-none"}`}
@@ -1247,88 +1048,8 @@ export function BookingFlow({
             className="p-6 rounded-2xl shadow-xl border"
             style={{ ...T.card, ...T.border }}
           >
-            {/* Escolha da forma de pagamento */}
-            <div className="mb-6">
-              <p
-                className="text-sm font-bold mb-3"
-                style={T.title}
-              >
-                Como você prefere pagar?
-              </p>
-              <div className="grid grid-cols-2 gap-3">
-                <button
-                  type="button"
-                  onClick={() =>
-                    setFormData((prev) => ({ ...prev, payMethod: "online" }))
-                  }
-                  className="p-4 rounded-xl border text-left transition-all"
-                  style={
-                    payOnline
-                      ? { ...T.surfaceStrong, ...T.borderStrong }
-                      : { ...T.border }
-                  }
-                >
-                  <QrCode
-                    className="w-5 h-5 mb-2"
-                    style={payOnline ? T.title : T.textMuted}
-                  />
-                  <span
-                    className="block font-bold text-sm"
-                    style={payOnline ? T.title : T.textMuted}
-                  >
-                    Pagar agora
-                  </span>
-                  <span
-                    className="block text-xs font-medium mt-0.5"
-                    style={T.textMuted}
-                  >
-                    via PIX
-                  </span>
-                </button>
-                <button
-                  type="button"
-                  onClick={() =>
-                    setFormData((prev) => ({ ...prev, payMethod: "local" }))
-                  }
-                  className="p-4 rounded-xl border text-left transition-all"
-                  style={
-                    !payOnline
-                      ? { ...T.surfaceStrong, ...T.borderStrong }
-                      : { ...T.border }
-                  }
-                >
-                  <Store
-                    className="w-5 h-5 mb-2"
-                    style={!payOnline ? T.title : T.textMuted}
-                  />
-                  <span
-                    className="block font-bold text-sm"
-                    style={!payOnline ? T.title : T.textMuted}
-                  >
-                    Pagar no local
-                  </span>
-                  <span
-                    className="block text-xs font-medium mt-0.5"
-                    style={T.textMuted}
-                  >
-                    na barbearia
-                  </span>
-                </button>
-              </div>
-              {payOnline && !cpfValid && (
-                <p
-                  className="text-xs mt-3 font-medium flex items-center gap-1.5"
-                  style={T.textMuted}
-                >
-                  <AlertCircle className="w-3.5 h-3.5 shrink-0" /> Preencha um
-                  CPF válido em &quot;Seus Dados&quot; para gerar o PIX.
-                </p>
-              )}
-            </div>
-
             <div
-              className="flex items-center justify-between mb-6 pt-6 border-t"
-              style={T.border}
+              className="flex items-center justify-between mb-6"
             >
               <div>
                 <p
@@ -1363,20 +1084,14 @@ export function BookingFlow({
               {loading ? (
                 <Loader2 className="animate-spin w-5 h-5" />
               ) : (
-                <span>
-                  {payOnline
-                    ? "Gerar PIX e Confirmar"
-                    : "Confirmar Agendamento"}
-                </span>
+                <span>Confirmar Agendamento</span>
               )}
             </button>
             <p
               className="text-xs text-center mt-4 font-medium"
               style={T.textMuted}
             >
-              {payOnline
-                ? "Você verá o QR Code PIX na próxima etapa."
-                : "O pagamento é feito no local, direto com a barbearia."}
+              O pagamento é combinado diretamente com a barbearia.
             </p>
           </div>
         </div>

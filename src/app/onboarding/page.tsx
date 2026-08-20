@@ -3,8 +3,7 @@
 import { useState } from "react";
 import Link from "next/link";
 import { ArrowLeft, ArrowRight, Check, Copy, ExternalLink, Loader2 } from "lucide-react";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
+import { Field, FormAlert, TextInput, btn } from "@/components/brand/ui";
 import { apiUrl, siteHost } from "@/lib/config";
 
 type PixPayment = {
@@ -118,146 +117,286 @@ export default function OnboardingFlow() {
   };
 
   return (
-    <div className="mx-auto w-full max-w-lg">
-      <ol className="mb-8 grid grid-cols-3 border-b border-neutral-800" aria-label="Etapas do cadastro">
-        {steps.map((label, index) => {
-          const number = index + 1;
-          const active = step === number;
-          const complete = step > number;
-          return (
-            <li
-              key={label}
-              aria-current={active ? "step" : undefined}
-              className={`border-b-2 px-1 pb-3 text-xs font-medium sm:text-sm ${
-                active ? "border-white text-white" : "border-transparent text-neutral-500"
+    <div className="mx-auto w-full max-w-xl">
+      <Stepper current={step} />
+
+      {/* Borda em gradiente: o mesmo destaque do cartão de plano da landing */}
+      <div className="mt-8 rounded-[1.6rem] bg-[linear-gradient(160deg,#c9c3b6_0%,#e4e0d8_45%,rgba(228,224,216,0)_100%)] p-px shadow-[0_40px_90px_-55px_rgba(13,12,10,0.75)] sm:mt-10 sm:rounded-[1.85rem]">
+        <section className="rounded-[1.55rem] bg-white p-6 sm:rounded-[1.8rem] sm:p-10">
+          {step === 1 && (
+            <div className="space-y-6">
+              <StepHeader
+                eyebrow="Dados de acesso"
+                title="Quem administra a barbearia?"
+                text="Use os dados do responsável pela assinatura."
+              />
+
+              <div className="space-y-4">
+                <Field id="admin-name" label="Nome completo">
+                  <TextInput
+                    id="admin-name"
+                    value={adminName}
+                    onChange={(event) => setAdminName(event.target.value)}
+                    autoComplete="name"
+                  />
+                </Field>
+                <Field id="admin-email" label="E-mail">
+                  <TextInput
+                    id="admin-email"
+                    type="email"
+                    value={adminEmail}
+                    onChange={(event) => setAdminEmail(event.target.value)}
+                    autoComplete="email"
+                  />
+                </Field>
+                <Field id="admin-document" label="CPF ou CNPJ">
+                  <TextInput
+                    id="admin-document"
+                    value={adminCpfCnpj}
+                    onChange={(event) => setAdminCpfCnpj(event.target.value)}
+                    inputMode="numeric"
+                    autoComplete="off"
+                  />
+                </Field>
+                <Field id="admin-password" label="Senha" hint="Mínimo de 12 caracteres">
+                  <TextInput
+                    id="admin-password"
+                    type="password"
+                    value={adminPassword}
+                    onChange={(event) => setAdminPassword(event.target.value)}
+                    minLength={12}
+                    autoComplete="new-password"
+                  />
+                </Field>
+              </div>
+
+              <FormAlert message={errorMsg || null} />
+
+              <button type="button" onClick={goToBusiness} className={`${btn.primary} w-full`}>
+                Continuar
+                <ArrowRight className="size-3.5" aria-hidden="true" />
+              </button>
+            </div>
+          )}
+
+          {step === 2 && (
+            <div className="space-y-6">
+              <div>
+                <button
+                  type="button"
+                  onClick={() => {
+                    setErrorMsg("");
+                    setStep(1);
+                  }}
+                  className="mb-5 inline-flex items-center gap-2 rounded-lg text-[0.85rem] font-medium text-[#6f6b64] transition-colors hover:text-[#0d0c0a] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#0d0c0a]"
+                >
+                  <ArrowLeft className="size-4" aria-hidden="true" />
+                  Voltar
+                </button>
+                <StepHeader
+                  eyebrow="Identificação pública"
+                  title="Dados da barbearia"
+                  text="O endereço abaixo será usado pelos clientes para agendar."
+                />
+              </div>
+
+              <div className="space-y-4">
+                <Field id="tenant-name" label="Nome da barbearia">
+                  <TextInput
+                    id="tenant-name"
+                    value={tenantName}
+                    onChange={(event) => {
+                      const name = event.target.value;
+                      setTenantName(name);
+                      setTenantSlug(normalizeSlug(name));
+                    }}
+                  />
+                </Field>
+                <Field id="tenant-slug" label="Endereço da agenda">
+                  <div className="grid w-full min-w-0 sm:grid-cols-[auto_minmax(8rem,1fr)]">
+                    <span
+                      className="flex h-12 min-w-0 items-center overflow-hidden text-ellipsis whitespace-nowrap rounded-t-xl border border-b-0 border-[#d9d4c9] bg-[#f3f1ec] px-3 text-[0.8rem] text-[#6f6b64] sm:rounded-l-xl sm:rounded-tr-none sm:border-b sm:border-r-0"
+                      title={`${siteHost()}/`}
+                    >
+                      {siteHost()}/
+                    </span>
+                    <TextInput
+                      id="tenant-slug"
+                      className="min-w-0 rounded-t-none sm:rounded-l-none sm:rounded-tr-xl"
+                      value={tenantSlug}
+                      onChange={(event) => setTenantSlug(normalizeSlug(event.target.value))}
+                    />
+                  </div>
+                </Field>
+              </div>
+
+              {/* Resumo da cobrança, no mesmo padrão da seção de plano */}
+              <div className="rounded-[1.15rem] border border-[#e4e0d8] bg-[#faf9f6] p-4 sm:p-5">
+                <div className="flex items-end justify-between gap-3">
+                  <div>
+                    <p className="text-[0.65rem] font-semibold uppercase tracking-[0.22em] text-[#6f6b64]">
+                      Growingman Premium
+                    </p>
+                    <p className="mt-1.5 text-[0.85rem] text-[#6f6b64]">Plano único mensal</p>
+                  </div>
+                  <p className="shrink-0 font-heading text-[1.6rem] font-semibold leading-none tracking-[-0.04em] text-[#0d0c0a]">
+                    R$ 299
+                    <span className="ml-1 text-[0.85rem] font-medium tracking-normal text-[#6f6b64]">
+                      /mês
+                    </span>
+                  </p>
+                </div>
+                <p className="mt-3 border-t border-[#eae7e0] pt-3 text-[0.78rem] leading-5 text-[#8a857c]">
+                  A cobrança Pix vence em 3 dias.
+                </p>
+              </div>
+
+              <FormAlert message={errorMsg || null} />
+
+              <button
+                type="button"
+                disabled={isLoading}
+                onClick={handleCreateAccount}
+                className={`${btn.primary} w-full`}
+              >
+                {isLoading ? (
+                  <>
+                    <Loader2 className="size-4 animate-spin" aria-hidden="true" />
+                    Gerando cobrança…
+                  </>
+                ) : (
+                  <>
+                    Criar conta e gerar Pix
+                    <ArrowRight className="size-3.5" aria-hidden="true" />
+                  </>
+                )}
+              </button>
+            </div>
+          )}
+
+          {step === 3 && pixData && (
+            <div className="space-y-6">
+              <StepHeader
+                eyebrow="Cobrança gerada"
+                title={`Pague R$ ${pixData.value.toFixed(2).replace(".", ",")} via Pix`}
+                text={`Escaneie o QR Code ou copie o código. Vencimento em ${new Date(
+                  `${pixData.dueDate}T12:00:00`,
+                ).toLocaleDateString("pt-BR")}.`}
+              />
+
+              <div className="mx-auto w-full max-w-64 rounded-[1.15rem] border border-[#e4e0d8] bg-white p-4 shadow-[0_20px_44px_-34px_rgba(13,12,10,0.55)]">
+                {/* O Asaas fornece a imagem do QR Code em Base64. */}
+                {/* eslint-disable-next-line @next/next/no-img-element */}
+                <img
+                  src={`data:image/png;base64,${pixData.qrCodeBase64}`}
+                  alt="QR Code da cobrança Pix"
+                  className="aspect-square h-auto w-full"
+                />
+              </div>
+
+              <div className="space-y-3">
+                <button type="button" onClick={copyPixPayload} className={`${btn.secondary} w-full`}>
+                  {copied ? (
+                    <>
+                      <Check className="size-3.5" aria-hidden="true" />
+                      Código copiado
+                    </>
+                  ) : (
+                    <>
+                      <Copy className="size-3.5" aria-hidden="true" />
+                      Copiar código Pix
+                    </>
+                  )}
+                </button>
+                <a
+                  href={pixData.invoiceUrl}
+                  target="_blank"
+                  rel="noreferrer"
+                  className={`${btn.secondary} w-full`}
+                >
+                  Abrir cobrança no Asaas
+                  <ExternalLink className="size-3.5" aria-hidden="true" />
+                </a>
+              </div>
+
+              <p className="border-t border-[#eae7e0] pt-6 text-[0.9rem] leading-6 text-[#6f6b64]">
+                Depois do pagamento, entre com o e-mail e a senha cadastrados.
+              </p>
+
+              <Link href="/login" className={`${btn.primary} w-full`}>
+                Ir para entrar
+                <ArrowRight className="size-3.5" aria-hidden="true" />
+              </Link>
+            </div>
+          )}
+        </section>
+      </div>
+    </div>
+  );
+}
+
+/** Cabeçalho de etapa: mesma escala tipográfica das seções da landing. */
+function StepHeader({ eyebrow, title, text }: { eyebrow: string; title: string; text: string }) {
+  return (
+    <header>
+      <p className="text-[0.65rem] font-semibold uppercase tracking-[0.22em] text-[#6f6b64] sm:text-[0.68rem]">
+        {eyebrow}
+      </p>
+      <h1 className="mt-3 text-balance font-heading text-[clamp(1.45rem,3.4vw,1.9rem)] font-semibold leading-[1.12] tracking-[-0.03em] text-[#0d0c0a]">
+        {title}
+      </h1>
+      <p className="mt-2.5 text-[0.9rem] leading-6 text-[#6f6b64] sm:text-[0.93rem]">{text}</p>
+    </header>
+  );
+}
+
+/** Etapas com o mesmo selo numerado da seção "Como funciona". */
+function Stepper({ current }: { current: number }) {
+  return (
+    <ol className="flex items-start gap-2 sm:gap-3" aria-label="Etapas do cadastro">
+      {steps.map((label, index) => {
+        const number = index + 1;
+        const active = current === number;
+        const complete = current > number;
+        const reached = active || complete;
+
+        return (
+          <li
+            key={label}
+            aria-current={active ? "step" : undefined}
+            className="flex min-w-0 flex-1 flex-col items-center gap-2 text-center"
+          >
+            <div className="flex w-full items-center gap-2">
+              <span
+                aria-hidden="true"
+                className={`h-px flex-1 ${index === 0 ? "opacity-0" : reached ? "bg-[#b3ada0]" : "bg-[#e4e0d8]"}`}
+              />
+              <span
+                className={`grid size-9 shrink-0 place-items-center rounded-full font-heading text-[0.8rem] font-semibold sm:size-10 sm:text-[0.85rem] ${
+                  reached
+                    ? "bg-[linear-gradient(145deg,#5a564e_0%,#1c1a17_60%,#000000_100%)] text-white shadow-[0_12px_28px_-14px_rgba(13,12,10,0.9)]"
+                    : "border border-[#e4e0d8] bg-white text-[#a39d92]"
+                }`}
+              >
+                {complete ? <Check className="size-4" strokeWidth={3} aria-hidden="true" /> : `0${number}`}
+              </span>
+              <span
+                aria-hidden="true"
+                className={`h-px flex-1 ${
+                  index === steps.length - 1 ? "opacity-0" : current > number ? "bg-[#b3ada0]" : "bg-[#e4e0d8]"
+                }`}
+              />
+            </div>
+            <span
+              className={`truncate text-[0.72rem] font-medium sm:text-[0.8rem] ${
+                reached ? "text-[#0d0c0a]" : "text-[#8a857c]"
               }`}
             >
-              <span className="mr-2 font-mono">{complete ? "✓" : `0${number}`}</span>
               {label}
-            </li>
-          );
-        })}
-      </ol>
-
-      <section className="border border-neutral-800 bg-neutral-950 p-6 sm:p-8">
-        {step === 1 && (
-          <div className="space-y-6">
-            <header>
-              <p className="mb-2 font-mono text-xs uppercase tracking-[0.18em] text-neutral-500">Dados de acesso</p>
-              <h1 className="text-2xl font-semibold tracking-tight">Quem administra a barbearia?</h1>
-              <p className="mt-2 text-sm leading-6 text-neutral-400">Use os dados do responsável pela assinatura.</p>
-            </header>
-
-            <div className="space-y-4">
-              <Field id="admin-name" label="Nome completo">
-                <Input id="admin-name" value={adminName} onChange={(event) => setAdminName(event.target.value)} autoComplete="name" />
-              </Field>
-              <Field id="admin-email" label="E-mail">
-                <Input id="admin-email" type="email" value={adminEmail} onChange={(event) => setAdminEmail(event.target.value)} autoComplete="email" />
-              </Field>
-              <Field id="admin-document" label="CPF ou CNPJ">
-                <Input id="admin-document" value={adminCpfCnpj} onChange={(event) => setAdminCpfCnpj(event.target.value)} inputMode="numeric" autoComplete="off" />
-              </Field>
-              <Field id="admin-password" label="Senha" hint="Mínimo de 12 caracteres">
-                <Input id="admin-password" type="password" value={adminPassword} onChange={(event) => setAdminPassword(event.target.value)} minLength={12} autoComplete="new-password" />
-              </Field>
-            </div>
-
-            <ErrorMessage message={errorMsg} />
-            <Button className="h-12 w-full" onClick={goToBusiness}>Continuar <ArrowRight className="ml-2 size-4" /></Button>
-          </div>
-        )}
-
-        {step === 2 && (
-          <div className="space-y-6">
-            <header>
-              <button type="button" onClick={() => { setErrorMsg(""); setStep(1); }} className="mb-5 flex items-center gap-2 text-sm text-neutral-400 hover:text-white">
-                <ArrowLeft className="size-4" /> Voltar
-              </button>
-              <p className="mb-2 font-mono text-xs uppercase tracking-[0.18em] text-neutral-500">Identificação pública</p>
-              <h1 className="text-2xl font-semibold tracking-tight">Dados da barbearia</h1>
-              <p className="mt-2 text-sm leading-6 text-neutral-400">O endereço abaixo será usado pelos clientes para agendar.</p>
-            </header>
-
-            <div className="space-y-4">
-              <Field id="tenant-name" label="Nome da barbearia">
-                <Input id="tenant-name" value={tenantName} onChange={(event) => { const name = event.target.value; setTenantName(name); setTenantSlug(normalizeSlug(name)); }} />
-              </Field>
-              <Field id="tenant-slug" label="Endereço da agenda">
-                <div className="grid w-full min-w-0 sm:grid-cols-[auto_minmax(8rem,1fr)]">
-                  <span
-                    className="flex h-12 min-w-0 items-center overflow-hidden text-ellipsis whitespace-nowrap rounded-t-xl border border-b-0 border-neutral-800 bg-black px-3 text-xs text-neutral-500 sm:rounded-l-xl sm:rounded-tr-none sm:border-b sm:border-r-0"
-                    title={`${siteHost()}/`}
-                  >
-                    {siteHost()}/
-                  </span>
-                  <Input
-                    id="tenant-slug"
-                    className="min-w-0 rounded-t-none sm:rounded-l-none sm:rounded-tr-xl"
-                    value={tenantSlug}
-                    onChange={(event) => setTenantSlug(normalizeSlug(event.target.value))}
-                  />
-                </div>
-              </Field>
-            </div>
-
-            <div className="border-y border-neutral-800 py-4 text-sm">
-              <div className="flex items-center justify-between"><span className="text-neutral-400">Growingman Premium</span><strong>R$ 299/mês</strong></div>
-              <p className="mt-2 text-xs text-neutral-500">A cobrança Pix vence em 3 dias.</p>
-            </div>
-
-            <ErrorMessage message={errorMsg} />
-            <Button disabled={isLoading} className="h-12 w-full" onClick={handleCreateAccount}>
-              {isLoading ? <><Loader2 className="mr-2 size-4 animate-spin" />Gerando cobrança…</> : <>Criar conta e gerar Pix <ArrowRight className="ml-2 size-4" /></>}
-            </Button>
-          </div>
-        )}
-
-        {step === 3 && pixData && (
-          <div className="space-y-6">
-            <header>
-              <p className="mb-2 font-mono text-xs uppercase tracking-[0.18em] text-neutral-500">Cobrança gerada</p>
-              <h1 className="text-2xl font-semibold tracking-tight">Pague R$ {pixData.value.toFixed(2).replace(".", ",")} via Pix</h1>
-              <p className="mt-2 text-sm leading-6 text-neutral-400">Escaneie o QR Code ou copie o código. Vencimento em {new Date(`${pixData.dueDate}T12:00:00`).toLocaleDateString("pt-BR")}.</p>
-            </header>
-
-            <div className="mx-auto w-full max-w-64 bg-white p-4">
-              {/* O Asaas fornece a imagem do QR Code em Base64. */}
-              {/* eslint-disable-next-line @next/next/no-img-element */}
-              <img src={`data:image/png;base64,${pixData.qrCodeBase64}`} alt="QR Code da cobrança Pix" className="aspect-square h-auto w-full" />
-            </div>
-
-            <div className="space-y-3">
-              <Button variant="outline" className="h-12 w-full" onClick={copyPixPayload}>
-                {copied ? <><Check className="mr-2 size-4" />Código copiado</> : <><Copy className="mr-2 size-4" />Copiar código Pix</>}
-              </Button>
-              <a href={pixData.invoiceUrl} target="_blank" rel="noreferrer" className="flex h-12 items-center justify-center border border-neutral-800 text-sm font-medium text-neutral-300 hover:border-neutral-600 hover:text-white">
-                Abrir cobrança no Asaas <ExternalLink className="ml-2 size-4" />
-              </a>
-            </div>
-
-            <p className="border-t border-neutral-800 pt-5 text-sm leading-6 text-neutral-400">Depois do pagamento, entre com o e-mail e a senha cadastrados.</p>
-            <Button asChild className="h-12 w-full"><Link href="/login">Ir para entrar</Link></Button>
-          </div>
-        )}
-      </section>
-    </div>
+            </span>
+          </li>
+        );
+      })}
+    </ol>
   );
-}
-
-function Field({ id, label, hint, children }: { id: string; label: string; hint?: string; children: React.ReactNode }) {
-  return (
-    <div>
-      <div className="mb-1.5 flex items-baseline justify-between gap-4">
-        <label htmlFor={id} className="text-sm font-medium text-neutral-200">{label}</label>
-        {hint && <span className="text-xs text-neutral-500">{hint}</span>}
-      </div>
-      {children}
-    </div>
-  );
-}
-
-function ErrorMessage({ message }: { message: string }) {
-  if (!message) return null;
-  return <p role="alert" className="border-l-2 border-red-500 bg-red-950/30 px-4 py-3 text-sm text-red-300">{message}</p>;
 }

@@ -145,6 +145,7 @@ export async function apiPut<T = unknown>(path: string, body?: unknown, init?: R
 export async function apiDelete<T = unknown>(path: string, init?: RequestInit): Promise<T> {
   const res = await apiFetch(path, { ...init, method: "DELETE" });
   if (!res.ok) await throwApiError(res);
+  if (res.status === 204) return undefined as T;
   return res.json();
 }
 

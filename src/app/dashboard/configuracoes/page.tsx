@@ -14,7 +14,7 @@ import { siteHost } from "@/lib/config";
 import { useToast } from "@/components/ui/toast";
 import { ImageUpload } from "@/components/ui/image-upload";
 import { SiteLayoutEditor } from "@/components/SiteLayoutEditor";
-import type { Tenant } from "@/lib/types";
+import type { AuthUser, Tenant } from "@/lib/types";
 import { SITE_PRESETS, resolveSitePreset, type SitePresetId } from "@/lib/site-presets";
 import { defaultSiteLayout, normalizeSiteLayout } from "@/lib/site-layout";
 
@@ -52,6 +52,7 @@ export default function ConfiguracoesPage() {
   const [saving, setSaving]       = useState(false);
   const [saved, setSaved]         = useState(false);
   const [tenant, setTenant]       = useState<Tenant | null>(null);
+  const [userRole, setUserRole]   = useState<AuthUser["role"] | null>(null);
   const [mpLoading, setMpLoading] = useState(false);
   // Host público (ex.: "app.growingman.com.br"). Resolvido após montar para evitar
   // divergência de hidratação com o valor de fallback do servidor (sincronização
@@ -135,6 +136,10 @@ export default function ConfiguracoesPage() {
   };
 
   useEffect(() => {
+    apiGet<AuthUser>("/auth/me")
+      .then((user) => setUserRole(user.role))
+      .catch(console.error);
+
     apiGet<Tenant>("/tenants/my")
       .then((data) => {
         if (!data) return;
@@ -554,7 +559,8 @@ export default function ConfiguracoesPage() {
             </Field>
           </FieldGroup>
 
-          <FieldGroup title="Pagamentos Online (Mercado Pago)">
+          {userRole === "TENANT_ADMIN" && (
+          <FieldGroup title="Conta de recebimento (Mercado Pago)">
             {/* OAuth: o dono autoriza pela conta dele. Antes era preciso caçar o
                 access_token no painel do MP e colar aqui — inviável na prática. */}
             {tenant?.mp_connected ? (
@@ -562,8 +568,8 @@ export default function ConfiguracoesPage() {
                 <div className="flex items-center gap-2 p-3 rounded-xl bg-green-500/5 border border-green-500/15">
                   <CheckCircle2 className="w-4 h-4 text-green-500 shrink-0" />
                   <p className="text-xs text-green-400/90 leading-relaxed">
-                    Conta conectada. O pagamento PIX do cliente no agendamento está ativo
-                    e o dinheiro cai direto na sua conta do Mercado Pago.
+                    Conta da barbearia conectada. As cobranças geradas no fechamento
+                    do atendimento caem direto nesta conta do Mercado Pago.
                   </p>
                 </div>
 
@@ -580,8 +586,8 @@ export default function ConfiguracoesPage() {
             ) : (
               <>
                 <p className="text-xs text-neutral-500 leading-relaxed">
-                  Conecte sua conta do Mercado Pago para receber os pagamentos dos cortes
-                  direto na sua conta. Você será levado ao site do Mercado Pago para autorizar.
+                  Conecte a conta Mercado Pago da barbearia para receber cobranças de
+                  atendimentos. Apenas o dono pode conectar ou trocar esta conta.
                 </p>
 
                 <Button
@@ -605,6 +611,7 @@ export default function ConfiguracoesPage() {
               </p>
             </div>
           </FieldGroup>
+          )}
         </div>
       )}
 
