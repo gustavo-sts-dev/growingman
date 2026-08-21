@@ -116,3 +116,25 @@ export function isValidCpf(value: string | null | undefined): boolean {
 
   return calcCheckDigit(9) === digits[9] && calcCheckDigit(10) === digits[10];
 }
+
+/**
+ * Data no fuso da barbearia (America/Sao_Paulo), no formato AAAA-MM-DD que o
+ * `<input type="date">` espera. `offsetDays` desloca em dias de calendário.
+ *
+ * Existe porque `new Date().toISOString()` devolve UTC: depois das 21h no
+ * Brasil ele já virou o dia seguinte, e o seletor passava a recusar o próprio
+ * dia de hoje. O backend decide a janela de agendamento em America/Sao_Paulo,
+ * então o seletor precisa usar o mesmo referencial — senão oferece uma data que
+ * a API vai rejeitar (ou esconde uma que ela aceitaria).
+ *
+ * `en-CA` é usado só porque formata como AAAA-MM-DD; o fuso é o que importa.
+ */
+export function brazilianDateInput(offsetDays = 0): string {
+  const alvo = new Date(Date.now() + offsetDays * 24 * 60 * 60 * 1000);
+  return new Intl.DateTimeFormat("en-CA", {
+    timeZone: "America/Sao_Paulo",
+    year: "numeric",
+    month: "2-digit",
+    day: "2-digit",
+  }).format(alvo);
+}

@@ -110,6 +110,8 @@ export interface Tenant {
   page_subheadline: string | null;
   hero_layout: HeroLayout | null;
   hero_image_url: string | null;
+  /** Largura da imagem do topo em % da coluna; altura sai do aspecto do arquivo. */
+  hero_image_width: number;
   show_stats: boolean | null;
   show_team: boolean | null;
   show_reviews: boolean | null;

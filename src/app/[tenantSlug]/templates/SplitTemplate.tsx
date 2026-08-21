@@ -1,6 +1,7 @@
 import { MapPin, Clock } from "lucide-react";
 import Link from "next/link";
 import { TenantLogo } from "@/components/TenantLogo";
+import { HeroImage } from "@/components/HeroImage";
 import { HeroGlow } from "@/components/HeroGlow";
 import {
   isSiteSectionVisible,
@@ -21,6 +22,8 @@ export function SplitTemplate({ tenant, services, barbers }: TemplateProps) {
     tenant.description ||
     "Escolha o serviço e reserve em segundos.";
   const hero = tenant.hero_image_url?.trim() || null;
+  // Largura em % da coluna; a altura sai do aspecto do arquivo enviado.
+  const heroWidth = typeof tenant.hero_image_width === "number" ? tenant.hero_image_width : 100;
   const geo = { fontFamily: "var(--font-heading)" };
   const border = "color-mix(in srgb, var(--theme-text) 12%, transparent)";
   const layout = normalizeSiteLayout(tenant.site_layout, "split", {
@@ -47,28 +50,10 @@ export function SplitTemplate({ tenant, services, barbers }: TemplateProps) {
             "--mobile-order": siteSectionOrder(layout, "hero"),
           } as React.CSSProperties}
         >
-          {hero ? (
-            <>
-              {/* eslint-disable-next-line @next/next/no-img-element */}
-              <img
-                src={hero}
-                alt=""
-                aria-hidden
-                className="absolute inset-0 w-full h-full object-cover opacity-25"
-                style={{ objectPosition: layout.hero.imagePosition }}
-              />
-              <div
-                className="absolute inset-0"
-                style={{
-                  background:
-                    "linear-gradient(to bottom, transparent, var(--theme-card))",
-                }}
-              />
-            </>
-          ) : (
-            /* Sem imagem: malha de gradientes do tema no painel da marca. */
-            <HeroGlow className="absolute inset-0" />
-          )}
+          {/* A malha do tema é sempre o fundo do painel. A foto, quando existe,
+              entra abaixo do texto como imagem normal — antes ela ficava atrás
+              a 25% de opacidade, o que a tornava quase indistinguível. */}
+          <HeroGlow className="absolute inset-0" />
           <div className="relative z-10 flex min-w-0 items-center gap-3">
             <TenantLogo
               logoUrl={tenant.logo_url}
@@ -112,6 +97,15 @@ export function SplitTemplate({ tenant, services, barbers }: TemplateProps) {
             >
               Agendar horário
             </Link>
+
+            {hero && (
+              <HeroImage
+                src={hero}
+                alt={tenant.name}
+                width={heroWidth}
+                className={`mt-8 block rounded-2xl ${heroCentered ? "mx-auto" : ""}`}
+              />
+            )}
           </div>
           <p
             className="relative z-10 mt-auto flex items-center gap-1.5 pt-8 text-xs"

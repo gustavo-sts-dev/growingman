@@ -43,12 +43,15 @@ export async function apiFetch(
   path: string,
   init: RequestInit = {}
 ): Promise<Response> {
+  // `Content-Type: application/json` só quando há corpo. Anunciar JSON sem
+  // enviar nada faz o Fastify recusar a requisição com FST_ERR_CTP_EMPTY_JSON_BODY
+  // — foi o que quebrava todo DELETE do app, que não manda corpo.
   const makeRequest = () =>
     fetch(`${API_BASE}${path}`, {
       ...init,
       credentials: "include", // envia cookies HttpOnly automaticamente
       headers: {
-        "Content-Type": "application/json",
+        ...(init.body === undefined ? {} : { "Content-Type": "application/json" }),
         ...init.headers,
       },
     });

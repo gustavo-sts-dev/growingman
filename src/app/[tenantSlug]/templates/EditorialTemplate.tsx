@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { TenantLogo } from "@/components/TenantLogo";
+import { HeroImage } from "@/components/HeroImage";
 import {
   isSiteSectionVisible,
   normalizeSiteLayout,
@@ -23,6 +24,8 @@ export function EditorialTemplate({
     tenant.description ||
     "Um estúdio dedicado ao ofício. Cada corte, uma assinatura.";
   const hero = tenant.hero_image_url?.trim() || null;
+  // Largura em % da coluna; a altura sai do aspecto do arquivo enviado.
+  const heroWidth = typeof tenant.hero_image_width === "number" ? tenant.hero_image_width : 100;
 
   const serif = { fontFamily: "var(--font-heading)" };
   const line = "color-mix(in srgb, var(--theme-text) 22%, transparent)";
@@ -108,18 +111,15 @@ export function EditorialTemplate({
             </Link>
           </div>
           {hero && (
-            <div
-              className="aspect-[4/3] w-full overflow-hidden md:aspect-[3/4]"
+            /* A borda vai na própria imagem: um wrapper com largura de conteúdo
+               tornaria a % da imagem circular (ela mediria o pai que mede ela). */
+            <HeroImage
+              src={hero}
+              alt={tenant.name}
+              width={heroWidth}
+              className="block grayscale transition-all duration-700 hover:grayscale-0"
               style={{ border: `1px solid ${line}` }}
-            >
-              {/* eslint-disable-next-line @next/next/no-img-element */}
-              <img
-                src={hero}
-                alt={tenant.name}
-                className="w-full h-full object-cover grayscale hover:grayscale-0 transition-all duration-700"
-                style={{ objectPosition: layout.hero.imagePosition }}
-              />
-            </div>
+            />
           )}
         </div>
       </section>

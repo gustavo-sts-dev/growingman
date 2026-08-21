@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { TenantLogo } from "@/components/TenantLogo";
+import { HeroImage } from "@/components/HeroImage";
 import { HeroGlow } from "@/components/HeroGlow";
 import {
   isSiteSectionVisible,
@@ -21,6 +22,8 @@ export function ShowcaseTemplate({ tenant, services, barbers }: TemplateProps) {
     tenant.description ||
     "Estilo é atitude. Agende o seu.";
   const hero = tenant.hero_image_url?.trim() || null;
+  // Largura em % da coluna; a altura sai do aspecto do arquivo enviado.
+  const heroWidth = typeof tenant.hero_image_width === "number" ? tenant.hero_image_width : 100;
 
   // Oswald é condensada — "cond" reforça a verticalidade do template.
   const cond = {
@@ -46,27 +49,9 @@ export function ShowcaseTemplate({ tenant, services, barbers }: TemplateProps) {
           backgroundColor: "var(--theme-bg)",
         }}
       >
-        {hero ? (
-          <>
-            {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img
-              src={hero}
-              alt=""
-              aria-hidden
-              className="absolute inset-0 h-full w-full object-cover object-center"
-              style={{ objectPosition: layout.hero.imagePosition }}
-            />
-            <div
-              className="absolute inset-0"
-              style={{
-                background:
-                  "linear-gradient(to top, var(--theme-bg) 2%, color-mix(in srgb, var(--theme-bg) 55%, transparent) 45%, color-mix(in srgb, var(--theme-bg) 30%, transparent) 100%)",
-              }}
-            />
-          </>
-        ) : (
-          <HeroGlow className="absolute inset-0" />
-        )}
+        {/* A malha do tema é sempre o fundo. A foto, quando existe, entra como
+            imagem normal junto do texto — não mais esticada por trás dele. */}
+        <HeroGlow className="absolute inset-0" />
 
         <nav className="absolute inset-x-0 top-0 z-20 flex items-center justify-between px-5 py-5 md:relative md:inset-auto md:z-10 md:mb-4 md:px-12 md:pb-0 md:pt-7">
           <div className="flex min-w-0 items-center gap-2.5">
@@ -115,6 +100,16 @@ export function ShowcaseTemplate({ tenant, services, barbers }: TemplateProps) {
           >
             {sub}
           </p>
+
+          {hero && (
+            <HeroImage
+              src={hero}
+              alt={tenant.name}
+              width={heroWidth}
+              className={`mt-8 block rounded-sm md:mt-10 ${heroCentered ? "mx-auto" : ""}`}
+              style={{ border: `1px solid ${border}` }}
+            />
+          )}
         </div>
       </section>
 

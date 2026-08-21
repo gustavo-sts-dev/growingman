@@ -17,10 +17,18 @@ import {
 import { useRouter } from "next/navigation";
 import { apiUrl } from "@/lib/config";
 import {
+  brazilianDateInput,
   formatPhone,
   isValidPhone,
   onlyDigits,
 } from "@/lib/format";
+
+/**
+ * Janela de agendamento, em dias de calendário. Precisa bater com
+ * MAX_ADVANCE_DAYS no backend (booking.service.ts) — aqui é só para o seletor
+ * não oferecer data que a API vai recusar; quem decide é o backend.
+ */
+const MAX_ADVANCE_DAYS = 5;
 
 interface TenantLite {
   id: string;
@@ -128,9 +136,16 @@ export function BookingFlow({
   initialServiceId = "",
 }: BookingFlowProps) {
   const router = useRouter();
-  const [activeSection, setActiveSection] = useState<SectionType>(
+  // `null` = todas recolhidas. Sem esse estado o cabeçalho só conseguia ABRIR:
+  // clicar numa seção já aberta reatribuía o mesmo valor e nada fechava, embora
+  // o chevron girasse como se fosse um toggle.
+  const [activeSection, setActiveSection] = useState<SectionType | null>(
     initialServiceId ? "barber" : "service",
   );
+
+  /** Alterna a seção: abre se estiver fechada, recolhe se já estiver aberta. */
+  const toggleSection = (section: SectionType) =>
+    setActiveSection((current) => (current === section ? null : section));
   const sectionRefs = useRef<
     Partial<Record<SectionType, HTMLDivElement | null>>
   >({});
@@ -207,7 +222,7 @@ export function BookingFlow({
     pendingSectionScroll.current = false;
 
     const frame = window.requestAnimationFrame(() => {
-      scrollToElement(sectionRefs.current[activeSection] ?? null);
+      scrollToElement(activeSection ? sectionRefs.current[activeSection] ?? null : null);
     });
     return () => window.cancelAnimationFrame(frame);
   }, [activeSection]);
@@ -255,17 +270,12 @@ export function BookingFlow({
           { signal: controller.signal },
         );
         if (!res.ok) return;
-        const { name } = await res.json();
-        if (!name) {
-          setKnownClient(null);
-          return;
-        }
-        setKnownClient(name);
-        // Só preenche se o cliente ainda não digitou nada — nunca sobrescreve
-        // o que ele está escrevendo.
-        setFormData((prev) =>
-          prev.nome.trim() ? prev : { ...prev, nome: name },
-        );
+        // A API devolve só o PRIMEIRO nome (a rota é pública; entregar o nome
+        // completo a quem varre telefones vaza demais). Serve para reconhecer
+        // o cliente, não para preencher o campo: preencher com um nome
+        // truncado faria o agendamento sobrescrever o cadastro sem o sobrenome.
+        const { firstName } = await res.json();
+        setKnownClient(firstName || null);
       } catch {
         // Lookup é conveniência: falhou, segue o fluxo manual.
       }
@@ -443,7 +453,7 @@ export function BookingFlow({
           style={sectionShell(activeSection === "service")}
         >
           <button
-            onClick={() => setActiveSection("service")}
+            onClick={() => toggleSection("service")}
             className={headerBtnStyle}
           >
             <div className="flex items-center gap-4">
@@ -549,7 +559,7 @@ export function BookingFlow({
           style={sectionShell(activeSection === "barber")}
         >
           <button
-            onClick={() => setActiveSection("barber")}
+            onClick={() => toggleSection("barber")}
             className={headerBtnStyle}
           >
             <div className="flex items-center gap-4">
@@ -659,7 +669,7 @@ export function BookingFlow({
           style={sectionShell(activeSection === "datetime")}
         >
           <button
-            onClick={() => setActiveSection("datetime")}
+            onClick={() => toggleSection("datetime")}
             className={headerBtnStyle}
           >
             <div className="flex items-center gap-4">
@@ -712,7 +722,8 @@ export function BookingFlow({
                   <input
                     type="date"
                     value={formData.date}
-                    min={new Date().toISOString().split("T")[0]}
+                    min={brazilianDateInput()}
+                    max={brazilianDateInput(MAX_ADVANCE_DAYS)}
                     onChange={(e) =>
                       setFormData({ ...formData, date: e.target.value })
                     }
@@ -794,7 +805,7 @@ export function BookingFlow({
           style={sectionShell(activeSection === "user")}
         >
           <button
-            onClick={() => setActiveSection("user")}
+            onClick={() => toggleSection("user")}
             className={headerBtnStyle}
           >
             <div className="flex items-center gap-4">
@@ -893,9 +904,8 @@ export function BookingFlow({
                     className="text-xs mt-1.5 font-medium"
                     style={T.textMuted}
                   >
-                    {formData.nome.trim() === knownClient
-                      ? "Bem-vindo de volta! Se o nome mudou, é só corrigir."
-                      : "Este número já tem cadastro — o nome será atualizado."}
+                    Bem-vindo de volta, {knownClient}! Confirme seu nome
+                    completo para continuar.
                   </p>
                 )}
                 {formData.nome.trim().length > 0 && !isValidName && (

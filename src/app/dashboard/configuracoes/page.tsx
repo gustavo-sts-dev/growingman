@@ -144,6 +144,7 @@ export default function ConfiguracoesPage() {
     page_subheadline:         "",
     site_preset:              "classic",
     hero_image_url:           "",
+    hero_image_width:         100,
     stat_clients:             "",
     stat_rating:              "",
     stat_experience:          "",
@@ -226,6 +227,7 @@ export default function ConfiguracoesPage() {
           page_subheadline:         data.page_subheadline ?? "",
           site_preset:              data.site_preset ?? "classic",
           hero_image_url:           data.hero_image_url ?? "",
+          hero_image_width:         data.hero_image_width ?? 100,
           stat_clients:             data.stat_clients ?? "",
           stat_rating:              data.stat_rating ?? "",
           stat_experience:          data.stat_experience ?? "",
@@ -438,16 +440,37 @@ export default function ConfiguracoesPage() {
           </FieldGroup>
 
           {activePreset.needsImage && (
-            <FieldGroup title="Imagem de Capa">
-              <Field label="Foto do topo" hint="Recomendado: imagem horizontal de alta qualidade (JPG/PNG/WEBP). Máx. 5 MB.">
+            <FieldGroup title="Imagem do Topo">
+              <Field label="Foto" hint="JPG, PNG ou WEBP. Máx. 5 MB.">
                 <ImageUpload
                   value={form.hero_image_url}
                   folder="tenants/hero"
                   shape="wide"
                   onChange={(url) => set("hero_image_url", url)}
-                  hint="Usada pelos presets com imagem."
+                  hint="Aparece inteira, no formato original do arquivo."
                 />
               </Field>
+
+              {form.hero_image_url && (
+                <Field
+                  label={`Largura da imagem — ${form.hero_image_width}%`}
+                  hint="A altura acompanha o formato da foto"
+                >
+                  <input
+                    type="range"
+                    min={20}
+                    max={100}
+                    step={5}
+                    value={form.hero_image_width}
+                    onChange={(e) => set("hero_image_width", Number(e.target.value))}
+                    className="h-2 w-full cursor-pointer appearance-none rounded-full bg-white/10 accent-white"
+                  />
+                  <p className="mt-2 text-xs leading-relaxed text-neutral-500">
+                    Só a largura é ajustável. A altura sai do formato do arquivo
+                    enviado, então a foto nunca é cortada nem distorcida.
+                  </p>
+                </Field>
+              )}
               {!form.hero_image_url && (
                 <div className="flex items-start gap-3 p-3 rounded-xl bg-amber-500/5 border border-amber-500/15">
                   <AlertTriangle className="w-4 h-4 text-amber-500/80 shrink-0 mt-0.5" />
