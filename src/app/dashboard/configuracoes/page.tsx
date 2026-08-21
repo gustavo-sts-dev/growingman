@@ -5,7 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import {
   Palette, Globe, Shield, Clock, Save, CheckCircle2,
-  Scissors, AlertTriangle, Loader2, Percent, LayoutTemplate, Image as ImageGrowingman,
+  Scissors, AlertTriangle, Loader2, Percent, LayoutTemplate,
   CreditCard, type LucideIcon
 } from "lucide-react";
 
@@ -95,6 +95,9 @@ const COLOR_PRESET_GROUPS: ColorPresetGroup[] = [
   },
 ];
 
+/** Intervalos oferecidos no seletor. O backend aceita 5..240. */
+const intervalOptions = [10, 15, 20, 30, 45, 60, 90];
+
 const THEME_COLOR_KEYS = [
   "theme_bg",
   "theme_card",
@@ -143,12 +146,17 @@ export default function ConfiguracoesPage() {
     page_headline:            "",
     page_subheadline:         "",
     site_preset:              "classic",
-    hero_image_url:           "",
-    hero_image_width:         100,
     stat_clients:             "",
     stat_rating:              "",
     stat_experience:          "",
     site_layout:              defaultSiteLayout("classic"),
+    // Expediente. O almoço é `string | null` de propósito: o schema aceita null
+    // (sem pausa) mas recusa "" — mandar string vazia daria 400.
+    opening_time:             "08:00",
+    closing_time:             "18:00",
+    lunch_start:              "12:00" as string | null,
+    lunch_end:                "13:00" as string | null,
+    slot_interval_minutes:    30,
     // Pagamentos online (Mercado Pago). Campo de escrita-única: o backend nunca
     // devolve o token salvo, então este valor começa e permanece vazio até o dono
     // colar um novo. Enviado no PATCH apenas quando preenchido (ver handleSave).
@@ -226,11 +234,15 @@ export default function ConfiguracoesPage() {
           page_headline:            data.page_headline ?? "",
           page_subheadline:         data.page_subheadline ?? "",
           site_preset:              data.site_preset ?? "classic",
-          hero_image_url:           data.hero_image_url ?? "",
-          hero_image_width:         data.hero_image_width ?? 100,
           stat_clients:             data.stat_clients ?? "",
           stat_rating:              data.stat_rating ?? "",
           stat_experience:          data.stat_experience ?? "",
+          opening_time:             data.opening_time ?? "08:00",
+          closing_time:             data.closing_time ?? "18:00",
+          // `?? null` e não `?? ""`: ausência de almoço é null no banco.
+          lunch_start:              data.lunch_start ?? null,
+          lunch_end:                data.lunch_end ?? null,
+          slot_interval_minutes:    data.slot_interval_minutes ?? 30,
           site_layout:              normalizeSiteLayout(data.site_layout, preset.id, {
             stats: data.show_stats,
             team: data.show_team,
@@ -248,6 +260,21 @@ export default function ConfiguracoesPage() {
     setForm((f) => ({ ...f, [field]: value }));
 
   const activePreset = resolveSitePreset(form.site_preset);
+
+  // Expediente — as mesmas coerências que o backend valida, checadas aqui para
+  // o dono ver o problema enquanto edita, e não só ao levar erro no salvar.
+  // Comparar 'HH:mm' como string funciona porque o formato é zero-padded.
+  const temAlmoco = form.lunch_start !== null && form.lunch_end !== null;
+  const horarioInvertido = form.opening_time >= form.closing_time;
+  const almocoInvertido =
+    temAlmoco && (form.lunch_start as string) >= (form.lunch_end as string);
+  // Não é erro, é aviso: salva, mas não surte efeito nenhum na grade.
+  const almocoForaDoExpediente =
+    temAlmoco &&
+    !almocoInvertido &&
+    ((form.lunch_end as string) <= form.opening_time ||
+      (form.lunch_start as string) >= form.closing_time);
+  const expedienteInvalido = horarioInvertido || almocoInvertido;
 
   const handleSave = async () => {
     setSaving(true);
@@ -357,6 +384,107 @@ export default function ConfiguracoesPage() {
               />
             </Field>
           </FieldGroup>
+
+          <FieldGroup title="Expediente">
+            <p className="text-sm text-neutral-400">
+              Define quais horários a página de agendamento oferece aos clientes.
+              Horário já agendado continua valendo mesmo se você mudar a faixa depois.
+            </p>
+
+            <div className="grid grid-cols-2 gap-4">
+              <Field label="Abre às">
+                <TimeInput
+                  value={form.opening_time}
+                  onChange={(v) => set("opening_time", v)}
+                />
+              </Field>
+              <Field label="Fecha às">
+                <TimeInput
+                  value={form.closing_time}
+                  onChange={(v) => set("closing_time", v)}
+                />
+              </Field>
+            </div>
+
+            {horarioInvertido && (
+              <p className="text-xs font-medium text-red-400">
+                O fechamento precisa ser depois da abertura.
+              </p>
+            )}
+
+            <Field
+              label="Intervalo entre horários"
+              hint="De quanto em quanto tempo um novo horário aparece para o cliente."
+            >
+              <select
+                value={form.slot_interval_minutes}
+                onChange={(e) => set("slot_interval_minutes", Number(e.target.value))}
+                className="h-11 w-full rounded-xl border border-white/[0.08] bg-white/[0.04] px-3 text-sm text-white transition-colors focus:border-white/25 focus:outline-none"
+              >
+                {intervalOptions.map((min) => (
+                  <option key={min} value={min} className="bg-zinc-900">
+                    {min} minutos
+                  </option>
+                ))}
+              </select>
+            </Field>
+
+            <div className="border-t border-white/[0.06] pt-4">
+              <label className="flex cursor-pointer items-start gap-3">
+                <input
+                  type="checkbox"
+                  checked={temAlmoco}
+                  onChange={(e) => {
+                    if (e.target.checked) {
+                      setForm((f) => ({ ...f, lunch_start: "12:00", lunch_end: "13:00" }));
+                    } else {
+                      // null, não "": o schema recusa string vazia.
+                      setForm((f) => ({ ...f, lunch_start: null, lunch_end: null }));
+                    }
+                  }}
+                  className="mt-0.5 h-4 w-4 shrink-0 accent-white"
+                />
+                <span>
+                  <span className="block text-sm font-semibold text-white">
+                    Fecho para almoço
+                  </span>
+                  <span className="block text-xs text-neutral-600">
+                    Nenhum horário é oferecido nessa faixa.
+                  </span>
+                </span>
+              </label>
+
+              {temAlmoco && (
+                <>
+                  <div className="mt-4 grid grid-cols-2 gap-4">
+                    <Field label="Pausa das">
+                      <TimeInput
+                        value={form.lunch_start ?? ""}
+                        onChange={(v) => set("lunch_start", v)}
+                      />
+                    </Field>
+                    <Field label="Até">
+                      <TimeInput
+                        value={form.lunch_end ?? ""}
+                        onChange={(v) => set("lunch_end", v)}
+                      />
+                    </Field>
+                  </div>
+                  {almocoInvertido && (
+                    <p className="mt-2 text-xs font-medium text-red-400">
+                      O fim da pausa precisa ser depois do início.
+                    </p>
+                  )}
+                  {almocoForaDoExpediente && (
+                    <p className="mt-2 text-xs font-medium text-amber-400">
+                      A pausa está fora do horário de funcionamento — ela não vai
+                      remover nenhum horário da agenda.
+                    </p>
+                  )}
+                </>
+              )}
+            </div>
+          </FieldGroup>
         </div>
       )}
 
@@ -418,11 +546,6 @@ export default function ConfiguracoesPage() {
                   >
                     <div className="relative h-24 bg-black/40 border-b border-white/[0.06]">
                       <HeroPresetPreview id={preset.id} />
-                      {preset.needsImage && (
-                        <span className="absolute top-1.5 right-1.5 inline-flex items-center gap-1 px-1.5 py-0.5 rounded-md bg-black/60 backdrop-blur-sm text-[10px] font-semibold text-white">
-                          <ImageGrowingman className="w-3 h-3" /> Imagem
-                        </span>
-                      )}
                     </div>
                     <div className="p-3">
                       <div className="flex items-center gap-2">
@@ -438,49 +561,6 @@ export default function ConfiguracoesPage() {
               })}
             </div>
           </FieldGroup>
-
-          {activePreset.needsImage && (
-            <FieldGroup title="Imagem do Topo">
-              <Field label="Foto" hint="JPG, PNG ou WEBP. Máx. 5 MB.">
-                <ImageUpload
-                  value={form.hero_image_url}
-                  folder="tenants/hero"
-                  shape="wide"
-                  onChange={(url) => set("hero_image_url", url)}
-                  hint="Aparece inteira, no formato original do arquivo."
-                />
-              </Field>
-
-              {form.hero_image_url && (
-                <Field
-                  label={`Largura da imagem — ${form.hero_image_width}%`}
-                  hint="A altura acompanha o formato da foto"
-                >
-                  <input
-                    type="range"
-                    min={20}
-                    max={100}
-                    step={5}
-                    value={form.hero_image_width}
-                    onChange={(e) => set("hero_image_width", Number(e.target.value))}
-                    className="h-2 w-full cursor-pointer appearance-none rounded-full bg-white/10 accent-white"
-                  />
-                  <p className="mt-2 text-xs leading-relaxed text-neutral-500">
-                    Só a largura é ajustável. A altura sai do formato do arquivo
-                    enviado, então a foto nunca é cortada nem distorcida.
-                  </p>
-                </Field>
-              )}
-              {!form.hero_image_url && (
-                <div className="flex items-start gap-3 p-3 rounded-xl bg-amber-500/5 border border-amber-500/15">
-                  <AlertTriangle className="w-4 h-4 text-amber-500/80 shrink-0 mt-0.5" />
-                  <p className="text-xs text-amber-400/80 leading-relaxed">
-                    Sem uma imagem, este preset exibe o topo padrão. Envie uma foto para ativá-lo.
-                  </p>
-                </div>
-              )}
-            </FieldGroup>
-          )}
 
           {activePreset.sections.includes("stats") && (
             <FieldGroup title="Números de Destaque">
@@ -760,7 +840,9 @@ export default function ConfiguracoesPage() {
         )}
         <Button
           onClick={handleSave}
-          disabled={saving || saved}
+          // Expediente incoerente é recusado pelo backend de qualquer forma;
+          // barrar aqui evita a viagem de ida e volta só para levar erro.
+          disabled={saving || saved || expedienteInvalido}
           className={`h-10 px-6 rounded-xl text-sm font-semibold transition-all ${
             saved
               ? "bg-green-500 text-white hover:bg-green-500"
@@ -877,5 +959,30 @@ function HeroPresetPreview({ id }: { id: SitePresetId }) {
       <div className={`${bar} h-1.5 w-16 bg-white/40`} style={{ letterSpacing: "0.3em" }} />
       <div className="h-px w-10 bg-white/20" />
     </div>
+  );
+}
+
+/**
+ * Campo de horário em 'HH:mm'.
+ *
+ * `<input type="time">` já entrega o formato de 24h zero-padded que o backend
+ * valida, e no celular abre o seletor nativo de hora. O `step={300}` (5 min)
+ * evita que o seletor ofereça segundos, que quebrariam o formato.
+ */
+function TimeInput({
+  value,
+  onChange,
+}: {
+  value: string;
+  onChange: (value: string) => void;
+}) {
+  return (
+    <input
+      type="time"
+      value={value}
+      step={300}
+      onChange={(e) => onChange(e.target.value)}
+      className="h-11 w-full rounded-xl border border-white/[0.08] bg-white/[0.04] px-3 text-sm text-white transition-colors focus:border-white/25 focus:outline-none"
+    />
   );
 }

@@ -1,6 +1,5 @@
 import Link from "next/link";
 import { TenantLogo } from "@/components/TenantLogo";
-import { HeroImage } from "@/components/HeroImage";
 import { HeroGlow } from "@/components/HeroGlow";
 import {
   isSiteSectionVisible,
@@ -12,9 +11,8 @@ import { PolicyLinks } from "./PolicyLinks";
 
 /**
  * VITRINE (showcase) — imersivo e fotográfico.
- * Hero de tela cheia com imagem de fundo e título condensado gigante; serviços
- * em mosaico/grade densa de cartões; forte apelo visual. Sem imagem, usa um
- * fundo tonal do tema (degradê) para manter o impacto.
+ * Hero de tela cheia com título condensado gigante sobre a malha tonal do
+ * tema; serviços em mosaico/grade densa de cartões; forte apelo visual.
  */
 export function ShowcaseTemplate({ tenant, services, barbers }: TemplateProps) {
   const headline = (tenant.page_headline?.trim() || tenant.name).toUpperCase();
@@ -22,9 +20,6 @@ export function ShowcaseTemplate({ tenant, services, barbers }: TemplateProps) {
     tenant.page_subheadline?.trim() ||
     tenant.description ||
     "Estilo é atitude. Agende o seu.";
-  const hero = tenant.hero_image_url?.trim() || null;
-  // Largura em % da coluna; a altura sai do aspecto do arquivo enviado.
-  const heroWidth = typeof tenant.hero_image_width === "number" ? tenant.hero_image_width : 100;
 
   // Oswald é condensada — "cond" reforça a verticalidade do template.
   const cond = {
@@ -36,22 +31,19 @@ export function ShowcaseTemplate({ tenant, services, barbers }: TemplateProps) {
     team: tenant.show_team,
   });
   const heroCentered = layout.hero.alignment === "center";
-  const mobileHeroHeight = layout.hero.mobileHeight === "screen"
-    ? "min-h-[100svh]"
-    : hero ? "min-h-[70svh]" : "min-h-[64svh]";
+  const mobileHeroHeight =
+    layout.hero.mobileHeight === "screen" ? "min-h-[100svh]" : "min-h-[64svh]";
 
   return (
     <div className="flex flex-col" style={{ fontFamily: "var(--font-body)" }}>
-      {/* HERO — com imagem ganha altura; sem imagem, a malha do tema precisa de espaço p/ respirar. */}
+      {/* HERO — tipografia sobre a malha do tema. */}
       <section
-        className={`relative flex flex-col overflow-hidden md:justify-end ${mobileHeroHeight} ${hero ? "md:min-h-[70vh]" : "md:min-h-[60vh]"}`}
+        className={`relative flex flex-col overflow-hidden md:justify-end md:min-h-[60vh] ${mobileHeroHeight}`}
         style={{
           order: siteSectionOrder(layout, "hero"),
           backgroundColor: "var(--theme-bg)",
         }}
       >
-        {/* A malha do tema é sempre o fundo. A foto, quando existe, entra como
-            imagem normal junto do texto — não mais esticada por trás dele. */}
         <HeroGlow className="absolute inset-0" />
 
         <nav className="absolute inset-x-0 top-0 z-20 flex items-center justify-between px-5 py-5 md:relative md:inset-auto md:z-10 md:mb-4 md:px-12 md:pb-0 md:pt-7">
@@ -102,15 +94,6 @@ export function ShowcaseTemplate({ tenant, services, barbers }: TemplateProps) {
             {sub}
           </p>
 
-          {hero && (
-            <HeroImage
-              src={hero}
-              alt={tenant.name}
-              width={heroWidth}
-              className={`mt-8 block rounded-sm md:mt-10 ${heroCentered ? "mx-auto" : ""}`}
-              style={{ border: `1px solid ${border}` }}
-            />
-          )}
         </div>
       </section>
 

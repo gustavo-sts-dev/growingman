@@ -39,8 +39,6 @@ export interface SitePreset {
   id: SitePresetId;
   label: string;
   description: string;
-  /** Precisa de imagem de capa (hero_image_url) para ficar pleno. */
-  needsImage: boolean;
   /** Seções que o template exibe (informativo; o layout mora no componente). */
   sections: SectionId[];
   /** Tipografia fixa do template. */
@@ -53,7 +51,6 @@ export const SITE_PRESETS: SitePreset[] = [
     label: "Clássico",
     description:
       "Barbearia premium tradicional: topo centralizado e imponente, grade de serviços em cartões, seção de equipe e avaliações. A escolha segura.",
-    needsImage: false,
     sections: ["stats", "services", "team", "reviews"],
     // Sans forte e confiável; corpo neutro legível.
     fonts: { heading: "Archivo", body: "Inter", weights: [400, 500, 600, 700, 800, 900] },
@@ -63,7 +60,6 @@ export const SITE_PRESETS: SitePreset[] = [
     label: "Revista",
     description:
       "Cara de editorial de moda: serifa display gigante, colunas estreitas, muito respiro e fios finos. Sofisticado e diferente.",
-    needsImage: true,
     sections: ["services", "team", "reviews"],
     // Serifa de alto contraste no display + grotesca clean no corpo.
     fonts: { heading: "Playfair Display", body: "DM Sans", weights: [400, 500, 700, 800, 900] },
@@ -73,7 +69,6 @@ export const SITE_PRESETS: SitePreset[] = [
     label: "Vitrine",
     description:
       "Imersivo e visual: hero de tela cheia com imagem de fundo, serviços em mosaico denso, forte apelo fotográfico. Ideal com boas fotos.",
-    needsImage: true,
     sections: ["services", "team", "reviews"],
     // Grotesca condensada com atitude; corpo neutro.
     fonts: { heading: "Oswald", body: "Inter", weights: [400, 500, 600, 700] },
@@ -83,7 +78,6 @@ export const SITE_PRESETS: SitePreset[] = [
     label: "Conversão",
     description:
       "Focado em agendar rápido: tela dividida (texto + imagem), pouca rolagem, serviços em lista direta com botão. Menos é mais.",
-    needsImage: true,
     sections: ["services", "team"],
     // Geométrica amigável e moderna; corpo da mesma família p/ coesão.
     fonts: { heading: "Poppins", body: "Poppins", weights: [400, 500, 600, 700, 800] },
@@ -93,7 +87,6 @@ export const SITE_PRESETS: SitePreset[] = [
     label: "Minimalista",
     description:
       "Silêncio e tipografia: quase sem elementos, muito espaço em branco, linhas em vez de caixas, letras com espaçamento. Elegância pela ausência.",
-    needsImage: false,
     sections: ["services", "team"],
     // Grotesca de baixo contraste, discreta; peso leve como identidade.
     fonts: { heading: "Space Grotesk", body: "Space Grotesk", weights: [300, 400, 500, 600, 700] },

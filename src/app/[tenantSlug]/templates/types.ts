@@ -14,7 +14,6 @@ export interface PublicTenant {
   address?: string | null;
   description?: string | null;
   logo_url?: string | null;
-  hero_image_url?: string | null;
   page_headline?: string | null;
   page_subheadline?: string | null;
   show_stats?: boolean | null;

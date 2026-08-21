@@ -1,6 +1,5 @@
 import Link from "next/link";
 import { TenantLogo } from "@/components/TenantLogo";
-import { HeroImage } from "@/components/HeroImage";
 import {
   isSiteSectionVisible,
   normalizeSiteLayout,
@@ -24,9 +23,6 @@ export function EditorialTemplate({
     tenant.page_subheadline?.trim() ||
     tenant.description ||
     "Um estúdio dedicado ao ofício. Cada corte, uma assinatura.";
-  const hero = tenant.hero_image_url?.trim() || null;
-  // Largura em % da coluna; a altura sai do aspecto do arquivo enviado.
-  const heroWidth = typeof tenant.hero_image_width === "number" ? tenant.hero_image_width : 100;
 
   const serif = { fontFamily: "var(--font-heading)" };
   const line = "color-mix(in srgb, var(--theme-text) 22%, transparent)";
@@ -72,9 +68,7 @@ export function EditorialTemplate({
         className={`mx-auto w-full max-w-6xl px-5 pb-14 pt-10 md:px-10 md:pb-20 md:pt-24 ${layout.hero.mobileHeight === "screen" ? "min-h-[100svh]" : ""}`}
         style={{ order: siteSectionOrder(layout, "hero") }}
       >
-        <div
-          className={`grid items-end gap-10 md:gap-12 ${hero ? "md:grid-cols-[1.3fr_1fr]" : "md:grid-cols-1"}`}
-        >
+        <div className="grid items-end gap-10 md:grid-cols-1 md:gap-12">
           <div className={heroCentered ? "text-center" : ""}>
             <p
               className="mb-5 text-xs uppercase tracking-[0.32em] md:mb-8 md:tracking-[0.4em]"
@@ -111,17 +105,6 @@ export function EditorialTemplate({
               Agendar um horário →
             </Link>
           </div>
-          {hero && (
-            /* A borda vai na própria imagem: um wrapper com largura de conteúdo
-               tornaria a % da imagem circular (ela mediria o pai que mede ela). */
-            <HeroImage
-              src={hero}
-              alt={tenant.name}
-              width={heroWidth}
-              className="block grayscale transition-all duration-700 hover:grayscale-0"
-              style={{ border: `1px solid ${line}` }}
-            />
-          )}
         </div>
       </section>
 

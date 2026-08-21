@@ -109,9 +109,7 @@ export interface Tenant {
   page_headline: string | null;
   page_subheadline: string | null;
   hero_layout: HeroLayout | null;
-  hero_image_url: string | null;
   /** Largura da imagem do topo em % da coluna; altura sai do aspecto do arquivo. */
-  hero_image_width: number;
   show_stats: boolean | null;
   show_team: boolean | null;
   show_reviews: boolean | null;
@@ -119,6 +117,16 @@ export interface Tenant {
   stat_rating: string | null;
   stat_experience: string | null;
   site_layout: import("@/lib/site-layout").SiteLayoutConfig | null;
+
+  // Expediente da barbearia, em 'HH:mm' (24h). Define a grade de horários que a
+  // página de agendamento oferece. O almoço é opcional — `null` significa que a
+  // barbearia não fecha para pausa.
+  opening_time: string;
+  closing_time: string;
+  lunch_start: string | null;
+  lunch_end: string | null;
+  /** Intervalo entre horários oferecidos, em minutos. */
+  slot_interval_minutes: number;
 
   // Pagamentos online (Mercado Pago). O backend NUNCA devolve o token cru:
   // expõe apenas `mp_connected` (derivado) para indicar se há credencial salva.
