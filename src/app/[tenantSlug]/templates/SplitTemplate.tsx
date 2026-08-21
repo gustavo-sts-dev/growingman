@@ -1,7 +1,7 @@
 import { MapPin, Clock } from "lucide-react";
 import Link from "next/link";
 import { TenantLogo } from "@/components/TenantLogo";
-import Silk from "@/components/Silk";
+import { HeroGlow } from "@/components/HeroGlow";
 import {
   isSiteSectionVisible,
   normalizeSiteLayout,
@@ -66,8 +66,8 @@ export function SplitTemplate({ tenant, services, barbers }: TemplateProps) {
               />
             </>
           ) : (
-            /* Sem imagem: fundo de seda animado no painel da marca. */
-            <Silk className="absolute inset-0 opacity-60" />
+            /* Sem imagem: malha de gradientes do tema no painel da marca. */
+            <HeroGlow className="absolute inset-0" />
           )}
           <div className="relative z-10 flex min-w-0 items-center gap-3">
             <TenantLogo

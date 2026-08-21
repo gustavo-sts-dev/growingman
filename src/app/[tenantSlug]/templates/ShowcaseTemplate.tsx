@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { TenantLogo } from "@/components/TenantLogo";
-import Silk from "@/components/Silk";
+import { HeroGlow } from "@/components/HeroGlow";
 import {
   isSiteSectionVisible,
   normalizeSiteLayout,
@@ -38,7 +38,7 @@ export function ShowcaseTemplate({ tenant, services, barbers }: TemplateProps) {
 
   return (
     <div className="flex flex-col" style={{ fontFamily: "var(--font-body)" }}>
-      {/* HERO — com imagem ganha altura; sem imagem, o Silk precisa de espaço p/ respirar. */}
+      {/* HERO — com imagem ganha altura; sem imagem, a malha do tema precisa de espaço p/ respirar. */}
       <section
         className={`relative flex flex-col overflow-hidden md:justify-end ${mobileHeroHeight} ${hero ? "md:min-h-[70vh]" : "md:min-h-[60vh]"}`}
         style={{
@@ -65,11 +65,7 @@ export function ShowcaseTemplate({ tenant, services, barbers }: TemplateProps) {
             />
           </>
         ) : (
-          <Silk
-            color={typeof tenant.theme_card === "string" ? tenant.theme_card : undefined}
-            colorDark={typeof tenant.theme_bg === "string" ? tenant.theme_bg : undefined}
-            className="absolute inset-0"
-          />
+          <HeroGlow className="absolute inset-0" />
         )}
 
         <nav className="absolute inset-x-0 top-0 z-20 flex items-center justify-between px-5 py-5 md:relative md:inset-auto md:z-10 md:mb-4 md:px-12 md:pb-0 md:pt-7">
