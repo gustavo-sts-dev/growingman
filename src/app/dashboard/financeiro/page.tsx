@@ -4,7 +4,7 @@ import { useState, useEffect, useMemo } from "react";
 import { Button } from "@/components/ui/button";
 import { Modal } from "@/components/ui/modal";
 import { useToast } from "@/components/ui/toast";
-import { apiGet, apiPost } from "@/lib/api";
+import { apiGet, apiPost, apiDelete } from "@/lib/api";
 import {
   formatCurrency,
   parseCurrencyInput,
@@ -23,6 +23,7 @@ import {
   Plus,
   Search,
   PackageX,
+  Trash2,
 } from "lucide-react";
 
 type TabKey = "overview" | "pdv" | "caixa" | "comissoes";
@@ -106,6 +107,8 @@ export default function FinanceiroPage() {
 
   const [isTxModalOpen, setIsTxModalOpen] = useState(false);
   const [txSaving, setTxSaving] = useState(false);
+  // id do lançamento sendo apagado — trava só a linha dele, não a tabela.
+  const [deletingTxId, setDeletingTxId] = useState<string | null>(null);
   const [txData, setTxData] = useState<{
     type: TxType;
     amount: number;
@@ -224,6 +227,30 @@ export default function FinanceiroPage() {
       toast.error(e instanceof Error ? e.message : "Erro ao lançar transação.");
     } finally {
       setTxSaving(false);
+    }
+  };
+
+  /**
+   * Apaga um lançamento do caixa. O backend é quem decide se pode: recusa
+   * lançamento de caixa já fechado e pagamento de comissão, e a mensagem dele
+   * explica o motivo — por isso o catch mostra `e.message` em vez de um texto
+   * genérico.
+   */
+  const handleDeleteTransaction = async (tx: Transaction) => {
+    const rotulo = tx.description || "este lançamento";
+    if (!confirm(`Apagar "${rotulo}"? O valor sai do caixa e não há como desfazer.`)) {
+      return;
+    }
+
+    setDeletingTxId(tx.id);
+    try {
+      await apiDelete(`/finance/transactions/${tx.id}`);
+      toast.success("Lançamento apagado.");
+      reload();
+    } catch (e) {
+      toast.error(e instanceof Error ? e.message : "Erro ao apagar lançamento.");
+    } finally {
+      setDeletingTxId(null);
     }
   };
 
@@ -636,13 +663,16 @@ export default function FinanceiroPage() {
                           <th className="px-5 py-3 font-semibold text-right">
                             Valor
                           </th>
+                          <th className="px-5 py-3 font-semibold w-px">
+                            <span className="sr-only">Ações</span>
+                          </th>
                         </tr>
                       </thead>
                       <tbody className="divide-y divide-white/[0.04]">
                         {transactions.length === 0 ? (
                           <tr>
                             <td
-                              colSpan={4}
+                              colSpan={5}
                               className="px-5 py-8 text-center text-neutral-600"
                             >
                               Nenhum lançamento ainda.
@@ -682,6 +712,18 @@ export default function FinanceiroPage() {
                                 >
                                   {isNeg ? "-" : "+"}
                                   {formatCurrency(tx.amount)}
+                                </td>
+                                <td className="px-5 py-3 text-right">
+                                  <button
+                                    type="button"
+                                    onClick={() => handleDeleteTransaction(tx)}
+                                    disabled={deletingTxId === tx.id}
+                                    title="Apagar lançamento"
+                                    aria-label={`Apagar lançamento ${tx.description || ""}`}
+                                    className="p-1.5 rounded-lg text-neutral-600 hover:text-red-400 hover:bg-red-500/10 transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
+                                  >
+                                    <Trash2 className="w-4 h-4" />
+                                  </button>
                                 </td>
                               </tr>
                             );
