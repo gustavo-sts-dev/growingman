@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useMemo } from "react";
 import { Button } from "@/components/ui/button";
-import { Modal } from "@/components/ui/modal";
+import { Modal, ConfirmDialog } from "@/components/ui/modal";
 import { useToast } from "@/components/ui/toast";
 import { apiGet, apiPost, apiDelete } from "@/lib/api";
 import {
@@ -107,8 +107,9 @@ export default function FinanceiroPage() {
 
   const [isTxModalOpen, setIsTxModalOpen] = useState(false);
   const [txSaving, setTxSaving] = useState(false);
-  // id do lançamento sendo apagado — trava só a linha dele, não a tabela.
-  const [deletingTxId, setDeletingTxId] = useState<string | null>(null);
+  // Lançamento aguardando confirmação de exclusão (null = diálogo fechado).
+  const [txToDelete, setTxToDelete] = useState<Transaction | null>(null);
+  const [deletingTx, setDeletingTx] = useState(false);
   const [txData, setTxData] = useState<{
     type: TxType;
     amount: number;
@@ -236,21 +237,19 @@ export default function FinanceiroPage() {
    * explica o motivo — por isso o catch mostra `e.message` em vez de um texto
    * genérico.
    */
-  const handleDeleteTransaction = async (tx: Transaction) => {
-    const rotulo = tx.description || "este lançamento";
-    if (!confirm(`Apagar "${rotulo}"? O valor sai do caixa e não há como desfazer.`)) {
-      return;
-    }
+  const handleConfirmDeleteTransaction = async () => {
+    if (!txToDelete) return;
 
-    setDeletingTxId(tx.id);
+    setDeletingTx(true);
     try {
-      await apiDelete(`/finance/transactions/${tx.id}`);
+      await apiDelete(`/finance/transactions/${txToDelete.id}`);
       toast.success("Lançamento apagado.");
+      setTxToDelete(null);
       reload();
     } catch (e) {
       toast.error(e instanceof Error ? e.message : "Erro ao apagar lançamento.");
     } finally {
-      setDeletingTxId(null);
+      setDeletingTx(false);
     }
   };
 
@@ -716,8 +715,8 @@ export default function FinanceiroPage() {
                                 <td className="px-5 py-3 text-right">
                                   <button
                                     type="button"
-                                    onClick={() => handleDeleteTransaction(tx)}
-                                    disabled={deletingTxId === tx.id}
+                                    onClick={() => setTxToDelete(tx)}
+                                    disabled={deletingTx}
                                     title="Apagar lançamento"
                                     aria-label={`Apagar lançamento ${tx.description || ""}`}
                                     className="p-1.5 rounded-lg text-neutral-600 hover:text-red-400 hover:bg-red-500/10 transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
@@ -980,6 +979,17 @@ export default function FinanceiroPage() {
           </div>
         </div>
       </Modal>
+
+      <ConfirmDialog
+        open={!!txToDelete}
+        title="Apagar lançamento"
+        message={`Apagar "${txToDelete?.description || "este lançamento"}"? O valor sai do caixa e não há como desfazer.`}
+        confirmLabel="Apagar"
+        destructive
+        loading={deletingTx}
+        onConfirm={handleConfirmDeleteTransaction}
+        onCancel={() => setTxToDelete(null)}
+      />
     </div>
   );
 }

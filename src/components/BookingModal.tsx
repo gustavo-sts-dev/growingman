@@ -9,6 +9,7 @@ import {
   CheckCircle2,
 } from "lucide-react";
 import { apiUrl } from "@/lib/config";
+import { useToast } from "@/components/ui/toast";
 
 interface BookingServiceOption {
   id: string;
@@ -35,6 +36,7 @@ export function BookingModal({
   barbers,
   heroMode,
 }: BookingModalProps) {
+  const toast = useToast();
   const [isOpen, setIsOpen] = useState(false);
   const [step, setStep] = useState(1);
   const [loading, setLoading] = useState(false);
@@ -88,10 +90,13 @@ export function BookingModal({
       if (res.ok) {
         setSuccess(true);
       } else {
-        alert("Erro ao realizar agendamento");
+        // A API explica o motivo (horário ocupado, data fora da janela...).
+        // Mostrar a mensagem dela ajuda mais que um texto genérico.
+        const body = await res.json().catch(() => null);
+        toast.error(body?.message || "Erro ao realizar agendamento.");
       }
     } catch {
-      alert("Erro de rede");
+      toast.error("Falha de conexão. Verifique sua internet e tente de novo.");
     } finally {
       setLoading(false);
     }
