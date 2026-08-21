@@ -7,6 +7,7 @@ import {
   siteSectionOrder,
 } from "@/lib/site-layout";
 import { bookingHref, type TemplateProps, formatPrice } from "./types";
+import { PolicyLinks } from "./PolicyLinks";
 
 /**
  * REVISTA (editorial) — cara de editorial de moda.
@@ -170,11 +171,16 @@ export function EditorialTemplate({
                         {String(i + 1).padStart(2, "0")}
                       </span>
                       {svc.image_url && (
+                        /* `alt` vazio: o nome do serviço está no <h3> ao lado,
+                           então o alt só faria o leitor de tela repetir — e, se
+                           a imagem não carregar, evita texto espremido na caixa
+                           de tamanho fixo. */
                         /* eslint-disable-next-line @next/next/no-img-element */
                         <img
                           src={svc.image_url}
-                          alt={svc.name}
-                          className="w-16 h-16 object-cover grayscale hover:grayscale-0 transition-all hidden sm:block shrink-0"
+                          alt=""
+                          aria-hidden="true"
+                          className="w-12 h-12 sm:w-16 sm:h-16 object-cover grayscale hover:grayscale-0 transition-all shrink-0"
                         />
                       )}
                       <div>
@@ -251,7 +257,8 @@ export function EditorialTemplate({
                     /* eslint-disable-next-line @next/next/no-img-element */
                     <img
                       src={b.avatarUrl}
-                      alt={b.name}
+                      alt=""
+                      aria-hidden="true"
                       className="w-12 h-12 object-cover rounded-full grayscale hover:grayscale-0 transition-all shrink-0"
                     />
                   )}
@@ -307,10 +314,11 @@ export function EditorialTemplate({
         </div>
       </section>}
       <footer
-        className="max-w-6xl mx-auto px-6 md:px-10 py-6 flex items-center justify-between text-xs uppercase tracking-[0.2em]"
+        className="max-w-6xl mx-auto px-6 md:px-10 py-6 flex flex-wrap items-center justify-between gap-x-6 gap-y-3 text-xs uppercase tracking-[0.2em]"
         style={{ color: "var(--theme-text)", order: 100 }}
       >
         <span style={{ color: "var(--theme-title)" }}>{tenant.name}</span>
+        <PolicyLinks tenant={tenant} />
         <span>Powered by Growingman</span>
       </footer>
     </div>

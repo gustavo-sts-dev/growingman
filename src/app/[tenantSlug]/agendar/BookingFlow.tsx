@@ -34,6 +34,9 @@ interface TenantLite {
   id: string;
   slug: string;
   name: string;
+  /** Aviso de privacidade no ponto de coleta (LGPD Art. 9º). Pode não estar
+   *  preenchido: nesse caso o aviso aparece sem link. */
+  privacy_policy_url?: string | null;
 }
 interface ServiceLite {
   id: string;
@@ -1102,6 +1105,31 @@ export function BookingFlow({
               style={T.textMuted}
             >
               O pagamento é combinado diretamente com a barbearia.
+            </p>
+
+            {/* LGPD Art. 9º: o titular precisa saber, NO MOMENTO DA COLETA, quem
+                trata os dados e para quê. Fica aqui, junto do botão, e não num
+                rodapé distante — é neste clique que o dado é entregue. */}
+            <p
+              className="text-[0.7rem] leading-relaxed text-center mt-3"
+              style={T.textMuted}
+            >
+              Ao confirmar, {tenant.name} usa seu nome e telefone para realizar e
+              gerenciar este atendimento.
+              {tenant.privacy_policy_url ? (
+                <>
+                  {" "}
+                  <a
+                    href={tenant.privacy_policy_url}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="underline underline-offset-2 hover:opacity-80"
+                  >
+                    Política de Privacidade
+                  </a>
+                  .
+                </>
+              ) : null}
             </p>
           </div>
         </div>

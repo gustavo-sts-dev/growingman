@@ -5,6 +5,7 @@ import {
   siteSectionOrder,
 } from "@/lib/site-layout";
 import { bookingHref, type TemplateProps, formatPrice } from "./types";
+import { PolicyLinks } from "./PolicyLinks";
 
 /**
  * MINIMALISTA — silêncio e tipografia.
@@ -97,8 +98,9 @@ export function MinimalTemplate({ tenant, services, barbers }: TemplateProps) {
                       /* eslint-disable-next-line @next/next/no-img-element */
                       <img
                         src={svc.image_url}
-                        alt={svc.name}
-                        className="w-10 h-10 object-cover grayscale hidden sm:block shrink-0"
+                        alt=""
+                        aria-hidden="true"
+                        className="w-10 h-10 object-cover grayscale shrink-0"
                       />
                     )}
                     <div>
@@ -164,7 +166,8 @@ export function MinimalTemplate({ tenant, services, barbers }: TemplateProps) {
                     /* eslint-disable-next-line @next/next/no-img-element */
                     <img
                       src={b.avatarUrl}
-                      alt={b.name}
+                      alt=""
+                      aria-hidden="true"
                       className="w-8 h-8 object-cover rounded-full grayscale shrink-0"
                     />
                   )}
@@ -204,10 +207,11 @@ export function MinimalTemplate({ tenant, services, barbers }: TemplateProps) {
         </section>}
 
         <footer
-          className="py-8 border-t flex items-center justify-between text-[0.7rem] uppercase tracking-[0.2em]"
+          className="py-8 border-t flex flex-wrap items-center justify-between gap-x-6 gap-y-3 text-[0.7rem] uppercase tracking-[0.2em]"
           style={{ borderColor: line, color: "var(--theme-text)", order: 100 }}
         >
           <span style={{ color: "var(--theme-title)" }}>{tenant.name}</span>
+          <PolicyLinks tenant={tenant} />
           <span>Growingman</span>
         </footer>
       </div>

@@ -8,6 +8,7 @@ import {
   siteSectionOrder,
 } from "@/lib/site-layout";
 import { bookingHref, type TemplateProps, formatPrice } from "./types";
+import { PolicyLinks } from "./PolicyLinks";
 
 /**
  * VITRINE (showcase) — imersivo e fotográfico.
@@ -147,21 +148,39 @@ export function ShowcaseTemplate({ tenant, services, barbers }: TemplateProps) {
               {services.map((svc) => (
                 <div
                   key={svc.id}
-                  className="p-5 flex flex-col justify-between min-h-[150px] rounded-sm border transition-colors hover:border-[color-mix(in_srgb,var(--theme-accent)_50%,transparent)] relative overflow-hidden"
+                  className="p-5 flex flex-col justify-between min-h-[150px] rounded-sm border transition-colors hover:border-[color-mix(in_srgb,var(--theme-accent)_50%,transparent)] overflow-hidden"
                   style={{
                     backgroundColor: "var(--theme-card)",
                     borderColor: border,
                   }}
                 >
-                  {svc.image_url && (
-                    /* eslint-disable-next-line @next/next/no-img-element */
-                    <img
-                      src={svc.image_url}
-                      alt={svc.name}
-                      className="absolute inset-0 w-full h-full object-cover opacity-20"
-                    />
-                  )}
-                  <div className="relative z-10">
+                  {/* Foto e identificação formam UM bloco: o cartão usa
+                      justify-between, então três filhos soltos ganhariam vãos
+                      distribuídos entre si em vez de imagem+título no topo e
+                      preço embaixo. */}
+                  <div>
+                    {/* A foto entra como imagem normal. Antes ficava esticada
+                        por trás do texto a 20% de opacidade: a legibilidade do
+                        preço dependia de qual foto foi enviada, e quando ela não
+                        carregava o navegador desenhava o alt como marca d'água
+                        atravessando o cartão. */}
+                    {svc.image_url && (
+                      <div
+                        className="mb-4 aspect-[16/10] w-full overflow-hidden rounded-sm"
+                        style={{
+                          backgroundColor:
+                            "color-mix(in srgb, var(--theme-text) 8%, transparent)",
+                        }}
+                      >
+                        {/* eslint-disable-next-line @next/next/no-img-element */}
+                        <img
+                          src={svc.image_url}
+                          alt=""
+                          aria-hidden="true"
+                          className="h-full w-full object-cover"
+                        />
+                      </div>
+                    )}
                     <h3
                       className="uppercase font-semibold text-lg leading-tight"
                       style={{ ...cond, color: "var(--theme-title)" }}
@@ -175,7 +194,7 @@ export function ShowcaseTemplate({ tenant, services, barbers }: TemplateProps) {
                       {svc.duration_minutes} min
                     </p>
                   </div>
-                  <div className="relative z-10 mt-4 flex flex-col items-start gap-3 md:flex-row md:items-end md:justify-between">
+                  <div className="mt-4 flex flex-col items-start gap-3 md:flex-row md:items-end md:justify-between">
                     <p
                       className="font-bold text-2xl"
                       style={{ ...cond, color: "var(--theme-accent)" }}
@@ -216,31 +235,38 @@ export function ShowcaseTemplate({ tenant, services, barbers }: TemplateProps) {
             </h2>
             <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-2 md:gap-3">
               {barbers.map((b) => (
-                <div
-                  key={b.id}
-                  className="relative aspect-[3/4] rounded-sm overflow-hidden flex items-end p-4"
-                  style={{
-                    background:
-                      "linear-gradient(to top, color-mix(in srgb, var(--theme-accent) 22%, var(--theme-card)), var(--theme-card))",
-                  }}
-                >
-                  {b.avatarUrl ? (
-                    /* eslint-disable-next-line @next/next/no-img-element */
-                    <img
-                      src={b.avatarUrl}
-                      alt={b.name}
-                      className="absolute inset-0 w-full h-full object-cover mix-blend-overlay opacity-80"
-                    />
-                  ) : (
-                    <span
-                      className="absolute top-3 right-4 text-6xl font-bold opacity-20"
-                      style={{ ...cond, color: "var(--theme-title)" }}
-                    >
-                      {b.name.charAt(0)}
-                    </span>
-                  )}
+                /* A foto do profissional deixou de ser fundo com o nome por
+                   cima: agora é imagem normal, e o nome vem abaixo dela. Assim
+                   o nome não depende do contraste da foto, e quem não tem foto
+                   cadastrada continua com a inicial no mesmo lugar. */
+                <div key={b.id} className="flex flex-col gap-2">
+                  <div
+                    className="aspect-[3/4] overflow-hidden rounded-sm"
+                    style={{
+                      background:
+                        "linear-gradient(to top, color-mix(in srgb, var(--theme-accent) 22%, var(--theme-card)), var(--theme-card))",
+                    }}
+                  >
+                    {b.avatarUrl ? (
+                      /* eslint-disable-next-line @next/next/no-img-element */
+                      <img
+                        src={b.avatarUrl}
+                        alt=""
+                        aria-hidden="true"
+                        className="h-full w-full object-cover"
+                      />
+                    ) : (
+                      <div
+                        className="flex h-full w-full items-center justify-center text-6xl font-bold opacity-20"
+                        style={{ ...cond, color: "var(--theme-title)" }}
+                        aria-hidden="true"
+                      >
+                        {b.name.charAt(0)}
+                      </div>
+                    )}
+                  </div>
                   <p
-                    className="uppercase font-semibold text-sm relative z-10"
+                    className="uppercase font-semibold text-sm"
                     style={{ ...cond, color: "var(--theme-title)" }}
                   >
                     {b.name}
@@ -275,12 +301,13 @@ export function ShowcaseTemplate({ tenant, services, barbers }: TemplateProps) {
         </Link>
       </section>}
       <footer
-        className="px-6 md:px-12 py-6 flex items-center justify-between text-xs uppercase tracking-widest"
+        className="px-6 md:px-12 py-6 flex flex-wrap items-center justify-between gap-x-6 gap-y-3 text-xs uppercase tracking-widest"
         style={{ color: "var(--theme-text)", order: 100 }}
       >
         <span style={{ ...cond, color: "var(--theme-title)" }}>
           {tenant.name}
         </span>
+        <PolicyLinks tenant={tenant} />
         <span>Powered by Growingman</span>
       </footer>
     </div>

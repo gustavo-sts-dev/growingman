@@ -24,6 +24,9 @@ export interface PublicTenant {
   stat_rating?: string | null;
   stat_experience?: string | null;
   site_layout?: unknown;
+  /** Documentos da barbearia, exibidos no rodapé pelos templates (LGPD Art. 9º). */
+  privacy_policy_url?: string | null;
+  terms_of_service_url?: string | null;
   [key: string]: unknown;
 }
 

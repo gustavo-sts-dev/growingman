@@ -9,6 +9,7 @@ import {
   siteSectionOrder,
 } from "@/lib/site-layout";
 import { bookingHref, type TemplateProps, formatPrice } from "./types";
+import { PolicyLinks } from "./PolicyLinks";
 
 /**
  * CONVERSÃO (split) — feito para agendar rápido.
@@ -149,8 +150,9 @@ export function SplitTemplate({ tenant, services, barbers }: TemplateProps) {
                       /* eslint-disable-next-line @next/next/no-img-element */
                       <img
                         src={svc.image_url}
-                        alt={svc.name}
-                        className="w-12 h-12 object-cover rounded-xl shrink-0 hidden sm:block"
+                        alt=""
+                        aria-hidden="true"
+                        className="w-12 h-12 object-cover rounded-xl shrink-0"
                       />
                     )}
                     <div className="min-w-0">
@@ -216,7 +218,8 @@ export function SplitTemplate({ tenant, services, barbers }: TemplateProps) {
                       /* eslint-disable-next-line @next/next/no-img-element */
                       <img
                         src={b.avatarUrl}
-                        alt={b.name}
+                        alt=""
+                        aria-hidden="true"
                         className="w-5 h-5 object-cover rounded-full shrink-0"
                       />
                     )}
@@ -227,12 +230,13 @@ export function SplitTemplate({ tenant, services, barbers }: TemplateProps) {
             </div>
           )}
 
-          <p
-            className="mt-8 text-xs"
+          <div
+            className="mt-8 flex flex-wrap items-center gap-x-5 gap-y-2 text-xs"
             style={{ color: "var(--theme-text)", opacity: 0.7, order: 100 }}
           >
-            Powered by Growingman
-          </p>
+            <PolicyLinks tenant={tenant} />
+            <span>Powered by Growingman</span>
+          </div>
         </div>
       </div>
     </div>

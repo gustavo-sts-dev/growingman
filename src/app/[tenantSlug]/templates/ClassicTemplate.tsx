@@ -15,6 +15,7 @@ import {
   siteSectionOrder,
 } from "@/lib/site-layout";
 import { bookingHref, type TemplateProps, formatPrice, realStats } from "./types";
+import { PolicyLinks } from "./PolicyLinks";
 
 /**
  * CLÁSSICO — barbearia premium tradicional.
@@ -293,7 +294,8 @@ export function ClassicTemplate({ tenant, services, barbers }: TemplateProps) {
                       /* eslint-disable-next-line @next/next/no-img-element */
                       <img
                         src={b.avatarUrl}
-                        alt={b.name}
+                        alt=""
+                        aria-hidden="true"
                         className="w-full h-full object-cover"
                       />
                     ) : (
@@ -390,7 +392,7 @@ function ClassicFooter({
         style={{ borderColor: border, order: 100 }}
       >
         <div
-          className="max-w-5xl mx-auto flex items-center justify-between text-sm"
+          className="max-w-5xl mx-auto flex flex-wrap items-center justify-between gap-x-6 gap-y-3 text-sm"
           style={{ color: "var(--theme-text)" }}
         >
           <span
@@ -399,6 +401,7 @@ function ClassicFooter({
           >
             {tenant.name}
           </span>
+          <PolicyLinks tenant={tenant} />
           <p>
             Powered by{" "}
             <span
