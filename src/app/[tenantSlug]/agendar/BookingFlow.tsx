@@ -155,7 +155,6 @@ export function BookingFlow({
   const checkoutRef = useRef<HTMLDivElement | null>(null);
   const confirmationRef = useRef<HTMLDivElement | null>(null);
   const pendingSectionScroll = useRef(false);
-  const wasBaseValid = useRef(false);
   const [loading, setLoading] = useState(false);
   const [loadingHours, setLoadingHours] = useState(false);
   const [availableHours, setAvailableHours] = useState<string[]>([]);
@@ -230,18 +229,14 @@ export function BookingFlow({
     return () => window.cancelAnimationFrame(frame);
   }, [activeSection]);
 
-  // Quando os dados pessoais ficam válidos, revela a ação final sem tirar
-  // abruptamente o campo em edição da tela.
-  useEffect(() => {
-    const justCompleted = isBaseValid && !wasBaseValid.current;
-    wasBaseValid.current = isBaseValid;
-    if (!justCompleted) return;
-
-    const frame = window.requestAnimationFrame(() => {
-      scrollToElement(checkoutRef.current, "nearest");
-    });
-    return () => window.cancelAnimationFrame(frame);
-  }, [isBaseValid]);
+  // NÃO rolar quando os dados ficam válidos.
+  //
+  // Havia aqui um scroll até o bloco de confirmação, disparado assim que
+  // `isBaseValid` virava true. Como "nome válido" exige nome E sobrenome, ele
+  // disparava no meio da digitação do sobrenome — a página pulava com o teclado
+  // aberto e tirava do campo justamente quem ainda estava escrevendo nele.
+  //
+  // O bloco continua aparecendo; quem decide ir até ele é o cliente.
 
   useEffect(() => {
     if (!confirmed || !bookingSummary) return;
