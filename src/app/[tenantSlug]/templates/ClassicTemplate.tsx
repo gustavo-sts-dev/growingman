@@ -282,7 +282,11 @@ export function ClassicTemplate({ tenant, services, barbers }: TemplateProps) {
             >
               Profissionais de Elite
             </h2>
-            <div className="flex gap-5 overflow-x-auto pb-4">
+            {/* `w-full min-w-0`: os cartões são `shrink-0` de 200px, então a
+                soma passa da tela. Sem largura explícita, a faixa sairia do
+                tamanho do conteúdo e empurraria a página, em vez de rolar
+                sozinha — mesmo caso da barra de abas do painel. */}
+            <div className="flex w-full min-w-0 gap-5 overflow-x-auto pb-4">
               {barbers.map((b) => (
                 <div
                   key={b.id}

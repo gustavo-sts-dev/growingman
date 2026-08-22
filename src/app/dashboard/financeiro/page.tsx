@@ -333,8 +333,12 @@ export default function FinanceiroPage() {
         </p>
       </div>
 
-      {/* Tabs */}
-      <div className="flex border-b border-white/[0.08] overflow-x-auto">
+      {/* Tabs
+          `min-w-0` + `w-full`: os botões são `whitespace-nowrap` e somam mais
+          que a tela. Sem largura explícita, a barra saía com a largura somada
+          dos filhos em vez da largura do pai — ela rolava por dentro E ainda
+          empurrava a página, que era a barra de rolagem extra no rodapé. */}
+      <div className="flex w-full min-w-0 overflow-x-auto border-b border-white/[0.08]">
         {TABS.map((tab) => (
           <button
             key={tab.key}
