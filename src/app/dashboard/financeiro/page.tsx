@@ -597,8 +597,12 @@ export default function FinanceiroPage() {
           {/* TAB: CAIXA */}
           {activeTab === "caixa" && (
             <div className="space-y-6">
-              <div className="flex items-center justify-between p-6 rounded-2xl border border-white/[0.06] bg-gradient-to-r from-white/[0.02] to-transparent">
-                <div>
+              {/* `flex-wrap` + `min-w-0`: todo Button do projeto é
+                  `whitespace-nowrap`, então ele não encolhe e vira piso rígido
+                  da linha. Sem quebra, a soma "texto + botão" empurrava o
+                  container além da tela em celular estreito. */}
+              <div className="flex flex-wrap items-center justify-between gap-4 rounded-2xl border border-white/[0.06] bg-gradient-to-r from-white/[0.02] to-transparent p-4 sm:p-6">
+                <div className="min-w-0">
                   <h3 className="text-lg font-bold flex items-center gap-2">
                     {cashRegister ? (
                       <Unlock className="w-5 h-5 text-green-400" />
@@ -632,7 +636,7 @@ export default function FinanceiroPage() {
               </div>
 
               <div>
-                <div className="flex items-center justify-between mb-4">
+                <div className="mb-4 flex flex-wrap items-center justify-between gap-3">
                   <h3 className="font-semibold text-lg">Lançamentos</h3>
                   <Button
                     variant="ghost"
