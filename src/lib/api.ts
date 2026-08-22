@@ -66,8 +66,22 @@ export async function apiFetch(
   if (!isRefreshing) {
     isRefreshing = true;
 
-    const success = await tryRefresh();
-    isRefreshing = false;
+    let success = false;
+    try {
+      success = await tryRefresh();
+    } finally {
+      isRefreshing = false;
+      // AVISA OS QUE ESPERAM EM QUALQUER DESFECHO.
+      //
+      // Antes isto só era chamado no sucesso. Quando o refresh falhava — ou
+      // seja, exatamente quando a sessão expirava por inatividade — as outras
+      // requisições que estavam aguardando NUNCA eram resolvidas. As páginas do
+      // painel disparam 4 ou 5 chamadas em paralelo: a primeira tentava o
+      // refresh e as demais ficavam penduradas para sempre, então o `Promise.all`
+      // nunca terminava, o `finally` que desliga o "carregando" nunca rodava e a
+      // tela ficava presa no esqueleto — sem conteúdo, e por isso sem rolagem.
+      onRefreshed(success);
+    }
 
     if (!success) {
       try {
@@ -80,7 +94,6 @@ export async function apiFetch(
       return response;
     }
 
-    onRefreshed(true);
     return makeRequest(); // repete com novo token (nos cookies)
   }
 
