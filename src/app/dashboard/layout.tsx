@@ -341,8 +341,16 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
           </div>
         </header>
 
-        {/* Page content */}
-        <div className="flex-1 p-4 sm:p-6 md:p-8 overflow-y-auto">
+        {/* Page content
+            `overflow-x-clip`: a coluna de conteúdo do painel não rola na
+            horizontal — quem rola são os componentes que têm scroller próprio
+            (barra de abas, tabelas). Sem isso, qualquer filho que estoure a
+            largura arrasta a página inteira junto.
+
+            `clip` e não `hidden` de propósito: `hidden` cria um contexto de
+            rolagem e quebraria o `position: sticky` do cabeçalho e dos
+            componentes internos. `clip` só corta, sem virar scroller. */}
+        <div className="flex-1 overflow-y-auto overflow-x-clip p-4 sm:p-6 md:p-8">
           {children}
         </div>
       </main>
