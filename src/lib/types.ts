@@ -59,7 +59,12 @@ export const BOOKING_STATUS_LABEL: Record<BookingStatus, string> = {
   "no-show": "Não compareceu",
 };
 
-export type UserRole = "TENANT_ADMIN" | "BARBER" | "RECEPTIONIST" | "CUSTOMER";
+export type UserRole =
+  | "SUPERADMIN"
+  | "TENANT_ADMIN"
+  | "BARBER"
+  | "RECEPTIONIST"
+  | "CUSTOMER";
 
 export type TransactionType =
   | "INCOME"
@@ -344,4 +349,47 @@ export interface Review {
   comment: string | null;
   isApproved: boolean;
   createdAt: string;
+}
+
+
+// ──────────────────────────────────────────────────────────
+// Painel da plataforma (/admin) — visão cross-tenant, só SUPERADMIN
+// ──────────────────────────────────────────────────────────
+export interface AdminOverview {
+  tenants: {
+    total: number;
+    active: number;
+    inTrial: number;
+    newLast30Days: number;
+  };
+  barbers: { active: number };
+  customers: { total: number };
+  bookings: {
+    total: number;
+    last30Days: number;
+    /** Chave = status do agendamento (CONFIRMED, COMPLETED, ...). */
+    byStatus: Record<string, number>;
+  };
+  revenue: {
+    /** Soma das mensalidades das barbearias que já saíram da cortesia. */
+    monthlyRecurringRevenue: number;
+    billableTenants: number;
+  };
+  generatedAt: string;
+}
+
+export interface AdminTenantRow {
+  id: string;
+  name: string;
+  slug: string;
+  isActive: boolean;
+  trialEndsAt: string | null;
+  createdAt: string;
+  activeBarbers: number;
+  customers: number;
+  bookings: number;
+  inTrial: boolean;
+  /** Mensalidade calculada — existe mesmo em cortesia, mas aí não é cobrada. */
+  monthlyPrice: number;
+  billedNow: boolean;
 }
