@@ -21,6 +21,39 @@ const SIZE: Record<NonNullable<ModalProps["size"]>, string> = {
   lg: "max-w-lg",
 };
 
+/**
+ * Trava de rolagem do body, contada.
+ *
+ * Antes cada modal guardava o `overflow` anterior ao abrir e o devolvia ao
+ * fechar. Com mais de um modal na mesma tela — a agenda tem cinco — o segundo a
+ * abrir capturava "hidden" como "valor anterior" e o restaurava ao fechar,
+ * deixando a página sem rolagem até recarregar. Como dependia da ordem de
+ * abertura, travava "do nada".
+ *
+ * Com contador: só o primeiro a abrir guarda o valor original e trava; só o
+ * último a fechar destrava. Módulo-nível de propósito — a contagem tem que ser
+ * compartilhada entre TODAS as instâncias.
+ */
+let openModalCount = 0;
+let overflowBeforeLock = "";
+
+function lockBodyScroll() {
+  if (openModalCount === 0) {
+    overflowBeforeLock = document.body.style.overflow;
+    document.body.style.overflow = "hidden";
+  }
+  openModalCount += 1;
+}
+
+function unlockBodyScroll() {
+  // `Math.max` protege contra desmontagem fora de ordem: sem ele, um unlock a
+  // mais deixaria o contador negativo e o próximo lock nunca travaria.
+  openModalCount = Math.max(0, openModalCount - 1);
+  if (openModalCount === 0) {
+    document.body.style.overflow = overflowBeforeLock;
+  }
+}
+
 export function Modal({ open, onClose, title, description, children, size = "md" }: ModalProps) {
   const panelRef = React.useRef<HTMLDivElement>(null);
   const previousFocusRef = React.useRef<HTMLElement | null>(null);
@@ -47,7 +80,6 @@ export function Modal({ open, onClose, title, description, children, size = "md"
   React.useEffect(() => {
     if (!open) return;
     previousFocusRef.current = document.activeElement as HTMLElement | null;
-    const previousOverflow = document.body.style.overflow;
     const focusableSelector =
       'button:not([disabled]), [href], input:not([disabled]), select:not([disabled]), textarea:not([disabled]), [tabindex]:not([tabindex="-1"])';
 
@@ -76,7 +108,7 @@ export function Modal({ open, onClose, title, description, children, size = "md"
     };
 
     document.addEventListener("keydown", onKey);
-    document.body.style.overflow = "hidden";
+    lockBodyScroll();
     const frame = window.requestAnimationFrame(() => {
       const first = panelRef.current?.querySelector<HTMLElement>(focusableSelector);
       // `preventScroll`: focar um elemento faz o navegador rolar os ancestrais
@@ -89,7 +121,7 @@ export function Modal({ open, onClose, title, description, children, size = "md"
     return () => {
       window.cancelAnimationFrame(frame);
       document.removeEventListener("keydown", onKey);
-      document.body.style.overflow = previousOverflow;
+      unlockBodyScroll();
       previousFocusRef.current?.focus();
     };
   }, [open]);

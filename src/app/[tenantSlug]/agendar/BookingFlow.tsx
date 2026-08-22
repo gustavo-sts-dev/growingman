@@ -30,6 +30,13 @@ import {
  */
 const MAX_ADVANCE_DAYS = 5;
 
+/**
+ * Serviços combináveis num mesmo agendamento. Precisa bater com
+ * MAX_SERVICES_PER_BOOKING no backend — aqui é só para a tela não oferecer o
+ * que a API vai recusar; quem decide é o backend.
+ */
+const MAX_SERVICES = 3;
+
 interface TenantLite {
   id: string;
   slug: string;
@@ -149,6 +156,23 @@ export function BookingFlow({
   /** Alterna a seção: abre se estiver fechada, recolhe se já estiver aberta. */
   const toggleSection = (section: SectionType) =>
     setActiveSection((current) => (current === section ? null : section));
+
+  /**
+   * Marca/desmarca um serviço, respeitando o teto.
+   *
+   * Alternar em vez de substituir é a mudança central: antes o clique trocava a
+   * escolha e já avançava de etapa, o que impedia combinar corte + barba. Agora
+   * quem decide avançar é o botão "Continuar" abaixo da lista.
+   */
+  const toggleService = (serviceId: string) =>
+    setFormData((f) => {
+      const jaEscolhido = f.serviceIds.includes(serviceId);
+      if (jaEscolhido) {
+        return { ...f, serviceIds: f.serviceIds.filter((id) => id !== serviceId) };
+      }
+      if (f.serviceIds.length >= MAX_SERVICES) return f;
+      return { ...f, serviceIds: [...f.serviceIds, serviceId] };
+    });
   const sectionRefs = useRef<
     Partial<Record<SectionType, HTMLDivElement | null>>
   >({});
@@ -167,7 +191,7 @@ export function BookingFlow({
   const [knownClient, setKnownClient] = useState<string | null>(null);
 
   const [formData, setFormData] = useState({
-    serviceId: initialServiceId,
+    serviceIds: initialServiceId ? [initialServiceId] : ([] as string[]),
     barberId: "",
     date: "",
     time: "",
@@ -175,12 +199,21 @@ export function BookingFlow({
     telefone: "",
   });
 
-  const getServiceInfo = (id: string) => services.find((s) => s.id === id);
   const getBarberInfo = (id: string) => barbers.find((b) => b.id === id);
-  const getPrice = () => {
-    const s = getServiceInfo(formData.serviceId);
-    return s ? Number(s.base_price) : 0;
-  };
+  /** Serviços escolhidos, na ordem em que aparecem na lista. */
+  const selectedServices = useMemo(
+    () => services.filter((s) => formData.serviceIds.includes(s.id)),
+    [services, formData.serviceIds],
+  );
+
+  /** Preço e duração agora são a SOMA — o cliente pode combinar até três. */
+  const getPrice = () =>
+    selectedServices.reduce((soma, s) => soma + Number(s.base_price), 0);
+
+  const totalDuration = selectedServices.reduce(
+    (soma, s) => soma + s.duration_minutes,
+    0,
+  );
 
   const getInitials = (name: string) => {
     if (!name) return "B";
@@ -204,7 +237,7 @@ export function BookingFlow({
   const isValidUser = isValidName && phoneValid;
 
   const isBaseValid = !!(
-    formData.serviceId &&
+    formData.serviceIds.length > 0 &&
     formData.barberId &&
     formData.date &&
     formData.time &&
@@ -297,7 +330,7 @@ export function BookingFlow({
       try {
         const res = await fetch(
           apiUrl(
-            `/bookings/availability?barberId=${formData.barberId}&date=${formData.date}&serviceId=${formData.serviceId}`,
+            `/bookings/availability?barberId=${formData.barberId}&date=${formData.date}&serviceIds=${formData.serviceIds.join(",")}`,
           ),
         );
         if (res.ok) {
@@ -321,14 +354,14 @@ export function BookingFlow({
     // formData.time é lido para revalidar o horário escolhido, mas não deve
     // disparar o efeito (evita refetch ao apenas selecionar a hora).
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [formData.barberId, formData.date, formData.serviceId]);
+  }, [formData.barberId, formData.date, formData.serviceIds]);
 
   /** Monta um snapshot legível do agendamento para a tela de confirmação. */
   const buildSummary = (): BookingSummary => {
-    const s = getServiceInfo(formData.serviceId);
     const b = getBarberInfo(formData.barberId);
     return {
-      serviceName: s?.name ?? "",
+      // Combo aparece como "Corte + Barba" no comprovante.
+      serviceName: selectedServices.map((s) => s.name).join(" + "),
       barberName: b?.name ?? "",
       barberPhone: b?.phone,
       dateLabel: formData.date.split("-").reverse().join("/"),
@@ -346,7 +379,7 @@ export function BookingFlow({
     try {
       const payload = {
         tenantId: tenant.id,
-        serviceId: formData.serviceId,
+        serviceIds: formData.serviceIds,
         barberId: formData.barberId,
         date: formData.date,
         time: formData.time,
@@ -457,26 +490,27 @@ export function BookingFlow({
             <div className="flex items-center gap-4">
               {getStepCircle(
                 1,
-                !!formData.serviceId,
+                formData.serviceIds.length > 0,
                 activeSection === "service",
               )}
               <div className="text-left">
                 <h3
                   className="font-bold text-lg"
                   style={
-                    activeSection === "service" || formData.serviceId
+                    activeSection === "service" || formData.serviceIds.length > 0
                       ? T.title
                       : T.textMuted
                   }
                 >
                   O que você deseja?
                 </h3>
-                {formData.serviceId && activeSection !== "service" && (
+                {selectedServices.length > 0 && activeSection !== "service" && (
                   <p
                     className="text-sm font-medium mt-0.5"
                     style={T.textMuted}
                   >
-                    {getServiceInfo(formData.serviceId)?.name}
+                    {selectedServices.map((s) => s.name).join(" + ")}
+                    {totalDuration > 0 && ` · ${totalDuration} min`}
                   </p>
                 )}
               </div>
@@ -490,15 +524,20 @@ export function BookingFlow({
           {activeSection === "service" && (
             <div className="px-5 pb-5 pt-2 grid gap-3">
               {services.map((s) => {
-                const selected = formData.serviceId === s.id;
+                const selected = formData.serviceIds.includes(s.id);
+                // Cheio: os não escolhidos ficam inertes, em vez de aceitarem o
+                // clique e falharem em silêncio.
+                const bloqueado =
+                  !selected && formData.serviceIds.length >= MAX_SERVICES;
                 return (
                   <button
                     key={s.id}
-                    onClick={() => {
-                      setFormData({ ...formData, serviceId: s.id });
-                      advanceToSection("barber");
-                    }}
-                    className="w-full text-left p-4 rounded-xl border transition-all flex justify-between items-center"
+                    onClick={() => toggleService(s.id)}
+                    disabled={bloqueado}
+                    aria-pressed={selected}
+                    className={`w-full text-left p-4 rounded-xl border transition-all flex justify-between items-center ${
+                      bloqueado ? "opacity-40 cursor-not-allowed" : ""
+                    }`}
                     style={
                       selected
                         ? { ...T.surfaceStrong, ...T.borderStrong }
@@ -544,6 +583,30 @@ export function BookingFlow({
                   </button>
                 );
               })}
+
+              {/* O clique não avança mais sozinho — é preciso poder marcar um
+                  segundo e um terceiro serviço antes de seguir. */}
+              <div className="flex flex-col gap-3 pt-1">
+                <p className="text-xs font-medium" style={T.textMuted}>
+                  {formData.serviceIds.length >= MAX_SERVICES
+                    ? `Máximo de ${MAX_SERVICES} serviços por agendamento.`
+                    : `Você pode combinar até ${MAX_SERVICES} serviços.`}
+                </p>
+
+                <button
+                  onClick={() => advanceToSection("barber")}
+                  disabled={formData.serviceIds.length === 0}
+                  className="w-full py-3.5 rounded-xl font-bold transition-all disabled:opacity-40 disabled:cursor-not-allowed"
+                  style={T.buttonPrimary}
+                >
+                  {selectedServices.length > 0
+                    ? `Continuar · ${new Intl.NumberFormat("pt-BR", {
+                        style: "currency",
+                        currency: "BRL",
+                      }).format(getPrice())} · ${totalDuration} min`
+                    : "Escolha um serviço"}
+                </button>
+              </div>
             </div>
           )}
         </div>
@@ -553,7 +616,7 @@ export function BookingFlow({
           ref={(node) => {
             sectionRefs.current.barber = node;
           }}
-          className={`${sectionStyle} scroll-mt-6 ${!formData.serviceId ? "opacity-50 pointer-events-none" : ""}`}
+          className={`${sectionStyle} scroll-mt-6 ${formData.serviceIds.length === 0 ? "opacity-50 pointer-events-none" : ""}`}
           style={sectionShell(activeSection === "barber")}
         >
           <button

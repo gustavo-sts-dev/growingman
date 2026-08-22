@@ -30,6 +30,12 @@ import {
   Trash2,
 } from "lucide-react";
 
+/**
+ * Serviços combináveis num mesmo agendamento. Precisa bater com
+ * MAX_SERVICES_PER_BOOKING no backend.
+ */
+const MAX_SERVICES = 3;
+
 interface Barber {
   id: string;
   name: string;
@@ -349,7 +355,9 @@ export default function AgendaPage() {
       // VAZIOS e o id escondido em `notes`, o que o backend rejeitava ("Too small").
       const payload = {
         barberId: newBooking.barberId,
-        serviceId: newBooking.serviceIds[0],
+        // A UI aqui sempre foi de múltipla escolha (checkboxes), mas o envio
+        // truncava em [0] porque a API só aceitava um. Agora vai a lista toda.
+        serviceIds: newBooking.serviceIds,
         date: selectedDate,
         time: newBooking.time,
         ...(newBooking.clientId
@@ -1180,6 +1188,10 @@ export default function AgendaPage() {
                   <input
                     type="checkbox"
                     checked={newBooking.serviceIds.includes(s.id)}
+                    disabled={
+                      !newBooking.serviceIds.includes(s.id) &&
+                      newBooking.serviceIds.length >= MAX_SERVICES
+                    }
                     onChange={(e) => {
                       if (e.target.checked) {
                         setNewBooking({
