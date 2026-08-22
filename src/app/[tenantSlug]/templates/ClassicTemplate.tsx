@@ -90,8 +90,13 @@ export function ClassicTemplate({ tenant, services, barbers }: TemplateProps) {
             />
             Agendamento online disponível
           </div>
+          {/* `w-full` não é decorativo: o pai é `flex flex-col items-center`, e
+              em coluna flex o item é dimensionado pelo CONTEÚDO. Um nome longo
+              sem espaço ("GROWINGMAN") vira uma caixa mais larga que a tela, e
+              `break-words` não ajuda — ele não reduz a largura mínima intrínseca
+              de uma palavra só. Com largura definida, a quebra passa a valer. */}
           <h1
-            className="mb-5 break-words text-[clamp(2.75rem,14vw,4rem)] font-black leading-[0.92] tracking-[-0.03em] md:mb-6 md:text-[clamp(3.2rem,11vw,8rem)]"
+            className="mb-5 w-full break-words text-[clamp(2.75rem,14vw,4rem)] font-black leading-[0.92] tracking-[-0.03em] md:mb-6 md:text-[clamp(3.2rem,11vw,8rem)]"
             style={{ ...heading, color: "var(--theme-title)" }}
           >
             {headline}

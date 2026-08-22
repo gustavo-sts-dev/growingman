@@ -1,6 +1,7 @@
 "use client";
 
 import * as React from "react";
+import { createPortal } from "react-dom";
 import { X } from "lucide-react";
 import { cn } from "@/lib/utils";
 
@@ -26,6 +27,18 @@ export function Modal({ open, onClose, title, description, children, size = "md"
   const onCloseRef = React.useRef(onClose);
   const titleId = React.useId();
   const descriptionId = React.useId();
+  // `document` não existe no render do servidor, então o portal só entra depois
+  // de montar. Sem isso o build do Next quebra.
+  //
+  // É exatamente o caso que a regra do lint existe para evitar — estado setado
+  // em efeito — mas aqui é intencional: o próprio ato de montar no cliente é a
+  // informação que falta no servidor. Checar `typeof document` no render em vez
+  // disso causaria divergência de hidratação quando o modal já nasce aberto.
+  const [mounted, setMounted] = React.useState(false);
+  React.useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect
+    setMounted(true);
+  }, []);
 
   React.useEffect(() => {
     onCloseRef.current = onClose;
@@ -66,7 +79,11 @@ export function Modal({ open, onClose, title, description, children, size = "md"
     document.body.style.overflow = "hidden";
     const frame = window.requestAnimationFrame(() => {
       const first = panelRef.current?.querySelector<HTMLElement>(focusableSelector);
-      (first ?? panelRef.current)?.focus();
+      // `preventScroll`: focar um elemento faz o navegador rolar os ancestrais
+      // para revelá-lo. O painel é `fixed` (coordenadas de viewport), então essa
+      // rolagem não serve para nada — e era ela que deslocava o container do
+      // dashboard na horizontal ao abrir o modal.
+      (first ?? panelRef.current)?.focus({ preventScroll: true });
     });
 
     return () => {
@@ -77,11 +94,23 @@ export function Modal({ open, onClose, title, description, children, size = "md"
     };
   }, [open]);
 
-  if (!open) return null;
+  if (!open || !mounted) return null;
 
-  return (
+  /**
+   * Renderizado em `document.body`, não onde foi declarado.
+   *
+   * As páginas do painel vivem dentro de um container com `overflow-y-auto`, e
+   * pelo spec um eixo não-`visible` transforma o outro em `auto` — ou seja,
+   * aquele container também rola na horizontal. Um modal `fixed` declarado lá
+   * dentro fazia o navegador rolar esse container ao abrir, produzindo scroll
+   * lateral na página inteira.
+   *
+   * O portal também garante que o modal fique acima de qualquer contexto de
+   * empilhamento criado por ancestrais com transform, blur ou z-index.
+   */
+  return createPortal(
     <div
-      className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm animate-[fadeIn_0.15s_ease-out]"
+      className="fixed inset-0 z-50 flex items-center justify-center overflow-y-auto overscroll-contain p-4 bg-black/80 backdrop-blur-sm animate-[fadeIn_0.15s_ease-out]"
       onMouseDown={(e) => {
         if (e.target === e.currentTarget) onClose();
       }}
@@ -114,7 +143,8 @@ export function Modal({ open, onClose, title, description, children, size = "md"
         )}
         {children}
       </div>
-    </div>
+    </div>,
+    document.body,
   );
 }
 

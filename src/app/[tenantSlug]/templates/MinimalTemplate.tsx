@@ -41,8 +41,11 @@ export function MinimalTemplate({ tenant, services, barbers }: TemplateProps) {
           >
             {tenant.address || "Barbearia"}
           </p>
+          {/* `w-full`: mesmo caso do Classic — pai `flex flex-col items-center`
+              dimensiona o item pelo conteúdo, e nome longo sem espaço estoura a
+              tela. Ver o comentário lá para o porquê de `break-words` não bastar. */}
           <h1
-            className="mb-6 break-words text-[clamp(2rem,10vw,3rem)] md:mb-8 md:text-[clamp(2rem,7vw,4rem)]"
+            className="mb-6 w-full break-words text-[clamp(2rem,10vw,3rem)] md:mb-8 md:text-[clamp(2rem,7vw,4rem)]"
             style={{
               ...grotesk,
               color: "var(--theme-title)",
