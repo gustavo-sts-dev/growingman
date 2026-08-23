@@ -15,7 +15,7 @@ import {
 } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { apiUrl } from "@/lib/config";
-import { ProductShowcase } from "./ProductShowcase";
+import { ProductShowcase, type ShowcaseProduct } from "./ProductShowcase";
 import {
   brazilianDateInput,
   formatPhone,
@@ -208,6 +208,23 @@ export function BookingFlow({
     telefone: "",
   });
 
+  /**
+   * Produtos que o cliente marcou para levar.
+   *
+   * Guarda o OBJETO, e não só o id: o total precisa do preço, e reconsultar a
+   * vitrine para descobrir quanto custa o que já está na tela seria trabalho à toa.
+   * O servidor recalcula tudo a partir dos ids de qualquer forma — o preço daqui
+   * é só para exibir.
+   */
+  const [produtosEscolhidos, setProdutosEscolhidos] = useState<ShowcaseProduct[]>([]);
+
+  const alternarProduto = (produto: ShowcaseProduct) =>
+    setProdutosEscolhidos((atuais) =>
+      atuais.some((p) => p.id === produto.id)
+        ? atuais.filter((p) => p.id !== produto.id)
+        : [...atuais, produto],
+    );
+
   const getBarberInfo = (id: string) => barbers.find((b) => b.id === id);
   /** Serviços escolhidos, na ordem em que aparecem na lista. */
   const selectedServices = useMemo(
@@ -215,9 +232,15 @@ export function BookingFlow({
     [services, formData.serviceIds],
   );
 
-  /** Preço e duração agora são a SOMA — o cliente pode combinar até três. */
-  const getPrice = () =>
+  /** Total dos serviços escolhidos — o cliente pode combinar até três. */
+  const totalServicos = () =>
     selectedServices.reduce((soma, s) => soma + Number(s.base_price), 0);
+
+  const totalProdutos = () =>
+    produtosEscolhidos.reduce((soma, p) => soma + p.price, 0);
+
+  /** O que o cliente vai pagar: atendimento mais o que ele leva. */
+  const getPrice = () => totalServicos() + totalProdutos();
 
   const totalDuration = selectedServices.reduce(
     (soma, s) => soma + s.duration_minutes,
@@ -394,6 +417,10 @@ export function BookingFlow({
         time: formData.time,
         customerName: formData.nome.trim(),
         customerPhone: onlyDigits(formData.telefone),
+        // Só quando há algo: array vazio não significa nada e polui o payload.
+        ...(produtosEscolhidos.length > 0
+          ? { productIds: produtosEscolhidos.map((p) => p.id) }
+          : {}),
       };
       const res = await fetch(apiUrl("/bookings"), {
         method: "POST",
@@ -1182,7 +1209,7 @@ export function BookingFlow({
                   className="text-2xl font-bold"
                   style={T.title}
                 >
-                  {brl(getPrice() ?? 0)}
+                  {brl(totalServicos())}
                 </span>
               </div>
 
@@ -1192,9 +1219,42 @@ export function BookingFlow({
               <ProductShowcase
                 tenantId={tenant.id}
                 T={T}
+                selecionados={produtosEscolhidos.map((p) => p.id)}
+                onToggle={alternarProduto}
                 className="-mr-6 border-t pt-5 mt-5"
                 style={T.border}
               />
+
+              {/* Só aparece com produto marcado. O total do SERVIÇO fica lá em
+                  cima, junto dos serviços; aqui fecha o que o cliente vai pagar
+                  no total — assim nenhum dos dois rótulos mente. */}
+              {produtosEscolhidos.length > 0 && (
+                <div
+                  className="border-t pt-4 mt-4 space-y-2.5"
+                  style={T.border}
+                >
+                  {produtosEscolhidos.map((p) => (
+                    <ResumoLinha key={p.id} rotulo={p.name}>
+                      {brl(p.price)}
+                    </ResumoLinha>
+                  ))}
+
+                  <div className="flex items-center justify-between pt-1">
+                    <span
+                      className="text-sm font-medium"
+                      style={T.textMuted}
+                    >
+                      Total geral
+                    </span>
+                    <span
+                      className="text-2xl font-bold"
+                      style={T.title}
+                    >
+                      {brl(getPrice())}
+                    </span>
+                  </div>
+                </div>
+              )}
             </div>
 
             <button

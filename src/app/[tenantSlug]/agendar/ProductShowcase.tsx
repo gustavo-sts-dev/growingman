@@ -1,15 +1,15 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { ShoppingBag, X } from "lucide-react";
+import { Check, ShoppingBag, X } from "lucide-react";
 import { apiUrl } from "@/lib/config";
 
 /**
  * Vitrine de produtos da barbearia, no fim do agendamento.
  *
- * É um convite, não um carrinho: o cliente vê o que existe e pede no balcão. Não
- * há reserva nem cobrança aqui — juntar produto ao agendamento mexeria em preço,
- * estoque e pagamento, e nada disso está neste fluxo.
+ * O cliente marca o que quer levar, e o valor entra no total do agendamento.
+ * Estoque e caixa NÃO se movem aqui: a baixa acontece na conclusão do
+ * atendimento, quando o produto sai de fato da prateleira.
  *
  * Some por completo quando não há produto com estoque. Uma seção vazia
  * perguntando "quer levar um produto?" e não mostrando nenhum é pior que ausente.
@@ -28,6 +28,8 @@ interface Estilos {
   textMuted: React.CSSProperties;
   surface: React.CSSProperties;
   border: React.CSSProperties;
+  borderStrong: React.CSSProperties;
+  buttonPrimary: React.CSSProperties;
 }
 
 export function ProductShowcase({
@@ -35,9 +37,14 @@ export function ProductShowcase({
   T,
   className = "",
   style,
+  selecionados,
+  onToggle,
 }: {
   tenantId: string;
   T: Estilos;
+  /** Ids marcados. O estado vive no fluxo, que precisa dele para o total. */
+  selecionados: string[];
+  onToggle: (produto: ShowcaseProduct) => void;
   /** Espaçamento fica com quem posiciona: o componente não sabe onde será usado. */
   className?: string;
   /**
@@ -89,7 +96,7 @@ export function ProductShowcase({
         </button>
       </div>
       <p className="mb-4 text-sm" style={T.textMuted}>
-        Peça na barbearia no dia do seu horário.
+        Toque para adicionar ao seu atendimento. Você leva no dia.
       </p>
 
       {/*
@@ -106,11 +113,30 @@ export function ProductShowcase({
         style={{ scrollbarWidth: "thin" }}
       >
         {produtos.map((p) => (
-          <article
+          <button
             key={p.id}
-            className="w-40 shrink-0 snap-start overflow-hidden rounded-xl border"
-            style={{ ...T.surface, ...T.border }}
+            type="button"
+            onClick={() => onToggle(p)}
+            aria-pressed={selecionados.includes(p.id)}
+            className={`relative w-40 shrink-0 snap-start overflow-hidden rounded-xl border text-left transition-opacity hover:opacity-90 ${
+              selecionados.includes(p.id) ? "" : "opacity-100"
+            }`}
+            style={{
+              ...T.surface,
+              // Selecionado ganha borda de destaque; o resto fica na borda neutra.
+              ...(selecionados.includes(p.id) ? T.borderStrong : T.border),
+            }}
           >
+            {selecionados.includes(p.id) && (
+              /* Marca de seleção. Identidade nunca fica só na cor da borda: o
+                 ícone é o que diferencia para quem não distingue matiz. */
+              <span
+                className="absolute right-2 top-2 z-10 flex h-6 w-6 items-center justify-center rounded-full"
+                style={T.buttonPrimary}
+              >
+                <Check className="h-3.5 w-3.5" />
+              </span>
+            )}
             <div
               className="relative aspect-square w-full overflow-hidden"
               style={T.surface}
@@ -149,7 +175,7 @@ export function ProductShowcase({
                 }).format(p.price)}
               </p>
             </div>
-          </article>
+          </button>
         ))}
       </div>
     </div>
