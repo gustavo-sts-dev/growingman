@@ -393,3 +393,52 @@ export interface AdminTenantRow {
   monthlyPrice: number;
   billedNow: boolean;
 }
+
+// ── Assinatura e programa de indicação ────────────────────────────────────────
+
+export type SubscriptionStatus =
+  | "TRIAL"
+  | "ACTIVE"
+  | "OVERDUE"
+  | "SUSPENDED"
+  | "CANCELED";
+
+/** Retorno de `GET /tenants/my/subscription`. */
+export interface SubscriptionQuote {
+  basePrice: number;
+  pricePerBarber: number;
+  activeBarbers: number;
+  /** Valor antes dos descontos de indicação. */
+  subtotal: number;
+  discountPercent: number;
+  discountValue: number;
+  /** O que será efetivamente cobrado. */
+  total: number;
+}
+
+export type ReferralDiscountStatus = "PENDING" | "ACTIVE" | "EXPIRED";
+
+export interface ReferralDiscount {
+  id: string;
+  status: ReferralDiscountStatus;
+  percent: number;
+  /** Nulo enquanto o desconto espera na fila: o prazo só corre quando ativa. */
+  expiresAt: string | null;
+}
+
+export interface ReferralEntry {
+  id: string;
+  name: string;
+  /** Vira true quando a barbearia indicada paga a primeira mensalidade. */
+  confirmed: boolean;
+  createdAt: string;
+}
+
+/** Retorno de `GET /tenants/my/referrals`. */
+export interface ReferralSummary {
+  code: string;
+  discountPercent: number;
+  maxSimultaneous: number;
+  discounts: ReferralDiscount[];
+  referrals: ReferralEntry[];
+}

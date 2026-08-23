@@ -5,7 +5,7 @@ import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import {
   Scissors, Calendar, Users, Briefcase, BarChart3,
-  Settings, Bell, Search, LogOut, ExternalLink, Zap, DollarSign, Star, Package, Menu, X, TrendingUp, CornerDownLeft,
+  Settings, Bell, Search, LogOut, ExternalLink, Zap, DollarSign, Star, Package, Menu, X, TrendingUp, CornerDownLeft, CreditCard,
   type LucideIcon
 } from "lucide-react";
 import { Input } from "@/components/ui/input";
@@ -32,6 +32,9 @@ const BARBER_ALLOWED = ["/dashboard", "/dashboard/agenda", "/dashboard/meu-desem
 const BARBER_ONLY = ["/dashboard/meu-desempenho"];
 
 const settingsItems = [
+  // Fica no bloco de Configurações porque este bloco inteiro já é escondido do
+  // perfil BARBER — mensalidade e código de indicação são assunto do dono.
+  { href: "/dashboard/assinatura", growingman: CreditCard, label: "Assinatura", exact: false },
   { href: "/dashboard/configuracoes", growingman: Settings, label: "Ajustes do App", exact: false },
 ];
 

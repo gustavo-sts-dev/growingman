@@ -37,6 +37,7 @@ export default function OnboardingFlow() {
   const [adminPassword, setAdminPassword] = useState("");
   const [tenantName, setTenantName] = useState("");
   const [tenantSlug, setTenantSlug] = useState("");
+  const [referralCode, setReferralCode] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const [errorMsg, setErrorMsg] = useState("");
   const [copied, setCopied] = useState(false);
@@ -88,6 +89,8 @@ export default function OnboardingFlow() {
           adminPassword,
           tenantName: tenantName.trim(),
           tenantSlug,
+          // Opcional. Vazio não vai como "": o backend trata ausência, não string vazia.
+          ...(referralCode ? { referralCode } : {}),
         }),
       });
 
@@ -252,6 +255,25 @@ export default function OnboardingFlow() {
                       onChange={(event) => setTenantSlug(normalizeSlug(event.target.value))}
                     />
                   </div>
+                </Field>
+
+                <Field id="referral-code" label="Código de indicação (opcional)">
+                  <TextInput
+                    id="referral-code"
+                    value={referralCode}
+                    placeholder="Ex.: ABCD2345"
+                    maxLength={16}
+                    // Os códigos são gerados e comparados em caixa alta; normalizar
+                    // aqui evita que quem digitar minúsculo perca o desconto de
+                    // quem o indicou.
+                    onChange={(event) =>
+                      setReferralCode(event.target.value.toUpperCase().replace(/[^A-Z0-9]/g, ""))
+                    }
+                  />
+                  <p className="mt-1.5 text-[0.72rem] leading-4 text-[#8a857c]">
+                    Recebeu o código de outra barbearia? Ela ganha desconto quando
+                    você assinar.
+                  </p>
                 </Field>
               </div>
 
