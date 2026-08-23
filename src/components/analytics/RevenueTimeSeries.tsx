@@ -93,6 +93,20 @@ export function RevenueTimeSeries({ points }: { points: AnalyticsSeriesPoint[] }
     Math.ceil(points.length / Math.max(1, Math.floor(plotW / 48))),
   );
 
+  /**
+   * Quais dias recebem rótulo no eixo X.
+   *
+   * O último dia é a borda que o leitor procura, então entra fora do passo — mas
+   * só se estiver a pelo menos meio passo do rótulo anterior. Sem essa condição,
+   * um período cujo tamanho não é múltiplo do passo (44 dias com passo 3, por
+   * exemplo) coloca dois rótulos colados justamente na ponta mais consultada.
+   */
+  const rotulados = new Set<number>();
+  for (let i = 0; i < points.length; i += passoRotulo) rotulados.add(i);
+  const ultimo = points.length - 1;
+  const anteriorRotulado = Math.floor(ultimo / passoRotulo) * passoRotulo;
+  if (ultimo - anteriorRotulado >= Math.ceil(passoRotulo / 2)) rotulados.add(ultimo);
+
   const aoMover = (e: React.MouseEvent<SVGRectElement>) => {
     if (points.length === 0 || plotW <= 0) return;
     const rect = e.currentTarget.getBoundingClientRect();
@@ -156,7 +170,7 @@ export function RevenueTimeSeries({ points }: { points: AnalyticsSeriesPoint[] }
 
           {/* Rótulos do eixo X. */}
           {points.map((p, i) =>
-            i % passoRotulo === 0 || i === points.length - 1 ? (
+            rotulados.has(i) ? (
               <text
                 key={p.date}
                 x={x(i)}

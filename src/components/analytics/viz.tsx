@@ -12,8 +12,9 @@ import { Table2, BarChart3 } from "lucide-react";
  * entre barras, régua sólida de um tom acima da superfície) que uma biblioteca
  * genérica obrigaria a desfazer por CSS.
  *
- * A série temporal é a exceção e usa `react-charts` — é a única com eixo de
- * tempo contínuo, onde ticks e crosshair valem a dependência.
+ * A série temporal segue a mesma decisão, em `RevenueTimeSeries`: começou numa
+ * biblioteca e voltou para SVG escrito à mão depois que a dependência derrubou a
+ * página em produção por violar a CSP.
  */
 
 /** Superfície do dashboard: quase preto. As cores foram validadas contra ela. */

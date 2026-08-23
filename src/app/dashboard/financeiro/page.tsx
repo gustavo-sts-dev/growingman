@@ -670,7 +670,14 @@ export default function FinanceiroPage() {
                           <th className="px-5 py-3 font-semibold text-right">
                             Valor
                           </th>
-                          <th className="px-5 py-3 font-semibold w-px">
+                          {/* `relative` não é decorativo: `sr-only` é
+                              `position: absolute`, e sem um ancestral posicionado
+                              o bloco de contenção dele vira o viewport. Ele
+                              escapava do container que clipa a tabela e ia parar
+                              em x=529 numa tela de 390 — 139px de rolagem
+                              horizontal na página inteira, causada por um texto
+                              invisível de 1px. */}
+                          <th className="relative px-5 py-3 font-semibold w-px">
                             <span className="sr-only">Ações</span>
                           </th>
                         </tr>
