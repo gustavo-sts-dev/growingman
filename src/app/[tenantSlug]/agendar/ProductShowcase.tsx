@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { ShoppingBag } from "lucide-react";
+import { ShoppingBag, X } from "lucide-react";
 import { apiUrl } from "@/lib/config";
 
 /**
@@ -48,6 +48,7 @@ export function ProductShowcase({
   style?: React.CSSProperties;
 }) {
   const [produtos, setProdutos] = useState<ShowcaseProduct[]>([]);
+  const [oculto, setOculto] = useState(false);
 
   useEffect(() => {
     let cancelado = false;
@@ -65,15 +66,27 @@ export function ProductShowcase({
     };
   }, [tenantId]);
 
-  if (produtos.length === 0) return null;
+  if (produtos.length === 0 || oculto) return null;
 
   return (
     <div className={className} style={style}>
       <div className="mb-3 flex items-center gap-2">
-        <ShoppingBag className="h-4 w-4" style={T.textMuted} />
+        <ShoppingBag className="h-4 w-4 shrink-0" style={T.textMuted} />
         <h4 className="text-base font-bold" style={T.title}>
           Quer levar um produto?
         </h4>
+
+        {/* Dispensar a sugestão. `ml-auto` empurra para a direita; área de toque
+            de 44px (p-2 sobre ícone de 16) para não virar alvo de precisão. */}
+        <button
+          type="button"
+          onClick={() => setOculto(true)}
+          aria-label="Ocultar sugestão de produtos"
+          className="-mr-2 ml-auto shrink-0 rounded-lg p-2 transition-opacity hover:opacity-70"
+          style={T.textMuted}
+        >
+          <X className="h-4 w-4" />
+        </button>
       </div>
       <p className="mb-4 text-sm" style={T.textMuted}>
         Peça na barbearia no dia do seu horário.
