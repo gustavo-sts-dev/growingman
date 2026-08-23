@@ -157,6 +157,13 @@ export default function ConfiguracoesPage() {
     lunch_start:              "12:00" as string | null,
     lunch_end:                "13:00" as string | null,
     slot_interval_minutes:    30,
+    // Dias em que a barbearia abre. 0 = domingo … 6 = sábado.
+    open_weekdays:            [0, 1, 2, 3, 4, 5, 6] as number[],
+    // Sábado próprio. Null nos dois primeiros = sábado segue o expediente geral.
+    saturday_opening_time:    null as string | null,
+    saturday_closing_time:    null as string | null,
+    saturday_lunch_start:     null as string | null,
+    saturday_lunch_end:       null as string | null,
     // Pagamentos online (Mercado Pago). Campo de escrita-única: o backend nunca
     // devolve o token salvo, então este valor começa e permanece vazio até o dono
     // colar um novo. Enviado no PATCH apenas quando preenchido (ver handleSave).
@@ -243,6 +250,13 @@ export default function ConfiguracoesPage() {
           lunch_start:              data.lunch_start ?? null,
           lunch_end:                data.lunch_end ?? null,
           slot_interval_minutes:    data.slot_interval_minutes ?? 30,
+          // `??` e não `||`: uma barbearia legitimamente fechada todos os dias
+          // gravaria [] , e `||` o trocaria pelos sete dias silenciosamente.
+          open_weekdays:            data.open_weekdays ?? [0, 1, 2, 3, 4, 5, 6],
+          saturday_opening_time:    data.saturday_opening_time ?? null,
+          saturday_closing_time:    data.saturday_closing_time ?? null,
+          saturday_lunch_start:     data.saturday_lunch_start ?? null,
+          saturday_lunch_end:       data.saturday_lunch_end ?? null,
           site_layout:              normalizeSiteLayout(data.site_layout, preset.id, {
             stats: data.show_stats,
             team: data.show_team,
@@ -274,7 +288,44 @@ export default function ConfiguracoesPage() {
     !almocoInvertido &&
     ((form.lunch_end as string) <= form.opening_time ||
       (form.lunch_start as string) >= form.closing_time);
-  const expedienteInvalido = horarioInvertido || almocoInvertido;
+  // Sábado com horário próprio é opcional: existe quando a abertura está
+  // preenchida. Fechamento acompanha — o backend recusa meia configuração.
+  const sabadoProprio = form.saturday_opening_time !== null;
+  const sabadoTemAlmoco =
+    form.saturday_lunch_start !== null && form.saturday_lunch_end !== null;
+  const sabadoInvertido =
+    sabadoProprio &&
+    !!form.saturday_closing_time &&
+    (form.saturday_opening_time as string) >= form.saturday_closing_time;
+  const sabadoAlmocoInvertido =
+    sabadoTemAlmoco &&
+    (form.saturday_lunch_start as string) >= (form.saturday_lunch_end as string);
+
+  const SEMANA = [
+    { dia: 0, curto: "Dom" },
+    { dia: 1, curto: "Seg" },
+    { dia: 2, curto: "Ter" },
+    { dia: 3, curto: "Qua" },
+    { dia: 4, curto: "Qui" },
+    { dia: 5, curto: "Sex" },
+    { dia: 6, curto: "Sáb" },
+  ];
+
+  const abreNoDia = (dia: number) => form.open_weekdays.includes(dia);
+  const alternarDia = (dia: number) =>
+    setForm((f) => ({
+      ...f,
+      open_weekdays: f.open_weekdays.includes(dia)
+        ? f.open_weekdays.filter((d) => d !== dia)
+        : [...f.open_weekdays, dia].sort((a, b) => a - b),
+    }));
+
+  // Fechar todos os dias tira a barbearia do ar sem desativá-la — aviso, não
+  // bloqueio: pode ser férias, e a decisão é do dono.
+  const semDiaAberto = form.open_weekdays.length === 0;
+
+  const expedienteInvalido =
+    horarioInvertido || almocoInvertido || sabadoInvertido || sabadoAlmocoInvertido;
 
   const handleSave = async () => {
     setSaving(true);
@@ -391,6 +442,38 @@ export default function ConfiguracoesPage() {
               Horário já agendado continua valendo mesmo se você mudar a faixa depois.
             </p>
 
+            <Field
+              label="Dias em que a barbearia abre"
+              hint="Nos dias desmarcados nenhum horário é oferecido."
+            >
+              <div className="flex flex-wrap gap-2">
+                {SEMANA.map(({ dia, curto }) => {
+                  const aberto = abreNoDia(dia);
+                  return (
+                    <button
+                      key={dia}
+                      type="button"
+                      aria-pressed={aberto}
+                      onClick={() => alternarDia(dia)}
+                      className={`h-10 min-w-[3.25rem] rounded-xl border px-3 text-sm font-medium transition-colors ${
+                        aberto
+                          ? "border-white bg-white text-black"
+                          : "border-white/[0.08] bg-white/[0.04] text-neutral-500 hover:border-white/25"
+                      }`}
+                    >
+                      {curto}
+                    </button>
+                  );
+                })}
+              </div>
+            </Field>
+
+            {semDiaAberto && (
+              <p className="text-xs font-medium text-amber-400">
+                Nenhum dia marcado: a página não vai oferecer horário algum.
+              </p>
+            )}
+
             <div className="grid grid-cols-2 gap-4">
               <Field label="Abre às">
                 <TimeInput
@@ -484,6 +567,119 @@ export default function ConfiguracoesPage() {
                 </>
               )}
             </div>
+
+            {/* ── Sábado com horário próprio ─────────────────────────── */}
+            {abreNoDia(6) && (
+              <div className="border-t border-white/[0.06] pt-4">
+                <label className="flex cursor-pointer items-start gap-3">
+                  <input
+                    type="checkbox"
+                    checked={sabadoProprio}
+                    onChange={(e) => {
+                      if (e.target.checked) {
+                        // Abertura E fechamento juntos: o backend recusa meia
+                        // configuração, e um default útil evita o erro no salvar.
+                        setForm((f) => ({
+                          ...f,
+                          saturday_opening_time: f.opening_time,
+                          saturday_closing_time: "13:00",
+                        }));
+                      } else {
+                        setForm((f) => ({
+                          ...f,
+                          saturday_opening_time: null,
+                          saturday_closing_time: null,
+                          saturday_lunch_start: null,
+                          saturday_lunch_end: null,
+                        }));
+                      }
+                    }}
+                    className="mt-0.5 h-4 w-4 shrink-0 accent-white"
+                  />
+                  <span>
+                    <span className="block text-sm font-semibold text-white">
+                      Sábado tem horário próprio
+                    </span>
+                    <span className="block text-xs text-neutral-600">
+                      Para quem abre ou fecha em horário diferente no sábado.
+                    </span>
+                  </span>
+                </label>
+
+                {sabadoProprio && (
+                  <>
+                    <div className="mt-4 grid grid-cols-2 gap-4">
+                      <Field label="Sábado abre às">
+                        <TimeInput
+                          value={form.saturday_opening_time ?? ""}
+                          onChange={(v) => set("saturday_opening_time", v)}
+                        />
+                      </Field>
+                      <Field label="Sábado fecha às">
+                        <TimeInput
+                          value={form.saturday_closing_time ?? ""}
+                          onChange={(v) => set("saturday_closing_time", v)}
+                        />
+                      </Field>
+                    </div>
+
+                    {sabadoInvertido && (
+                      <p className="mt-2 text-xs font-medium text-red-400">
+                        O fechamento do sábado precisa ser depois da abertura.
+                      </p>
+                    )}
+
+                    <label className="mt-4 flex cursor-pointer items-start gap-3">
+                      <input
+                        type="checkbox"
+                        checked={sabadoTemAlmoco}
+                        onChange={(e) => {
+                          setForm((f) => ({
+                            ...f,
+                            saturday_lunch_start: e.target.checked ? "12:00" : null,
+                            saturday_lunch_end: e.target.checked ? "13:00" : null,
+                          }));
+                        }}
+                        className="mt-0.5 h-4 w-4 shrink-0 accent-white"
+                      />
+                      <span>
+                        <span className="block text-sm font-semibold text-white">
+                          Fecho para almoço no sábado
+                        </span>
+                        <span className="block text-xs text-neutral-600">
+                          A pausa dos outros dias NÃO vale aqui — marque se o sábado
+                          também tem.
+                        </span>
+                      </span>
+                    </label>
+
+                    {sabadoTemAlmoco && (
+                      <>
+                        <div className="mt-4 grid grid-cols-2 gap-4">
+                          <Field label="Pausa das">
+                            <TimeInput
+                              value={form.saturday_lunch_start ?? ""}
+                              onChange={(v) => set("saturday_lunch_start", v)}
+                            />
+                          </Field>
+                          <Field label="Até">
+                            <TimeInput
+                              value={form.saturday_lunch_end ?? ""}
+                              onChange={(v) => set("saturday_lunch_end", v)}
+                            />
+                          </Field>
+                        </div>
+                        {sabadoAlmocoInvertido && (
+                          <p className="mt-2 text-xs font-medium text-red-400">
+                            O fim da pausa de sábado precisa ser depois do início.
+                          </p>
+                        )}
+                      </>
+                    )}
+                  </>
+                )}
+              </div>
+            )}
           </FieldGroup>
         </div>
       )}

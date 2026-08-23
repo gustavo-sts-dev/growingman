@@ -132,6 +132,13 @@ export interface Tenant {
   lunch_end: string | null;
   /** Intervalo entre horários oferecidos, em minutos. */
   slot_interval_minutes: number;
+  /** Dias em que a barbearia abre. 0 = domingo … 6 = sábado. */
+  open_weekdays: number[];
+  /** Nulos = sábado segue o expediente geral. */
+  saturday_opening_time: string | null;
+  saturday_closing_time: string | null;
+  saturday_lunch_start: string | null;
+  saturday_lunch_end: string | null;
 
   // Pagamentos online (Mercado Pago). O backend NUNCA devolve o token cru:
   // expõe apenas `mp_connected` (derivado) para indicar se há credencial salva.
