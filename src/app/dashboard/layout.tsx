@@ -5,7 +5,7 @@ import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import {
   Scissors, Calendar, Users, Briefcase, BarChart3,
-  Settings, Bell, Search, LogOut, ExternalLink, Zap, DollarSign, Star, Package, Menu, X, TrendingUp, CornerDownLeft, CreditCard,
+  Settings, Bell, Search, LogOut, ExternalLink, Zap, DollarSign, Star, Package, Menu, X, TrendingUp, CornerDownLeft, CreditCard, PieChart,
   type LucideIcon
 } from "lucide-react";
 import { Input } from "@/components/ui/input";
@@ -22,6 +22,7 @@ const navItems = [
   { href: "/dashboard/servicos/estoque", growingman: Package, label: "Estoque", exact: false },
   { href: "/dashboard/financeiro", growingman: DollarSign, label: "Financeiro & PDV", exact: false },
   { href: "/dashboard/clientes", growingman: Star, label: "CRM & Clientes", exact: false },
+  { href: "/dashboard/analise", growingman: PieChart, label: "Análise", exact: false },
 ];
 
 // Itens visíveis para o perfil BARBER (acesso restrito).

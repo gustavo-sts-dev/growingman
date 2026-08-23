@@ -442,3 +442,50 @@ export interface ReferralSummary {
   discounts: ReferralDiscount[];
   referrals: ReferralEntry[];
 }
+
+// ── Página de análise ────────────────────────────────────────────────
+
+/** Filtros da tela. Um contrato só, compartilhado por todos os gráficos. */
+export interface AnalyticsFilters {
+  from: string;
+  to: string;
+  barberId?: string;
+  serviceId?: string;
+}
+
+export interface AnalyticsSummary {
+  revenue: number;
+  completed: number;
+  /** Agendamentos que existiram na agenda, em qualquer desfecho. */
+  total: number;
+  cancelled: number;
+  noShow: number;
+  averageTicket: number;
+  cancellationRate: number;
+  noShowRate: number;
+}
+
+export interface AnalyticsSeriesPoint {
+  date: string;
+  revenue: number;
+  bookings: number;
+}
+
+export interface AnalyticsAggregate {
+  id: string;
+  name: string;
+  revenue: number;
+  count: number;
+}
+
+/** Retorno de `GET /dashboard/analytics`. */
+export interface AnalyticsResponse {
+  period: { from: string; to: string };
+  summary: AnalyticsSummary;
+  series: AnalyticsSeriesPoint[];
+  byBarber: AnalyticsAggregate[];
+  byService: AnalyticsAggregate[];
+  peakHours: Array<{ hour: number; count: number }>;
+  peakWeekdays: Array<{ weekday: number; label: string; count: number }>;
+  clients: { new: number; returning: number };
+}
