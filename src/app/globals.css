@@ -324,3 +324,99 @@
     animation: none !important;
   }
 }
+
+/* ─────────────────────────────────────────────────────────────────────────────
+   Normalização de controles de formulário no iOS
+
+   O motor do iOS (WebKit) aplica estilo NATIVO a `select` e aos inputs de data
+   e hora, e esse estilo ganha da maior parte do CSS: ele impõe altura, cantos
+   arredondados próprios, sombra interna, gradiente de fundo e a seta do select.
+   O Android (Blink) respeita o CSS. É daí que vem a mesma tela parecer dois
+   aplicativos diferentes.
+
+   `appearance: none` desliga o estilo nativo e devolve o controle ao CSS — ou
+   seja, faz o iOS seguir o mesmo padrão que o Android já mostra. Precisa do
+   prefixo `-webkit-` porque é justamente o WebKit que precisa obedecer.
+   ───────────────────────────────────────────────────────────────────────────── */
+@layer base {
+  select,
+  input[type="date"],
+  input[type="time"],
+  input[type="datetime-local"],
+  input[type="month"],
+  input[type="week"],
+  input[type="search"],
+  textarea {
+    -webkit-appearance: none;
+    appearance: none;
+  }
+
+  /* O iOS centraliza verticalmente o texto de data/hora por conta própria e
+     ignora o padding vertical; isto devolve o alinhamento à esquerda e ao topo
+     que o Android usa. */
+  input[type="date"],
+  input[type="time"],
+  input[type="datetime-local"] {
+    text-align: left;
+    -webkit-align-items: center;
+    align-items: center;
+    min-height: 1lh;
+  }
+
+  /* O botão de limpar do `search` no WebKit reintroduz um ícone nativo. */
+  input[type="search"]::-webkit-search-decoration,
+  input[type="search"]::-webkit-search-cancel-button {
+    -webkit-appearance: none;
+  }
+
+  /* iOS aplica um brilho e cantos próprios em botões e campos de texto. */
+  input[type="text"],
+  input[type="tel"],
+  input[type="email"],
+  input[type="password"],
+  input[type="number"],
+  button {
+    -webkit-appearance: none;
+    appearance: none;
+    background-clip: padding-box;
+  }
+
+  /*
+    Zoom automático no foco.
+
+    O Safari do iPhone dá zoom na página quando um campo com fonte MENOR que
+    16px recebe foco — e depois não desfaz, deixando o layout deslocado. O
+    Android não faz isso, então a mesma tela "anda" só num dos dois.
+
+    O piso vale apenas em ponteiro grosso (toque) para não inflar a tipografia
+    compacta do painel no desktop, onde o problema não existe.
+  */
+  @media (pointer: coarse) {
+    input,
+    select,
+    textarea {
+      font-size: max(16px, 1em);
+    }
+  }
+}
+
+/*
+  Seta do select — FORA de `@layer` de propósito.
+
+  Com `appearance: none` o iOS deixa de desenhar a seta nativa (o Android
+  desenhava a dele), então ela precisa vir do CSS para as duas plataformas
+  ficarem iguais. E precisa do espaço dela reservado à direita.
+
+  A regra fica sem camada porque `padding-inline-end` dentro de `@layer base`
+  perderia para o `px-3` das utilities do Tailwind, e a seta acabaria por cima
+  do texto de opções longas. Em CSS, estilo sem camada vence estilo em camada.
+  O preço é que o recuo à direita do select passa a ser controlado aqui: para
+  mudar num caso específico, use `style` em vez de utility.
+*/
+select {
+  background-image: url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23a1a1aa' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3e%3cpath d='m6 9 6 6 6-6'/%3e%3c/svg%3e");
+  background-repeat: no-repeat;
+  background-position: right 0.6rem center;
+  background-size: 1rem;
+  padding-inline-end: 2rem;
+}

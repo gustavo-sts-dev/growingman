@@ -18,6 +18,9 @@ export const metadata: Metadata = {
   title: "Growingman | Gestão para barbearias",
   description:
     "Agenda online, equipe, clientes, serviços, estoque e financeiro em um só sistema para barbearias.",
+  icons: {
+    icon: '/logo.png',
+  },
 };
 
 export default function RootLayout({
