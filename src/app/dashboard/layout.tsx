@@ -218,7 +218,18 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
   }, []);
 
   return (
-    <div className="min-h-screen bg-[#080808] flex selection:bg-white/20">
+    /*
+      `h-dvh` (altura DEFINIDA), e não `min-h-screen`.
+      O painel é uma casca: barra lateral fixa e só a área de conteúdo rolando
+      (o `overflow-y-auto` mais abaixo). Com altura apenas MÍNIMA, esse
+      `overflow-y-auto` não tinha contra o que se limitar — crescia até o tamanho
+      do conteúdo e a página inteira passava a rolar junto, dando duas barras.
+      Aparecia sempre que o conteúdo passava da altura da tela; em celular
+      deitado, quase sempre.
+      `dvh` em vez de `vh` porque no celular a barra do navegador recolhe, e
+      `100vh` conta a altura sem ela — sobra faixa fora da tela.
+    */
+    <div className="h-dvh bg-[#080808] flex selection:bg-white/20">
       {/* ── Overlay (mobile, quando o drawer está aberto) ────── */}
       {mobileOpen && (
         <div
@@ -329,7 +340,9 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
       </aside>
 
       {/* ── Main ─────────────────────────────────────────────── */}
-      <main className="flex-1 flex flex-col min-h-screen min-w-0">
+      {/* `min-h-0`: por padrão um item flex não encolhe abaixo do conteúdo, o
+          que impediria a área de rolagem interna de se limitar à tela. */}
+      <main className="flex-1 flex flex-col min-h-0 min-w-0">
         {/* Topbar */}
         <header className="h-16 border-b border-white/[0.06] bg-[#080808] sticky top-0 z-20 flex items-center justify-between px-4 sm:px-6 gap-3">
           <button

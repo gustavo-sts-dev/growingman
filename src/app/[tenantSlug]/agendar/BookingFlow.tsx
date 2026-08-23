@@ -6,7 +6,6 @@ import {
   Clock,
   User,
   Phone,
-  Scissors,
   CheckCircle,
   Check,
   Loader2,
@@ -16,6 +15,7 @@ import {
 } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { apiUrl } from "@/lib/config";
+import { ProductShowcase } from "./ProductShowcase";
 import {
   brazilianDateInput,
   formatPhone,
@@ -76,6 +76,15 @@ type SectionType = "service" | "barber" | "datetime" | "user";
  * temas escuros quanto claros, sem cores fixas (text-white/bg-black) que quebram
  * em fundo claro.
  */
+/**
+ * Moeda no formato brasileiro.
+ *
+ * A página já usava `Intl` nos cartões de serviço ("R$ 35,00") e `toFixed(2)` no
+ * total ("R$ 45.00") — vírgula e ponto na mesma tela. Um lugar só resolve.
+ */
+const brl = (valor: number) =>
+  new Intl.NumberFormat("pt-BR", { style: "currency", currency: "BRL" }).format(valor);
+
 const T = {
   title: { color: "var(--theme-title)" },
   text: { color: "var(--theme-text)" },
@@ -575,10 +584,7 @@ export function BookingFlow({
                       className="font-extrabold text-lg"
                       style={T.title}
                     >
-                      {new Intl.NumberFormat("pt-BR", {
-                        style: "currency",
-                        currency: "BRL",
-                      }).format(Number(s.base_price))}
+                      {brl(Number(s.base_price))}
                     </div>
                   </button>
                 );
@@ -1119,27 +1125,66 @@ export function BookingFlow({
             className="p-6 rounded-2xl shadow-xl border"
             style={{ ...T.card, ...T.border }}
           >
-            <div
-              className="flex items-center justify-between mb-6"
-            >
-              <div>
-                <p
-                  className="text-sm font-medium mb-1"
+            {/* Resumo do que foi escolhido, ANTES de confirmar.
+                O fluxo é de sanfona: ao chegar aqui, as etapas anteriores estão
+                fechadas e o cliente não vê mais o que marcou. Confirmar sem poder
+                reler é o que produz agendamento no barbeiro errado. */}
+            <div className="mb-6 space-y-2.5">
+              {/* `text-lg`, o mesmo nível dos títulos de seção do fluxo ("O que você
+                  deseja?"). Em `text-sm` ele empatava com os rótulos logo abaixo e
+                  não se lia como título de nada. `<h4>` pelo mesmo motivo: aqui é
+                  cabeçalho de fato, e leitor de tela precisa saber disso. */}
+              {/* `mb-1` sobre o `space-y-2.5`: o espaçamento uniforme deixava o
+                  título tão perto da primeira linha quanto as linhas entre si, e
+                  agrupamento também é hierarquia. */}
+              <h4
+                className="mb-1 text-lg font-bold"
+                style={T.title}
+              >
+                Confira antes de confirmar
+              </h4>
+
+              <ResumoLinha rotulo="Serviço">
+                {selectedServices.map((s) => s.name).join(" + ")}
+              </ResumoLinha>
+
+              <ResumoLinha rotulo="Profissional">
+                {getBarberInfo(formData.barberId)?.name ?? "—"}
+              </ResumoLinha>
+
+              <ResumoLinha rotulo="Quando">
+                {formData.date.split("-").reverse().join("/")} às {formData.time}
+              </ResumoLinha>
+
+              <ResumoLinha rotulo="Duração">
+                {totalDuration} min
+              </ResumoLinha>
+
+              <ResumoLinha rotulo="Em nome de">
+                {formData.nome.trim()}
+              </ResumoLinha>
+
+              <ResumoLinha rotulo="WhatsApp">
+                {formData.telefone}
+              </ResumoLinha>
+
+              <div
+                className="flex items-center justify-between border-t pt-3 mt-1"
+                style={T.border}
+              >
+                <span
+                  className="text-sm font-medium"
                   style={T.textMuted}
                 >
-                  Total do Serviço
-                </p>
-                <p
+                  Total do serviço
+                </span>
+                <span
                   className="text-2xl font-bold"
                   style={T.title}
                 >
-                  R$ {getPrice()?.toFixed(2)}
-                </p>
+                  {brl(getPrice() ?? 0)}
+                </span>
               </div>
-              <Scissors
-                className="w-8 h-8"
-                style={T.textMuted}
-              />
             </div>
 
             <button
@@ -1190,8 +1235,38 @@ export function BookingFlow({
               ) : null}
             </p>
           </div>
+
+          {/* Vitrine depois do botão de propósito: o objetivo da página é fechar o
+              agendamento, e produto que aparece antes disso compete com ele. */}
+          <ProductShowcase tenantId={tenant.id} T={T} />
         </div>
       )}
+    </div>
+  );
+}
+
+/**
+ * Uma linha do resumo pré-confirmação: rótulo à esquerda, valor à direita.
+ *
+ * `min-w-0` + `truncate` no valor porque nome de combo ("Corte + Barba + Sobrancelha")
+ * e nome completo do cliente estouram a linha em tela estreita — e o resumo não
+ * pode ser o que empurra a página para os lados.
+ */
+function ResumoLinha({
+  rotulo,
+  children,
+}: {
+  rotulo: string;
+  children: React.ReactNode;
+}) {
+  return (
+    <div className="flex items-baseline justify-between gap-4 text-sm">
+      <span className="shrink-0 font-medium" style={T.textMuted}>
+        {rotulo}
+      </span>
+      <span className="min-w-0 truncate text-right font-bold" style={T.title}>
+        {children}
+      </span>
     </div>
   );
 }
