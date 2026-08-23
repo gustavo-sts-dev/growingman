@@ -5,7 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Modal } from "@/components/ui/modal";
 import { useToast } from "@/components/ui/toast";
 import { apiDelete, apiGet, apiPost, apiPatch } from "@/lib/api";
-import { formatCurrency, onlyDigits } from "@/lib/format";
+import { formatCurrency, formatPhone, onlyDigits } from "@/lib/format";
 import {
   type BookingStatus,
   type BlockedSlot,
@@ -60,7 +60,7 @@ interface AgendaBooking {
   id: string;
   start_time: string;
   status: string;
-  client: { name: string };
+  client: { name: string; phone: string | null };
   items: Array<{
     catalog_item: { name: string };
     barber_profile: { id: string; user: { id: string } };
@@ -1253,6 +1253,14 @@ export default function AgendaPage() {
                 label="Cliente"
                 value={detailBooking.client.name}
               />
+              {/* Agendamento feito no balcão pode não ter telefone; a linha some
+                  em vez de mostrar "—", que ocuparia espaço sem dizer nada. */}
+              {detailBooking.client.phone && (
+                <DetailRow
+                  label="Telefone"
+                  value={formatPhone(detailBooking.client.phone)}
+                />
+              )}
               <DetailRow
                 label="Horário"
                 value={slotOf(detailBooking.start_time)}

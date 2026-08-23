@@ -1185,6 +1185,16 @@ export function BookingFlow({
                   {brl(getPrice() ?? 0)}
                 </span>
               </div>
+
+              {/* Vitrine logo abaixo do total, ainda dentro do resumo: o cliente
+                  acabou de ver quanto vai pagar, que é quando faz sentido
+                  perguntar se ele quer levar algo também. */}
+              <ProductShowcase
+                tenantId={tenant.id}
+                T={T}
+                className="-mr-6 border-t pt-5 mt-5"
+                style={T.border}
+              />
             </div>
 
             <button
@@ -1235,10 +1245,6 @@ export function BookingFlow({
               ) : null}
             </p>
           </div>
-
-          {/* Vitrine depois do botão de propósito: o objetivo da página é fechar o
-              agendamento, e produto que aparece antes disso compete com ele. */}
-          <ProductShowcase tenantId={tenant.id} T={T} />
         </div>
       )}
     </div>

@@ -33,9 +33,19 @@ interface Estilos {
 export function ProductShowcase({
   tenantId,
   T,
+  className = "",
+  style,
 }: {
   tenantId: string;
   T: Estilos;
+  /** Espaçamento fica com quem posiciona: o componente não sabe onde será usado. */
+  className?: string;
+  /**
+   * Estilo do container. A borda separadora precisa vir daqui, e não de um
+   * wrapper do chamador: sem produto o componente devolve `null`, e aí um
+   * wrapper deixaria uma borda solta sobre espaço vazio.
+   */
+  style?: React.CSSProperties;
 }) {
   const [produtos, setProdutos] = useState<ShowcaseProduct[]>([]);
 
@@ -58,7 +68,7 @@ export function ProductShowcase({
   if (produtos.length === 0) return null;
 
   return (
-    <div className="mt-8">
+    <div className={className} style={style}>
       <div className="mb-3 flex items-center gap-2">
         <ShoppingBag className="h-4 w-4" style={T.textMuted} />
         <h4 className="text-base font-bold" style={T.title}>
@@ -71,13 +81,15 @@ export function ProductShowcase({
 
       {/*
         Rolagem horizontal com encaixe.
-        `-mx-1 px-1` deixa o card sangrar até a borda da tela em vez de parar num
-        recuo — o corte do último card na margem é o que sinaliza "tem mais para
-        o lado". `overscroll-x-contain` impede que o gesto continue na página e
-        dispare o "voltar" do navegador.
+        O recuo lateral vem do `className` do chamador, e não daqui: para o
+        próximo card espiar na borda — que é o que sinaliza "tem mais para o
+        lado" — a faixa precisa sangrar por cima do padding de quem a contém, e
+        só o chamador sabe qual é esse padding.
+        `overscroll-x-contain` impede que o gesto continue na página e dispare o
+        "voltar" do navegador.
       */}
       <div
-        className="-mx-1 flex snap-x snap-mandatory gap-3 overflow-x-auto overscroll-x-contain px-1 pb-2"
+        className="flex snap-x snap-mandatory gap-3 overflow-x-auto overscroll-x-contain pb-2"
         style={{ scrollbarWidth: "thin" }}
       >
         {produtos.map((p) => (
