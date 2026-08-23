@@ -381,23 +381,6 @@
     background-clip: padding-box;
   }
 
-  /*
-    Zoom automático no foco.
-
-    O Safari do iPhone dá zoom na página quando um campo com fonte MENOR que
-    16px recebe foco — e depois não desfaz, deixando o layout deslocado. O
-    Android não faz isso, então a mesma tela "anda" só num dos dois.
-
-    O piso vale apenas em ponteiro grosso (toque) para não inflar a tipografia
-    compacta do painel no desktop, onde o problema não existe.
-  */
-  @media (pointer: coarse) {
-    input,
-    select,
-    textarea {
-      font-size: max(16px, 1em);
-    }
-  }
 }
 
 /*
@@ -419,4 +402,31 @@ select {
   background-position: right 0.6rem center;
   background-size: 1rem;
   padding-inline-end: 2rem;
+}
+
+/*
+  Zoom automático no foco — só iOS.
+
+  O Safari do iPhone dá zoom na página quando um campo com fonte menor que 16px
+  recebe foco, e não desfaz depois: a tela fica deslocada até o usuário corrigir
+  na mão. O Android não faz isso.
+
+  `@supports (-webkit-touch-callout: none)` é verdadeiro apenas no iOS (Safari e
+  qualquer navegador de lá, todos WebKit) e falso no Android e no desktop. É o
+  recorte que resolve a tensão deste pedido: o padrão do Android é o que deve
+  valer, então um piso de 16px em TODO aparelho de toque engordaria os campos do
+  Android também — mudando justamente o lado que serve de referência.
+
+  Sem camada pelo mesmo motivo da seta: `text-sm` das utilities venceria.
+
+  A alternativa comum é travar o zoom no `<meta viewport>` com `user-scalable=no`.
+  Não fiz: isso impede a pessoa de ampliar a página, o que é barreira de
+  acessibilidade real, e trocaria um desalinhamento por um problema pior.
+*/
+@supports (-webkit-touch-callout: none) {
+  input,
+  select,
+  textarea {
+    font-size: max(16px, 1em);
+  }
 }

@@ -15,12 +15,23 @@ const outfit = Outfit({
 });
 
 export const metadata: Metadata = {
-  title: "Growingman | Gestão para barbearias",
+  title: {
+    // `default` vale nas rotas que não definem título; `template` monta o das que
+    // definem. O layout de cada barbearia sobrescreve o template com o nome dela,
+    // para a aba do cliente mostrar a barbearia, e não a plataforma.
+    default: "Growingman | Gestão para barbearias",
+    template: "%s | Growingman",
+  },
   description:
     "Agenda online, equipe, clientes, serviços, estoque e financeiro em um só sistema para barbearias.",
-  icons: {
-    icon: '/logo.png',
-  },
+  // Ícone NÃO declarado aqui, de propósito.
+  //
+  // Havia `icons: { icon: ... }` convivendo com um `app/favicon.ico`, e os dois
+  // emitiam <link rel="icon"> na mesma página. O do arquivo vinha com `sizes` e
+  // `type` declarados e ganhava a disputa — por isso o logo "não funcionava".
+  // Agora o ícone vem só de `app/icon.png` e `app/apple-icon.png`: é a API
+  // baseada em arquivo que a documentação do Next recomenda, com um lugar só e
+  // nenhuma config para manter em sincronia.
 };
 
 export default function RootLayout({

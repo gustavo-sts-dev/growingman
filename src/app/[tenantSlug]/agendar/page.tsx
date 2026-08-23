@@ -5,6 +5,10 @@ import { BookingFlow } from "./BookingFlow";
 import { apiUrl } from "@/lib/config";
 import { TenantLogo } from "@/components/TenantLogo";
 import { fontsHref, resolveSitePreset } from "@/lib/site-presets";
+import type { Metadata } from "next";
+
+/** O layout da barbearia compõe: "Agendar horário | Barbearia do Zé". */
+export const metadata: Metadata = { title: "Agendar horário" };
 
 interface TenantPageProps {
   params: Promise<{ tenantSlug: string }>;

@@ -1,6 +1,10 @@
 import { notFound } from "next/navigation";
 import { apiUrl } from "@/lib/config";
 import { OtpLogin } from "./OtpLogin";
+import type { Metadata } from "next";
+
+/** Idem: "Entrar | Barbearia do Zé". */
+export const metadata: Metadata = { title: "Entrar" };
 
 interface PageProps {
   params: Promise<{ tenantSlug: string }>;
