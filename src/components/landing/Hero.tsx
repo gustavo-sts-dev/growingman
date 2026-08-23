@@ -2,6 +2,7 @@ import Link from "next/link";
 import { ArrowRight, CalendarDays, Users, Wallet } from "lucide-react";
 import { DashboardMock } from "./DashboardMock";
 import { btn, containerFlush } from "@/components/brand/ui";
+import { PRECO_BASE_FMT, PRECO_POR_PROFISSIONAL_FMT } from "@/lib/pricing";
 
 const chips = [
   { Icon: CalendarDays, from: "#6f6b64", to: "#3a3733" },
@@ -57,7 +58,7 @@ export function Hero() {
               className="gm-rise mt-5 text-[0.75rem] text-white/70 sm:mt-6 sm:text-[0.8rem]"
               style={{ animationDelay: "240ms" }}
             >
-              A partir de R$ 110 por mês · R$ 15 por profissional
+              {`A partir de ${PRECO_BASE_FMT} por mês · ${PRECO_POR_PROFISSIONAL_FMT} por profissional`}
             </p>
           </div>
 

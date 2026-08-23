@@ -1,5 +1,6 @@
 import { CalendarDays, Check, LayoutTemplate, Users, Wallet } from "lucide-react";
 import { Eyebrow, container, sectionPad } from "@/components/brand/ui";
+import { PRECO_BASE_FMT, PRECO_POR_PROFISSIONAL_FMT } from "@/lib/pricing";
 
 const stats = [
   {
@@ -14,9 +15,9 @@ const stats = [
     text: "Cinco layouts prontos para a página pública. Cores, textos e imagem de capa são ajustados no próprio painel.",
   },
   {
-    value: "R$ 110",
+    value: PRECO_BASE_FMT,
     label: "Base mensal",
-    text: "Todos os módulos liberados, mais R$ 15 por profissional ativo. Uma barbearia paga pelo tamanho que tem.",
+    text: `Todos os módulos liberados, mais ${PRECO_POR_PROFISSIONAL_FMT} por profissional ativo. Uma barbearia paga pelo tamanho que tem.`,
   },
 ];
 

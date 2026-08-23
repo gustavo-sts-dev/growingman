@@ -5,6 +5,7 @@ import Link from "next/link";
 import { ArrowLeft, ArrowRight, Check, Copy, ExternalLink, Loader2 } from "lucide-react";
 import { Field, FormAlert, TextInput, btn } from "@/components/brand/ui";
 import { apiUrl, siteHost } from "@/lib/config";
+import { PRECO_BASE_FMT, PRECO_POR_PROFISSIONAL_FMT } from "@/lib/pricing";
 
 type PixPayment = {
   paymentId: string;
@@ -284,10 +285,10 @@ export default function OnboardingFlow() {
                     <p className="text-[0.65rem] font-semibold uppercase tracking-[0.22em] text-[#6f6b64]">
                       Growingman Premium
                     </p>
-                    <p className="mt-1.5 text-[0.85rem] text-[#6f6b64]">Base mensal · R$ 15 por profissional</p>
+                    <p className="mt-1.5 text-[0.85rem] text-[#6f6b64]">{`Base mensal · ${PRECO_POR_PROFISSIONAL_FMT} por profissional`}</p>
                   </div>
                   <p className="shrink-0 font-heading text-[1.6rem] font-semibold leading-none tracking-[-0.04em] text-[#0d0c0a]">
-                    R$ 110
+                    {PRECO_BASE_FMT}
                     <span className="ml-1 text-[0.85rem] font-medium tracking-normal text-[#6f6b64]">
                       /mês
                     </span>

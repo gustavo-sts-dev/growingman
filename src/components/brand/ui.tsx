@@ -1,6 +1,5 @@
 import * as React from "react";
 import Link from "next/link";
-import { Scissors } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 /**
@@ -89,16 +88,33 @@ export function Eyebrow({
 export function Wordmark({ tone = "light" }: { tone?: "light" | "dark" }) {
   return (
     <span className="flex items-center gap-2 sm:gap-2.5">
+      {/*
+        A marca de verdade, recortada do logo.
+
+        Antes era um ícone genérico de tesoura do lucide dentro de um quadrado
+        colorido — um placeholder. Aqui vai o símbolo próprio, sem a palavra
+        "GROWINGMAN" que o arquivo original também traz: ela já aparece ao lado,
+        e repetir deixaria a marca escrita duas vezes na mesma linha.
+
+        A imagem é a própria placa (fundo claro, símbolo verde), então o contêiner
+        não pinta fundo: só recorta o canto e projeta a sombra do tom.
+      */}
       <span
         aria-hidden="true"
         className={cn(
-          "grid size-8 shrink-0 place-items-center rounded-[0.6rem] sm:size-9 sm:rounded-[0.65rem]",
+          "block size-8 shrink-0 overflow-hidden rounded-[0.6rem] sm:size-9 sm:rounded-[0.65rem]",
           tone === "light"
-            ? "bg-[#0d0c0a] text-white shadow-[0_8px_18px_-8px_rgba(13,12,10,0.8)]"
-            : "bg-white text-black shadow-[0_0_18px_rgba(255,255,255,0.18)]",
+            ? "shadow-[0_8px_18px_-8px_rgba(13,12,10,0.8)]"
+            : "shadow-[0_0_18px_rgba(255,255,255,0.18)]",
         )}
       >
-        <Scissors className="size-4 sm:size-[1.05rem]" />
+        {/* `<img>` cru, como o resto do app. */}
+        {/* eslint-disable-next-line @next/next/no-img-element */}
+        <img
+          src="/brand/growingman-mark.png"
+          alt=""
+          className="h-full w-full object-cover"
+        />
       </span>
       <span
         className={cn(
