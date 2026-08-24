@@ -319,8 +319,13 @@ export default function AgendaPage() {
         await apiGet<DayGrid>(`/bookings/day-grid?date=${selectedDate}`),
       );
     } catch {
-      // Falha na busca não pode zerar a agenda: mantém a grade anterior.
+      // Mantém a grade anterior — zerar a agenda por uma falha de rede seria pior.
+      // Mas AVISA: sem isso a tela mostraria os horários de outro dia como se
+      // fossem deste, e num dia fechado isso é ativamente enganoso.
+      toast.error("Não foi possível atualizar a grade de horários deste dia.");
     }
+    // `toast` fora das deps: a instância muda a cada render do provider.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [selectedDate]);
 
   // Busca inicial e refetch ao trocar de data são sincronizações legítimas com a
@@ -338,9 +343,21 @@ export default function AgendaPage() {
       void fetchAvailability();
       void fetchBlockedSlots();
     }
-    // Fora do `if`: a grade não depende de haver barbeiro carregado.
+  }, [selectedDate, barbers.length, fetchBookings, fetchAvailability, fetchBlockedSlots]);
+
+  /**
+   * Efeito PRÓPRIO para a grade, dependendo só da data.
+   *
+   * Junto do efeito acima, ela era rebuscada toda vez que qualquer um daqueles
+   * callbacks era recriado — quatro requisições para a mesma data em um único
+   * carregamento, medidas no navegador. A grade só muda quando o dia muda.
+   */
+  useEffect(() => {
+    // Mesma justificativa dos efeitos acima: sincronização com API externa. O
+    // `setDayGrid` só acontece depois do `await`, mas o lint não enxerga isso.
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     void fetchDayGrid();
-  }, [selectedDate, barbers.length, fetchBookings, fetchAvailability, fetchBlockedSlots, fetchDayGrid]);
+  }, [fetchDayGrid]);
 
   // Barbeiros visíveis conforme o filtro
   const visibleBarbers = useMemo(
