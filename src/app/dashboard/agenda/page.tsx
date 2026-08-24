@@ -81,26 +81,24 @@ const PAYMENT_METHODS: Array<{ key: PaymentMethod; label: string }> = [
 const isPaidOnline = (b: AgendaBooking) =>
   (b.payments ?? []).some((p) => p.status === "APPROVED");
 
-const TIME_SLOTS = [
-  "08:00",
-  "08:30",
-  "09:00",
-  "09:30",
-  "10:00",
-  "10:30",
-  "11:00",
-  "11:30",
-  "13:00",
-  "13:30",
-  "14:00",
-  "14:30",
-  "15:00",
-  "15:30",
-  "16:00",
-  "16:30",
-  "17:00",
-  "17:30",
-];
+/**
+ * A grade de horários vem do BACKEND, não daqui.
+ *
+ * Antes era um array fixo (08:00 às 17:30, de 30 em 30, com o almoço já pulado)
+ * escrito neste arquivo. Isso ignorava por completo o expediente que a
+ * barbearia configura: abertura, fechamento, intervalo, almoço, dias em que
+ * abre e o horário próprio de sábado. Quem mudava o expediente nos Ajustes via
+ * a página pública mudar e a agenda do painel continuar igual.
+ *
+ * `GET /bookings/day-grid` devolve as linhas do dia usando as MESMAS funções que
+ * resolvem a disponibilidade pública — uma grade só, sem como divergir.
+ */
+interface DayGrid {
+  open: boolean;
+  slots: string[];
+  intervalMinutes: number;
+}
+
 
 type ViewMode = "grid" | "list";
 type StatusFilter = "all" | BookingStatus;
@@ -157,8 +155,15 @@ function timeToMinutes(time: string): number {
   return hours * 60 + minutes;
 }
 
-function defaultEndTime(startTime: string): string {
-  const total = Math.min(timeToMinutes(startTime) + 30, 23 * 60 + 59);
+/**
+ * Fim sugerido ao criar um bloqueio: um slot depois do início.
+ *
+ * O passo vem do expediente, não de 30 fixo — numa barbearia com slots de 20 ou
+ * 60 minutos, o sugerido contradizia a grade desenhada ao lado.
+ */
+function defaultEndTime(startTime: string, intervalMinutes: number): string {
+  const passo = intervalMinutes > 0 ? intervalMinutes : 30;
+  const total = Math.min(timeToMinutes(startTime) + passo, 23 * 60 + 59);
   return `${String(Math.floor(total / 60)).padStart(2, "0")}:${String(total % 60).padStart(2, "0")}`;
 }
 
@@ -168,6 +173,8 @@ export default function AgendaPage() {
     new Date().toISOString().split("T")[0],
   );
   const [barbers, setBarbers] = useState<Barber[]>([]);
+  // `null` = ainda carregando; distingue "sem grade" de "fechado nesse dia".
+  const [dayGrid, setDayGrid] = useState<DayGrid | null>(null);
   const [services, setServices] = useState<Service[]>([]);
   const [clients, setClients] = useState<Client[]>([]);
   const [bookings, setBookings] = useState<AgendaBooking[]>([]);
@@ -305,6 +312,17 @@ export default function AgendaPage() {
     setBlockedSlots(results.flat());
   }, [barbers, canManageBlocks, selectedDate]);
 
+  /** Grade do dia: muda com a data, porque o expediente varia por dia da semana. */
+  const fetchDayGrid = useCallback(async () => {
+    try {
+      setDayGrid(
+        await apiGet<DayGrid>(`/bookings/day-grid?date=${selectedDate}`),
+      );
+    } catch {
+      // Falha na busca não pode zerar a agenda: mantém a grade anterior.
+    }
+  }, [selectedDate]);
+
   // Busca inicial e refetch ao trocar de data são sincronizações legítimas com a
   // API externa (caso de uso válido de effect). O setLoading síncrono dispara a
   // regra do lint, que desabilitamos pontualmente aqui.
@@ -320,7 +338,9 @@ export default function AgendaPage() {
       void fetchAvailability();
       void fetchBlockedSlots();
     }
-  }, [selectedDate, barbers.length, fetchBookings, fetchAvailability, fetchBlockedSlots]);
+    // Fora do `if`: a grade não depende de haver barbeiro carregado.
+    void fetchDayGrid();
+  }, [selectedDate, barbers.length, fetchBookings, fetchAvailability, fetchBlockedSlots, fetchDayGrid]);
 
   // Barbeiros visíveis conforme o filtro
   const visibleBarbers = useMemo(
@@ -400,7 +420,7 @@ export default function AgendaPage() {
       barberId: defaultBarberId,
       date: selectedDate,
       startTime,
-      endTime: defaultEndTime(startTime),
+      endTime: defaultEndTime(startTime, dayGrid?.intervalMinutes ?? 30),
       reason: "personal",
       description: "",
     });
@@ -736,7 +756,20 @@ export default function AgendaPage() {
                 </tr>
               </thead>
               <tbody className="divide-y divide-white/[0.04]">
-                {TIME_SLOTS.map((time) => (
+                {dayGrid && !dayGrid.open && (
+                  <tr>
+                    <td
+                      colSpan={visibleBarbers.length + 1}
+                      className="px-4 py-10 text-center text-sm text-neutral-500"
+                    >
+                      A barbearia não abre neste dia da semana.
+                      <span className="block text-xs text-neutral-600 mt-1">
+                        Ajuste em Ajustes do App › Expediente.
+                      </span>
+                    </td>
+                  </tr>
+                )}
+                {(dayGrid?.slots ?? []).map((time) => (
                   <tr
                     key={time}
                     className="hover:bg-white/[0.01]"
@@ -965,7 +998,11 @@ export default function AgendaPage() {
                 value={blockForm.startTime}
                 onChange={(event) => {
                   const startTime = event.target.value;
-                  setBlockForm({ ...blockForm, startTime, endTime: defaultEndTime(startTime) });
+                  setBlockForm({
+                    ...blockForm,
+                    startTime,
+                    endTime: defaultEndTime(startTime, dayGrid?.intervalMinutes ?? 30),
+                  });
                 }}
                 className="w-full h-10 px-3 bg-white/[0.02] border border-white/10 rounded-xl text-sm focus:outline-none focus:border-white/25"
               />
