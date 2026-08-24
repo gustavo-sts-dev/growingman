@@ -183,14 +183,29 @@ export default function DashboardPage() {
         </div>
         <div className="flex items-center gap-2 shrink-0 flex-wrap">
           {appHref && (
-            <Link
-              href={appHref}
-              target="_blank"
+            /*
+              Copia, não navega.
+              Era um link que abria a página pública numa aba nova. Como o cartão
+              "Compartilhe seu app" logo abaixo já tem o "Abrir página", nada se
+              perde — e aqui, onde o endereço está escrito, copiar é o que se quer
+              fazer com ele.
+            */
+            <button
+              type="button"
+              onClick={copiarLink}
+              title="Copiar link público"
+              aria-label={`Copiar link público: ${appUrl}`}
               className="inline-flex items-center gap-2 h-9 px-4 rounded-xl border border-white/10 bg-white/[0.03] text-sm text-neutral-400 hover:text-white hover:border-white/20 transition-all font-medium"
             >
-              <ExternalLink className="w-3.5 h-3.5" />
+              {/* Só o ícone troca; o endereço continua visível. Trocar o texto por
+                  "Copiado" faria o botão mudar de largura e a linha inteira pular. */}
+              {linkCopiado ? (
+                <Check className="w-3.5 h-3.5 text-emerald-400" />
+              ) : (
+                <Copy className="w-3.5 h-3.5" />
+              )}
               {appUrl}
-            </Link>
+            </button>
           )}
           <Link href="/dashboard/agenda">
             <Button className="h-9 px-4 rounded-xl text-sm font-semibold bg-white text-black hover:bg-zinc-100 shadow-[0_0_20px_rgba(255,255,255,0.15)]">
