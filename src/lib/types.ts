@@ -427,8 +427,12 @@ export type ReferralDiscountStatus = "PENDING" | "ACTIVE" | "EXPIRED";
 
 export interface ReferralDiscount {
   id: string;
+  /** `PERCENT` = recompensa de quem indica; `FIXED` = bônus de quem foi indicado. */
+  kind: "PERCENT" | "FIXED";
   status: ReferralDiscountStatus;
   percent: number;
+  /** Abatimento em reais, quando `kind = FIXED`. */
+  amount: number | null;
   /** Nulo enquanto o desconto espera na fila: o prazo só corre quando ativa. */
   expiresAt: string | null;
 }
@@ -445,6 +449,8 @@ export interface ReferralEntry {
 export interface ReferralSummary {
   code: string;
   discountPercent: number;
+  /** Abatimento em reais por ter entrado indicado. Zero para quem não foi. */
+  discountAmount: number;
   maxSimultaneous: number;
   discounts: ReferralDiscount[];
   referrals: ReferralEntry[];

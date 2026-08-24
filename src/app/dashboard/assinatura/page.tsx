@@ -183,7 +183,14 @@ export default function SubscriptionPage() {
               <div className="rounded-lg bg-black/30 border border-white/[0.06] p-3">
                 <div className="text-xs text-neutral-500">Desconto atual</div>
                 <div className="text-xl font-semibold text-emerald-400 tabular-nums mt-0.5">
-                  {referral.discountPercent}%
+                  {/* Os dois programas coexistem: quem entrou indicado e passou
+                      a indicar tem percentual E abatimento em reais. */}
+                  {referral.discountPercent > 0 && `${referral.discountPercent}%`}
+                  {referral.discountPercent > 0 && referral.discountAmount > 0 && " + "}
+                  {referral.discountAmount > 0 && formatCurrency(referral.discountAmount)}
+                  {referral.discountPercent === 0 &&
+                    referral.discountAmount === 0 &&
+                    "0%"}
                 </div>
                 <div className="text-[11px] text-neutral-600 mt-0.5">
                   {ativos.length} de {referral.maxSimultaneous} vagas
@@ -215,8 +222,12 @@ export default function SubscriptionPage() {
                       key={d.id}
                       className="flex flex-wrap items-center justify-between gap-x-3 gap-y-1 rounded-lg border border-white/[0.04] bg-black/20 px-3 py-2.5"
                     >
+                      {/* Um bônus em reais mostrado como "15%" seria mentira de
+                          quatro vezes o valor. A unidade vem do tipo. */}
                       <span className="text-sm tabular-nums text-neutral-300">
-                        {d.percent}%
+                        {d.kind === "FIXED"
+                          ? formatCurrency(d.amount ?? 0)
+                          : `${d.percent}%`}
                       </span>
                       <div className="flex flex-wrap items-center gap-2 sm:gap-3">
                         <span className="text-xs text-neutral-500">
