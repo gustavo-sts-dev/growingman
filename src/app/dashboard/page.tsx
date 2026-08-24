@@ -11,11 +11,14 @@ import {
   ExternalLink,
   ChevronRight,
   Flame,
+  Copy,
+  Check,
 } from "lucide-react";
 import Link from "next/link";
 import { apiGet } from "@/lib/api";
 import { publicUrl, siteHost } from "@/lib/config";
 import { RevenueChart } from "@/components/RevenueChart";
+import { useToast } from "@/components/ui/toast";
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 
@@ -33,6 +36,8 @@ interface Tenant {
 
 export default function DashboardPage() {
   const router = useRouter();
+  const toast = useToast();
+  const [linkCopiado, setLinkCopiado] = useState(false);
   const [stats, setStats] = useState<DashboardStats | null>(null);
   const [tenant, setTenant] = useState<Tenant | null>(null);
   const [loading, setLoading] = useState(true);
@@ -91,6 +96,27 @@ export default function DashboardPage() {
   // amigável exibido (sem protocolo).
   const appHref = tenant ? publicUrl(`/${tenant.slug}`) : null;
   const appUrl = tenant ? `${siteHost()}/${tenant.slug}` : null;
+
+  /**
+   * Copia o link público da barbearia.
+   *
+   * Copia `appHref` (com protocolo), não o `appUrl` que aparece na tela: colado
+   * no WhatsApp, só a versão com `https://` vira link clicável — o texto exibido
+   * omite o protocolo por ser mais limpo de ler, mas péssimo de colar.
+   */
+  const copiarLink = async () => {
+    if (!appHref) return;
+    try {
+      await navigator.clipboard.writeText(appHref);
+      setLinkCopiado(true);
+      // Volta sozinho: um "copiado" permanente deixa de informar se a segunda
+      // cópia funcionou.
+      setTimeout(() => setLinkCopiado(false), 2000);
+    } catch {
+      // `navigator.clipboard` falha em contexto não seguro ou sem permissão.
+      toast.error("Não foi possível copiar. Selecione o link e copie à mão.");
+    }
+  };
 
   const statCards = [
     {
@@ -272,18 +298,37 @@ export default function DashboardPage() {
             </div>
           </div>
           {appHref && (
-            <Link
-              href={appHref}
-              target="_blank"
-            >
+            <div className="flex items-center gap-2 shrink-0">
               <Button
+                type="button"
                 variant="outline"
+                onClick={copiarLink}
+                aria-label="Copiar link público da barbearia"
                 className="h-9 px-4 rounded-xl border-white/10 bg-white/5 hover:bg-white/10 text-sm font-medium"
               >
-                <ExternalLink className="w-3.5 h-3.5 mr-1.5" />
-                Abrir página
+                {linkCopiado ? (
+                  <>
+                    <Check className="w-3.5 h-3.5 mr-1.5" />
+                    Copiado
+                  </>
+                ) : (
+                  <>
+                    <Copy className="w-3.5 h-3.5 mr-1.5" />
+                    Copiar link
+                  </>
+                )}
               </Button>
-            </Link>
+
+              <Link href={appHref} target="_blank">
+                <Button
+                  variant="outline"
+                  className="h-9 px-4 rounded-xl border-white/10 bg-white/5 hover:bg-white/10 text-sm font-medium"
+                >
+                  <ExternalLink className="w-3.5 h-3.5 mr-1.5" />
+                  Abrir página
+                </Button>
+              </Link>
+            </div>
           )}
         </div>
       </div>
