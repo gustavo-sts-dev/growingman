@@ -213,28 +213,31 @@ export default function BarbersPage() {
   };
 
   return (
-    <div className="max-w-5xl mx-auto space-y-6">
-      {/* Header */}
-      <div className="flex items-start justify-between gap-4">
-        <div>
+    <div className="max-w-5xl mx-auto space-y-5 sm:space-y-6">
+      {/* Header — empilhado no celular: título e ação não disputam a mesma
+          linha de 390px, e o botão vira alvo de largura inteira. */}
+      <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
+        <div className="min-w-0">
           <p className="text-xs uppercase tracking-[0.18em] text-neutral-600 font-semibold mb-1.5">
             Equipe
           </p>
-          <h1 className="text-3xl font-black tracking-tight">Profissionais</h1>
+          <h1 className="text-[1.75rem] font-black leading-tight tracking-tight sm:text-3xl">Profissionais</h1>
           <p className="text-neutral-500 text-sm mt-1">
             Gerencie a equipe da sua barbearia.
           </p>
         </div>
         <Button
           onClick={() => handleOpenModal()}
-          className="h-9 px-4 rounded-xl text-sm font-semibold bg-white text-black hover:bg-zinc-100 shadow-[0_0_20px_rgba(255,255,255,0.15)] shrink-0"
+          className="h-11 w-full shrink-0 rounded-xl bg-white px-4 text-sm font-semibold text-black shadow-[0_0_20px_rgba(255,255,255,0.15)] transition-transform hover:bg-zinc-100 active:scale-[0.98] sm:h-9 sm:w-auto"
         >
           <Plus className="w-4 h-4 mr-1.5" /> Novo Profissional
         </Button>
       </div>
 
-      {/* Cards de resumo */}
-      <div className="grid grid-cols-3 gap-4">
+      {/* Cards de resumo — três números curtos numa linha só, apertados no
+          celular e folgados a partir de `sm`. Empilhá-los custaria meia tela
+          de rolagem para mostrar três inteiros. */}
+      <div className="grid grid-cols-3 gap-2 sm:gap-4">
         <SummaryCard
           growingman={<Users className="w-4 h-4 text-white" />}
           label="Total"
@@ -260,14 +263,14 @@ export default function BarbersPage() {
         <div className="relative flex-1 sm:max-w-sm">
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-neutral-500" />
           <input
-            type="text"
+            type="search"
             placeholder="Buscar por nome, e-mail ou telefone..."
-            className="w-full h-10 pl-10 pr-4 bg-white/[0.02] border border-white/10 rounded-xl text-sm text-white placeholder:text-neutral-600 focus:outline-none focus:border-white/25"
+            className="h-11 w-full rounded-xl border border-white/10 bg-white/[0.02] pl-10 pr-4 text-sm text-white placeholder:text-neutral-600 focus:border-white/25 focus:outline-none sm:h-10"
             value={search}
             onChange={(e) => setSearch(e.target.value)}
           />
         </div>
-        <div className="flex gap-1 p-1 rounded-xl bg-white/[0.03] border border-white/[0.06] w-fit">
+        <div className="rail w-full gap-1 rounded-xl border border-white/[0.06] bg-white/[0.03] p-1 sm:w-fit sm:overflow-visible">
           {(
             [
               { key: "all", label: "Todos" },
@@ -278,7 +281,7 @@ export default function BarbersPage() {
             <button
               key={f.key}
               onClick={() => setStatusFilter(f.key)}
-              className={`px-3 py-1.5 rounded-lg text-xs font-semibold transition-all ${
+              className={`flex-1 whitespace-nowrap rounded-lg px-3 py-2 text-xs font-semibold transition-all active:scale-95 sm:flex-none sm:py-1.5 ${
                 statusFilter === f.key
                   ? "bg-white text-black"
                   : "text-neutral-500 hover:text-white"
@@ -312,7 +315,7 @@ export default function BarbersPage() {
           {visibleBarbers.map((barber) => (
             <div
               key={barber.id}
-              className="group p-5 rounded-2xl border border-white/[0.06] bg-white/[0.02] hover:bg-white/[0.04] hover:border-white/[0.1] transition-all duration-200"
+              className="group rounded-2xl border border-white/[0.06] bg-white/[0.02] p-4 transition-all duration-200 hover:border-white/[0.1] hover:bg-white/[0.04] sm:p-5"
             >
               {/* Avatar + name */}
               <div className="flex items-center gap-3 mb-4">
@@ -364,22 +367,26 @@ export default function BarbersPage() {
 
               {/* Actions */}
               <div className="flex items-center gap-2 pt-3 border-t border-white/[0.05]">
+                {/* Três ações num rodapé de cartão: com 32px de altura elas
+                    ficavam abaixo do alvo mínimo do dedo, e as duas de ícone —
+                    editar e excluir — encostadas uma na outra. Excluir não pode
+                    estar a um erro de mira de distância. */}
                 <button
                   onClick={() => openStats(barber)}
-                  className="flex-1 h-8 rounded-lg bg-white/[0.04] hover:bg-white/[0.08] text-neutral-400 hover:text-white transition-colors text-xs font-medium flex items-center justify-center gap-1.5"
+                  className="flex h-10 flex-1 items-center justify-center gap-1.5 rounded-lg bg-white/[0.04] text-xs font-medium text-neutral-400 transition-all hover:bg-white/[0.08] hover:text-white active:scale-95 sm:h-8"
                 >
                   <BarChart3 className="w-3.5 h-3.5" /> Desempenho
                 </button>
                 <button
                   onClick={() => handleOpenModal(barber)}
-                  className="w-8 h-8 rounded-lg bg-white/[0.04] hover:bg-white/[0.08] flex items-center justify-center text-neutral-400 hover:text-white transition-colors"
+                  className="flex h-10 w-10 items-center justify-center rounded-lg bg-white/[0.04] text-neutral-400 transition-all hover:bg-white/[0.08] hover:text-white active:scale-95 sm:h-8 sm:w-8"
                   aria-label="Editar"
                 >
                   <Edit2 className="w-3.5 h-3.5" />
                 </button>
                 <button
                   onClick={() => setDeleteTarget(barber)}
-                  className="w-8 h-8 rounded-lg hover:bg-red-500/10 flex items-center justify-center text-neutral-600 hover:text-red-400 transition-colors"
+                  className="flex h-10 w-10 items-center justify-center rounded-lg text-neutral-600 transition-all hover:bg-red-500/10 hover:text-red-400 active:scale-95 active:bg-red-500/10 sm:h-8 sm:w-8"
                   aria-label="Excluir"
                 >
                   <Trash2 className="w-3.5 h-3.5" />
@@ -425,7 +432,9 @@ export default function BarbersPage() {
               placeholder="Ex: João Silva"
             />
           </div>
-          <div className="grid grid-cols-2 gap-4">
+          {/* E-mail e telefone empilham no celular: são campos de texto
+             livre, e meia largura de 390px corta o valor enquanto se digita. */}
+          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
             <div>
               <label className="block text-sm text-neutral-400 mb-1">
                 E-mail
@@ -453,7 +462,7 @@ export default function BarbersPage() {
               />
             </div>
           </div>
-          <div className="grid grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
             <div>
               <label className="block text-sm text-neutral-400 mb-1">
                 Comissão (%)
@@ -511,18 +520,23 @@ export default function BarbersPage() {
               onClick={() =>
                 setFormData({ ...formData, isActive: !formData.isActive })
               }
-              className={`w-11 h-6 rounded-full transition-colors flex items-center px-1 ${formData.isActive ? "bg-green-500" : "bg-neutral-600"}`}
+              role="switch"
+              aria-checked={formData.isActive}
+              aria-label="Profissional ativo"
+              className={`flex h-7 w-12 shrink-0 items-center rounded-full px-1 transition-colors ${formData.isActive ? "bg-green-500" : "bg-neutral-600"}`}
             >
               <div
-                className={`w-4 h-4 rounded-full bg-white transition-transform ${formData.isActive ? "translate-x-5" : "translate-x-0"}`}
+                className={`h-5 w-5 rounded-full bg-white transition-transform ${formData.isActive ? "translate-x-5" : "translate-x-0"}`}
               />
             </button>
           </div>
-          <div className="flex gap-3 pt-4">
+          {/* Na folha do celular a ação principal fica embaixo, onde o
+              polegar chega primeiro; no diálogo do desktop, à direita. */}
+          <div className="flex flex-col-reverse gap-2.5 pt-4 sm:flex-row sm:gap-3">
             <Button
               onClick={() => setIsModalOpen(false)}
               variant="outline"
-              className="flex-1 rounded-xl"
+              className="h-12 flex-1 rounded-xl active:scale-[0.98] sm:h-10"
               disabled={saving}
             >
               Cancelar
@@ -530,7 +544,7 @@ export default function BarbersPage() {
             <Button
               onClick={handleSave}
               disabled={saving}
-              className="flex-1 rounded-xl bg-white text-black hover:bg-neutral-200"
+              className="h-12 flex-1 rounded-xl bg-white text-black transition-transform hover:bg-neutral-200 active:scale-[0.98] sm:h-10"
             >
               {saving ? "Salvando..." : "Salvar"}
             </Button>
@@ -625,9 +639,9 @@ function StatBox({
   accent?: string;
 }) {
   return (
-    <div className="rounded-xl border border-white/[0.06] bg-white/[0.02] p-4">
-      <p className="text-xs text-neutral-500 mb-1">{label}</p>
-      <p className={`text-2xl font-black ${accent ?? "text-white"}`}>{value}</p>
+    <div className="rounded-xl border border-white/[0.06] bg-white/[0.02] p-3 sm:p-4">
+      <p className="mb-1 text-xs text-neutral-500">{label}</p>
+      <p className={`text-xl font-black sm:text-2xl ${accent ?? "text-white"}`}>{value}</p>
     </div>
   );
 }
@@ -644,15 +658,15 @@ function SummaryCard({
   loading: boolean;
 }) {
   return (
-    <div className="p-4 rounded-2xl border border-white/[0.06] bg-white/[0.02]">
-      <div className="flex items-center gap-2 text-neutral-400 mb-2">
-        {growingman}
-        <span className="text-xs font-semibold">{label}</span>
+    <div className="rounded-2xl border border-white/[0.06] bg-white/[0.02] p-3 sm:p-4">
+      <div className="mb-2 flex items-center gap-1.5 text-neutral-400 sm:gap-2">
+        <span className="shrink-0">{growingman}</span>
+        <span className="text-[0.65rem] font-semibold leading-tight sm:text-xs">{label}</span>
       </div>
       {loading ? (
         <div className="h-7 w-12 bg-white/[0.05] rounded animate-pulse" />
       ) : (
-        <p className="text-2xl font-black">{value}</p>
+        <p className="text-xl font-black sm:text-2xl">{value}</p>
       )}
     </div>
   );

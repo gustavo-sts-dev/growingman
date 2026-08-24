@@ -113,20 +113,20 @@ export default function ClientesPage() {
   };
 
   return (
-    <div className="max-w-6xl mx-auto space-y-6">
+    <div className="max-w-6xl mx-auto space-y-5 sm:space-y-6">
       {/* Header */}
       <div>
         <p className="text-xs uppercase tracking-[0.18em] text-neutral-600 font-semibold mb-1.5">
           CRM & Retenção
         </p>
-        <h1 className="text-3xl font-black tracking-tight">Clientes</h1>
+        <h1 className="text-[1.75rem] font-black leading-tight tracking-tight sm:text-3xl">Clientes</h1>
         <p className="text-neutral-500 text-sm mt-1">
           Gerencie seus clientes, fidelidade e retenção.
         </p>
       </div>
 
       {/* Cards de resumo */}
-      <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+      <div className="grid grid-cols-2 gap-3 lg:grid-cols-4 lg:gap-4">
         <SummaryCard
           growingman={<Users className="w-4 h-4 text-white" />}
           label="Total de Clientes"
@@ -159,22 +159,24 @@ export default function ClientesPage() {
         <div className="relative flex-1 lg:max-w-sm">
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-neutral-500" />
           <input
-            type="text"
+            type="search"
             placeholder="Buscar por nome ou telefone..."
-            className="w-full h-10 pl-10 pr-4 bg-white/[0.02] border border-white/10 rounded-xl text-sm text-white placeholder:text-neutral-600 focus:outline-none focus:border-white/25"
+            className="h-11 w-full rounded-xl border border-white/10 bg-white/[0.02] pl-10 pr-4 text-sm text-white placeholder:text-neutral-600 focus:border-white/25 focus:outline-none lg:h-10"
             value={search}
             onChange={(e) => setSearch(e.target.value)}
           />
         </div>
 
-        <div className="flex items-center gap-3 flex-wrap">
-          {/* Filtros de status */}
-          <div className="flex gap-1 p-1 rounded-xl bg-white/[0.03] border border-white/[0.06]">
+        <div className="flex flex-wrap items-center gap-2.5 lg:gap-3">
+          {/* Filtros de status como trilho: quatro pílulas mais o par de
+              ordenação não cabem numa linha de 390px sem quebrar a barra em
+              duas alturas diferentes. */}
+          <div className="rail min-w-0 flex-1 gap-1 rounded-xl border border-white/[0.06] bg-white/[0.03] p-1 lg:flex-none lg:overflow-visible">
             {STATUS_FILTERS.map((f) => (
               <button
                 key={f.key}
                 onClick={() => setStatusFilter(f.key)}
-                className={`px-3 py-1.5 rounded-lg text-xs font-semibold transition-all ${
+                className={`whitespace-nowrap rounded-lg px-3 py-2 text-xs font-semibold transition-all active:scale-95 lg:py-1.5 ${
                   statusFilter === f.key
                     ? "bg-white text-black"
                     : "text-neutral-500 hover:text-white"
@@ -190,7 +192,8 @@ export default function ClientesPage() {
             <select
               value={sortKey}
               onChange={(e) => setSortKey(e.target.value as SortKey)}
-              className="h-9 px-3 bg-white/[0.03] border border-white/[0.06] rounded-xl text-xs font-semibold text-neutral-300 focus:outline-none focus:border-white/25 [&>option]:bg-zinc-900 [&>option]:text-white"
+              aria-label="Ordenar por"
+              className="h-11 rounded-xl border border-white/[0.06] bg-white/[0.03] px-3 text-xs font-semibold text-neutral-300 focus:border-white/25 focus:outline-none lg:h-9 [&>option]:bg-zinc-900 [&>option]:text-white"
             >
               {SORT_OPTIONS.map((o) => (
                 <option
@@ -203,7 +206,7 @@ export default function ClientesPage() {
             </select>
             <button
               onClick={() => setSortDir((d) => (d === "asc" ? "desc" : "asc"))}
-              className="w-9 h-9 rounded-xl bg-white/[0.03] border border-white/[0.06] flex items-center justify-center text-neutral-400 hover:text-white hover:border-white/20 transition-colors"
+              className="flex h-11 w-11 items-center justify-center rounded-xl border border-white/[0.06] bg-white/[0.03] text-neutral-400 transition-all hover:border-white/20 hover:text-white active:scale-95 lg:h-9 lg:w-9"
               aria-label={sortDir === "asc" ? "Crescente" : "Decrescente"}
             >
               {sortDir === "asc" ? (
@@ -243,7 +246,67 @@ export default function ClientesPage() {
             ))}
           </div>
         ) : (
-          <div className="overflow-x-auto">
+          <>
+          {/*
+            Duas apresentações do mesmo dado.
+
+            A tabela tem cinco colunas e 640px de largura mínima: no celular
+            ela virava um bloco que só se lê arrastando de lado, com o nome do
+            cliente saindo de vista justamente quando se olha a coluna de
+            faltas. Num app, uma coleção desse tamanho é uma LISTA — cada
+            cliente num cartão que cabe inteiro na tela.
+
+            A tabela continua intacta a partir de `md`, onde comparar colunas é
+            o que se quer fazer e há largura para isso.
+          */}
+          <div className="divide-y divide-white/[0.04] md:hidden">
+            {visibleClients.length === 0 ? (
+              <div className="flex flex-col items-center gap-3 px-5 py-12 text-center text-neutral-500">
+                <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-white/[0.04]">
+                  <Users className="h-5 w-5 text-neutral-600" />
+                </div>
+                <p className="text-sm">
+                  {search || statusFilter !== "all"
+                    ? "Nenhum cliente encontrado com esses filtros."
+                    : "Nenhum cliente cadastrado ainda."}
+                </p>
+              </div>
+            ) : (
+              visibleClients.map((client) => (
+                <div key={client.id} className="px-4 py-3.5">
+                  <div className="flex items-center gap-3">
+                    <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full border border-white/[0.08] bg-gradient-to-br from-zinc-700 to-zinc-800 text-sm font-black text-zinc-400">
+                      {client.name.charAt(0).toUpperCase()}
+                    </div>
+                    <div className="min-w-0 flex-1">
+                      <p className="truncate font-semibold text-white">{client.name}</p>
+                      <p className="truncate text-xs text-neutral-500">{client.phone}</p>
+                    </div>
+                    <div className="flex shrink-0 items-center gap-1 font-semibold text-amber-500">
+                      <Star className="h-3.5 w-3.5 fill-amber-500" />
+                      <span className="text-sm tabular-nums">{client.points}</span>
+                    </div>
+                  </div>
+                  <div className="mt-2.5 flex flex-wrap items-center gap-x-3 gap-y-1.5 pl-13 text-xs text-neutral-500">
+                    <RetentionBadge client={client} />
+                    <span>
+                      Última:{" "}
+                      {client.last_visit
+                        ? new Date(client.last_visit).toLocaleDateString("pt-BR")
+                        : "nunca"}
+                    </span>
+                    {client.no_shows > 0 && (
+                      <span className="font-semibold text-red-400">
+                        {client.no_shows} falta{client.no_shows === 1 ? "" : "s"}
+                      </span>
+                    )}
+                  </div>
+                </div>
+              ))
+            )}
+          </div>
+
+          <div className="hidden overflow-x-auto md:block">
             <table className="w-full text-sm text-left min-w-[640px]">
               <thead className="text-xs uppercase bg-white/[0.02] border-b border-white/[0.06] text-neutral-500">
                 <tr>
@@ -350,6 +413,7 @@ export default function ClientesPage() {
               </tbody>
             </table>
           </div>
+          </>
         )}
       </div>
     </div>
@@ -370,10 +434,10 @@ function SummaryCard({
   loading: boolean;
 }) {
   return (
-    <div className="p-4 rounded-2xl border border-white/[0.06] bg-white/[0.02]">
-      <div className="flex items-center gap-2 text-neutral-400 mb-2">
-        {growingman}
-        <span className="text-xs font-semibold">{label}</span>
+    <div className="rounded-2xl border border-white/[0.06] bg-white/[0.02] p-3.5 sm:p-4">
+      <div className="mb-2 flex items-center gap-2 text-neutral-400">
+        <span className="shrink-0">{growingman}</span>
+        <span className="text-[0.7rem] font-semibold leading-tight sm:text-xs">{label}</span>
       </div>
       {loading ? (
         <div className="h-7 w-12 bg-white/[0.05] rounded animate-pulse" />

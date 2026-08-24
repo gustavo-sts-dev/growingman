@@ -60,16 +60,16 @@ export default function SubscriptionPage() {
   const naFila = referral?.discounts.filter((d) => d.status === "PENDING") ?? [];
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-5 sm:space-y-6">
       <div>
-        <h1 className="text-2xl font-semibold text-white">Assinatura</h1>
+        <h1 className="text-[1.6rem] font-semibold leading-tight text-white sm:text-2xl">Assinatura</h1>
         <p className="text-sm text-neutral-400 mt-1">
           Sua mensalidade e o programa de indicação.
         </p>
       </div>
 
       {/* ── Mensalidade ─────────────────────────────────────────────────── */}
-      <section className="rounded-xl border border-white/[0.06] bg-white/[0.02] p-5">
+      <section className="rounded-xl border border-white/[0.06] bg-white/[0.02] p-4 sm:p-5">
         <h2 className="text-sm font-semibold text-neutral-300 mb-4">
           Sua mensalidade
         </h2>
@@ -88,8 +88,8 @@ export default function SubscriptionPage() {
               </span>
             </div>
 
-            <div className="flex justify-between text-sm">
-              <span className="text-neutral-400">
+            <div className="flex justify-between gap-3 text-sm">
+              <span className="min-w-0 text-neutral-400">
                 {quote.activeBarbers}{" "}
                 {quote.activeBarbers === 1 ? "profissional" : "profissionais"}
                 <span className="text-neutral-600">
@@ -97,14 +97,14 @@ export default function SubscriptionPage() {
                   × {formatCurrency(quote.pricePerBarber)}
                 </span>
               </span>
-              <span className="text-neutral-200 tabular-nums">
+              <span className="shrink-0 tabular-nums text-neutral-200">
                 {formatCurrency(quote.pricePerBarber * quote.activeBarbers)}
               </span>
             </div>
 
             {quote.discountPercent > 0 && (
-              <div className="flex justify-between text-sm pt-3 border-t border-white/[0.06]">
-                <span className="text-emerald-400 flex items-center gap-1.5">
+              <div className="flex justify-between gap-3 border-t border-white/[0.06] pt-3 text-sm">
+                <span className="flex min-w-0 items-center gap-1.5 text-emerald-400">
                   <TrendingDown className="w-3.5 h-3.5" />
                   Desconto por indicação ({quote.discountPercent}%)
                 </span>
@@ -127,7 +127,7 @@ export default function SubscriptionPage() {
       </section>
 
       {/* ── Programa de indicação ───────────────────────────────────────── */}
-      <section className="rounded-xl border border-white/[0.06] bg-white/[0.02] p-5">
+      <section className="rounded-xl border border-white/[0.06] bg-white/[0.02] p-4 sm:p-5">
         <div className="flex items-start gap-3 mb-4">
           <div className="p-2 rounded-lg bg-emerald-500/10 shrink-0">
             <Gift className="w-4 h-4 text-emerald-400" />
@@ -153,14 +153,16 @@ export default function SubscriptionPage() {
         ) : (
           <>
             <div className="flex flex-col sm:flex-row gap-2 mb-5">
-              <div className="flex-1 flex items-center px-4 py-3 rounded-lg bg-black/40 border border-white/[0.08]">
-                <code className="text-lg font-mono tracking-[0.2em] text-white">
+              <div className="flex flex-1 items-center justify-center rounded-lg border border-white/[0.08] bg-black/40 px-4 py-3.5 sm:justify-start sm:py-3">
+                {/* `tracking` menor no celular: com 0.2em o código de oito
+                    caracteres passava da largura da caixa em telas estreitas. */}
+                <code className="font-mono text-lg tracking-[0.12em] text-white sm:tracking-[0.2em]">
                   {referral.code}
                 </code>
               </div>
               <button
                 onClick={copyCode}
-                className="flex items-center justify-center gap-2 px-4 py-3 rounded-lg bg-white text-black text-sm font-medium hover:bg-neutral-200 transition-colors"
+                className="flex h-12 items-center justify-center gap-2 rounded-lg bg-white px-4 text-sm font-medium text-black transition-all hover:bg-neutral-200 active:scale-[0.98] sm:h-auto sm:py-3"
               >
                 {copied ? (
                   <>
@@ -177,7 +179,7 @@ export default function SubscriptionPage() {
             </div>
 
             {/* Resumo dos descontos */}
-            <div className="grid grid-cols-2 gap-3 mb-5">
+            <div className="mb-5 grid grid-cols-2 gap-2.5 sm:gap-3">
               <div className="rounded-lg bg-black/30 border border-white/[0.06] p-3">
                 <div className="text-xs text-neutral-500">Desconto atual</div>
                 <div className="text-xl font-semibold text-emerald-400 tabular-nums mt-0.5">
@@ -211,12 +213,12 @@ export default function SubscriptionPage() {
                   return (
                     <div
                       key={d.id}
-                      className="flex items-center justify-between px-3 py-2 rounded-lg bg-black/20 border border-white/[0.04]"
+                      className="flex flex-wrap items-center justify-between gap-x-3 gap-y-1 rounded-lg border border-white/[0.04] bg-black/20 px-3 py-2.5"
                     >
-                      <span className="text-sm text-neutral-300 tabular-nums">
+                      <span className="text-sm tabular-nums text-neutral-300">
                         {d.percent}%
                       </span>
-                      <div className="flex items-center gap-3">
+                      <div className="flex flex-wrap items-center gap-2 sm:gap-3">
                         <span className="text-xs text-neutral-500">
                           {d.status === "PENDING"
                             ? "prazo começa ao ativar"
@@ -250,9 +252,9 @@ export default function SubscriptionPage() {
                   {referral.referrals.map((r) => (
                     <div
                       key={r.id}
-                      className="flex items-center justify-between px-3 py-2 rounded-lg bg-black/20 border border-white/[0.04]"
+                      className="flex items-center justify-between gap-3 rounded-lg border border-white/[0.04] bg-black/20 px-3 py-2.5"
                     >
-                      <span className="text-sm text-neutral-300 truncate">
+                      <span className="min-w-0 truncate text-sm text-neutral-300">
                         {r.name}
                       </span>
                       {r.confirmed ? (

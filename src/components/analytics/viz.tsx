@@ -46,9 +46,9 @@ export function VizCard({
   const id = useId();
 
   return (
-    <section className="rounded-xl border border-white/[0.06] bg-white/[0.02] p-5">
-      <div className="flex items-start justify-between gap-3 mb-5">
-        <div>
+    <section className="rounded-xl border border-white/[0.06] bg-white/[0.02] p-4 sm:p-5">
+      <div className="mb-4 flex items-start justify-between gap-3 sm:mb-5">
+        <div className="min-w-0">
           <h2 className="text-sm font-semibold text-neutral-200">{title}</h2>
           {subtitle && (
             <p className="text-xs text-neutral-500 mt-0.5">{subtitle}</p>
@@ -61,7 +61,7 @@ export function VizCard({
             onClick={() => setShowTable((v) => !v)}
             aria-pressed={showTable}
             aria-controls={id}
-            className="shrink-0 flex items-center gap-1.5 px-2 py-1 rounded-md border border-white/[0.08] text-[11px] text-neutral-400 hover:text-neutral-200 hover:border-white/20 transition-colors"
+            className="flex h-9 shrink-0 items-center gap-1.5 rounded-md border border-white/[0.08] px-2.5 text-[11px] text-neutral-400 transition-all hover:border-white/20 hover:text-neutral-200 active:scale-95 sm:h-auto sm:py-1"
           >
             {showTable ? (
               <>
@@ -135,7 +135,7 @@ export function RankBars({
               />
             </div>
             {r.meta && (
-              <span className="text-[11px] text-neutral-600 tabular-nums shrink-0 w-20 text-right">
+              <span className="w-14 shrink-0 text-right text-[11px] tabular-nums text-neutral-600 sm:w-20">
                 {r.meta}
               </span>
             )}
@@ -178,8 +178,22 @@ export function ColumnBars({
 
   const max = Math.max(...points.map((p) => p.value), 1);
 
+  /*
+    Vinte e quatro horas em 320px de largura dariam colunas de 11px, com o
+    rótulo de cada uma cortado ao meio: a figura deixaria de ser legível
+    justamente onde ela responde "que horas enche a barbearia". Acima de doze
+    pontos, portanto, a figura ganha uma largura mínima e desliza — e abaixo
+    disso (dias da semana, por exemplo) continua ocupando a largura toda, sem
+    rolagem inventada.
+  */
+  const precisaTrilho = points.length > 12;
+
   return (
-    <div className="flex gap-[2px]" role="list">
+    <div className={precisaTrilho ? "no-scrollbar -mx-1 overflow-x-auto overscroll-x-contain px-1 sm:mx-0 sm:overflow-x-visible sm:px-0" : undefined}>
+    <div
+      className={`flex gap-[2px] ${precisaTrilho ? "min-w-[30rem] sm:min-w-0" : ""}`}
+      role="list"
+    >
       {points.map((p) => {
         const isPeak = p.value === max && p.value > 0;
         // Altura em PIXELS, não em porcentagem: um `height: %` só resolve contra
@@ -225,6 +239,7 @@ export function ColumnBars({
         );
       })}
     </div>
+    </div>
   );
 }
 
@@ -242,7 +257,7 @@ export function VizTable({
   }
 
   return (
-    <div className="overflow-x-auto">
+    <div className="no-scrollbar -mx-1 overflow-x-auto overscroll-x-contain px-1">
       <table className="w-full text-sm">
         <thead>
           <tr className="text-left">

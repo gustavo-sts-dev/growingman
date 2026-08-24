@@ -319,13 +319,13 @@ export default function FinanceiroPage() {
   };
 
   return (
-    <div className="max-w-5xl mx-auto space-y-6 pb-20">
+    <div className="max-w-5xl mx-auto space-y-5 sm:space-y-6">
       {/* Header */}
       <div>
         <p className="text-xs uppercase tracking-[0.18em] text-neutral-600 font-semibold mb-1.5">
           Gestão Financeira
         </p>
-        <h1 className="text-3xl font-black tracking-tight">
+        <h1 className="text-[1.75rem] font-black leading-tight tracking-tight sm:text-3xl">
           Financeiro &amp; PDV
         </h1>
         <p className="text-neutral-500 text-sm mt-1">
@@ -338,12 +338,15 @@ export default function FinanceiroPage() {
           que a tela. Sem largura explícita, a barra saía com a largura somada
           dos filhos em vez da largura do pai — ela rolava por dentro E ainda
           empurrava a página, que era a barra de rolagem extra no rodapé. */}
-      <div className="flex w-full min-w-0 overflow-x-auto border-b border-white/[0.08]">
+      {/* A barra vira trilho: some a barra de rolagem desenhada por cima (a
+          `rail` cuida disso) e o gesto passa a ser o de deslizar abas, não o de
+          arrastar uma régua. */}
+      <div className="rail w-full min-w-0 border-b border-white/[0.08]">
         {TABS.map((tab) => (
           <button
             key={tab.key}
             onClick={() => setActiveTab(tab.key)}
-            className={`px-4 py-3 text-sm font-semibold transition-colors border-b-2 whitespace-nowrap ${
+            className={`whitespace-nowrap border-b-2 px-4 py-3.5 text-sm font-semibold transition-colors sm:py-3 ${
               activeTab === tab.key
                 ? "border-white text-white"
                 : "border-transparent text-neutral-500 hover:text-white"
@@ -355,7 +358,7 @@ export default function FinanceiroPage() {
       </div>
 
       {loading ? (
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+        <div className="grid grid-cols-2 gap-3 md:grid-cols-4 md:gap-4">
           {Array.from({ length: 4 }).map((_, i) => (
             <div
               key={i}
@@ -367,8 +370,11 @@ export default function FinanceiroPage() {
         <>
           {/* TAB: OVERVIEW */}
           {activeTab === "overview" && dashboard && (
-            <div className="space-y-4">
-              <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+            <div className="space-y-3 sm:space-y-4">
+              {/* Dois por linha no celular: quatro valores curtos empilhados um a
+                  um custavam meia tela de rolagem para dizer o que cabe em duas
+                  linhas. */}
+              <div className="grid grid-cols-2 gap-3 md:grid-cols-4 md:gap-4">
                 <MetricCard
                   growingman={<TrendingUp className="w-4 h-4 text-green-400" />}
                   label="Entradas (Hoje)"
@@ -391,8 +397,8 @@ export default function FinanceiroPage() {
                   highlight
                 />
               </div>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div className="p-5 rounded-2xl border border-white/[0.06] bg-white/[0.02] flex items-center justify-between">
+              <div className="grid grid-cols-1 gap-3 md:grid-cols-2 md:gap-4">
+                <div className="flex items-center justify-between gap-3 rounded-2xl border border-white/[0.06] bg-white/[0.02] p-4 sm:p-5">
                   <div className="flex items-center gap-2 text-neutral-400">
                     <Wallet className="w-4 h-4 text-emerald-400" />
                     <span className="text-xs font-semibold">
@@ -412,7 +418,7 @@ export default function FinanceiroPage() {
                     </p>
                   </div>
                 </div>
-                <div className="p-5 rounded-2xl border border-white/[0.06] bg-white/[0.02] flex items-center justify-between">
+                <div className="flex items-center justify-between gap-3 rounded-2xl border border-white/[0.06] bg-white/[0.02] p-4 sm:p-5">
                   <div className="flex items-center gap-2 text-neutral-400">
                     <Users className="w-4 h-4 text-blue-400" />
                     <span className="text-xs font-semibold">
@@ -448,11 +454,11 @@ export default function FinanceiroPage() {
                 <div className="relative">
                   <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-neutral-500" />
                   <input
-                    type="text"
+                    type="search"
                     placeholder="Buscar produto..."
                     value={productSearch}
                     onChange={(e) => setProductSearch(e.target.value)}
-                    className="w-full h-10 pl-10 pr-4 bg-white/[0.02] border border-white/10 rounded-xl text-sm text-white placeholder:text-neutral-600 focus:outline-none focus:border-white/25"
+                    className="h-11 w-full rounded-xl border border-white/10 bg-white/[0.02] pl-10 pr-4 text-sm text-white placeholder:text-neutral-600 focus:border-white/25 focus:outline-none sm:h-10"
                   />
                 </div>
 
@@ -466,7 +472,7 @@ export default function FinanceiroPage() {
                     Nenhum produto encontrado.
                   </div>
                 ) : (
-                  <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
+                  <div className="grid grid-cols-2 gap-3 md:grid-cols-3 md:gap-4">
                     {filteredProducts.map((p) => {
                       const inCart = cartQtyById[p.id] ?? 0;
                       return (
@@ -474,10 +480,10 @@ export default function FinanceiroPage() {
                           key={p.id}
                           onClick={() => addToCart(p)}
                           disabled={p.stock_quantity < 1}
-                          className={`relative text-left p-4 rounded-xl border transition-colors ${
+                          className={`relative min-h-[5.5rem] rounded-xl border p-3.5 text-left transition-all sm:p-4 ${
                             p.stock_quantity > 0
-                              ? "border-white/[0.06] bg-white/[0.02] hover:border-white/20 cursor-pointer"
-                              : "border-red-500/20 bg-red-500/5 opacity-50 cursor-not-allowed"
+                              ? "cursor-pointer border-white/[0.06] bg-white/[0.02] hover:border-white/20 active:scale-[0.97] active:border-emerald-500/40"
+                              : "cursor-not-allowed border-red-500/20 bg-red-500/5 opacity-50"
                           } ${inCart > 0 ? "ring-1 ring-emerald-500/40" : ""}`}
                         >
                           {inCart > 0 && (
@@ -488,12 +494,12 @@ export default function FinanceiroPage() {
                           <div className="font-bold text-sm mb-1 truncate pr-6">
                             {p.name}
                           </div>
-                          <div className="flex items-center justify-between mt-2">
-                            <span className="text-emerald-400 font-semibold">
+                          <div className="mt-2 flex flex-wrap items-center justify-between gap-x-2 gap-y-0.5">
+                            <span className="text-sm font-semibold text-emerald-400">
                               {formatCurrency(p.base_price)}
                             </span>
                             <span
-                              className={`text-xs ${p.stock_quantity < 1 ? "text-red-400" : "text-neutral-500"}`}
+                              className={`text-[0.7rem] ${p.stock_quantity < 1 ? "text-red-400" : "text-neutral-500"}`}
                             >
                               {p.stock_quantity < 1
                                 ? "Sem estoque"
@@ -508,7 +514,14 @@ export default function FinanceiroPage() {
               </div>
 
               {/* Carrinho */}
-              <div className="bg-white/[0.02] border border-white/[0.06] rounded-2xl p-6 flex flex-col h-[500px] lg:h-[calc(100vh-9rem)] lg:max-h-[640px] lg:sticky lg:top-20">
+              {/*
+                Altura fixa só no desktop, onde o carrinho é uma coluna que
+                acompanha a rolagem. No celular ele é o último bloco da página:
+                travá-lo em 500px deixava um vazio enorme com o carrinho vazio e
+                escondia o botão de finalizar quando cheio. Agora ele cresce com
+                o conteúdo e a lista é que ganha teto.
+              */}
+              <div className="flex flex-col rounded-2xl border border-white/[0.06] bg-white/[0.02] p-5 sm:p-6 lg:sticky lg:top-20 lg:h-[calc(100dvh-9rem)] lg:max-h-[640px]">
                 <h3 className="font-bold text-lg mb-4 flex items-center justify-between">
                   <span>Carrinho</span>
                   <span className="bg-white/10 text-white text-xs px-2 py-1 rounded-md">
@@ -516,9 +529,9 @@ export default function FinanceiroPage() {
                   </span>
                 </h3>
 
-                <div className="flex-1 overflow-y-auto space-y-3 mb-4">
+                <div className="mb-4 max-h-[45dvh] space-y-3 overflow-y-auto overscroll-contain lg:max-h-none lg:flex-1">
                   {cart.length === 0 ? (
-                    <div className="h-full flex flex-col items-center justify-center text-neutral-500 text-sm">
+                    <div className="flex flex-col items-center justify-center py-10 text-sm text-neutral-500 lg:h-full lg:py-0">
                       <FileText className="w-8 h-8 mb-2 opacity-20" />
                       Selecione produtos
                     </div>
@@ -540,17 +553,17 @@ export default function FinanceiroPage() {
                           <button
                             onClick={() => changeQty(c.product.id, -1)}
                             aria-label="Diminuir quantidade"
-                            className="w-7 h-7 flex items-center justify-center rounded-md bg-white/10 text-white hover:bg-white/20 active:scale-95 transition-all"
+                            className="flex h-9 w-9 items-center justify-center rounded-lg bg-white/10 text-white transition-all hover:bg-white/20 active:scale-90 sm:h-7 sm:w-7"
                           >
                             <Minus className="w-3.5 h-3.5" />
                           </button>
-                          <span className="w-5 text-center text-sm font-semibold text-white">
+                          <span className="w-6 text-center text-sm font-semibold tabular-nums text-white">
                             {c.quantity}
                           </span>
                           <button
                             onClick={() => changeQty(c.product.id, 1)}
                             aria-label="Aumentar quantidade"
-                            className="w-7 h-7 flex items-center justify-center rounded-md bg-white/10 text-white hover:bg-white/20 active:scale-95 transition-all"
+                            className="flex h-9 w-9 items-center justify-center rounded-lg bg-white/10 text-white transition-all hover:bg-white/20 active:scale-90 sm:h-7 sm:w-7"
                           >
                             <Plus className="w-3.5 h-3.5" />
                           </button>
@@ -571,7 +584,8 @@ export default function FinanceiroPage() {
                     <select
                       value={posPaymentMethod}
                       onChange={(e) => setPosPaymentMethod(e.target.value)}
-                      className="w-full h-10 px-3 bg-white/5 border border-white/10 rounded-xl text-sm text-white focus:outline-none focus:border-white/25 [&>option]:bg-zinc-900 [&>option]:text-white"
+                      aria-label="Forma de pagamento"
+                      className="h-12 w-full rounded-xl border border-white/10 bg-white/5 px-3 text-sm text-white focus:border-white/25 focus:outline-none sm:h-10 [&>option]:bg-zinc-900 [&>option]:text-white"
                     >
                       <option value="CASH">Dinheiro Físico</option>
                       <option value="PIX">PIX QR Code</option>
@@ -587,7 +601,7 @@ export default function FinanceiroPage() {
                       <Button
                         onClick={processPosSale}
                         disabled={cart.length === 0 || posLoading}
-                        className="w-full h-12 bg-white text-black font-bold hover:bg-zinc-200 disabled:opacity-50"
+                        className="h-12 w-full rounded-xl bg-white font-bold text-black transition-transform hover:bg-zinc-200 active:scale-[0.98] disabled:opacity-50"
                       >
                         {posLoading ? "Processando..." : "Finalizar Venda"}
                       </Button>
@@ -629,7 +643,7 @@ export default function FinanceiroPage() {
                     );
                     setIsCashModalOpen(true);
                   }}
-                  className={`h-10 px-6 rounded-xl font-semibold ${
+                  className={`h-12 w-full rounded-xl px-6 font-semibold transition-transform active:scale-[0.98] sm:h-10 sm:w-auto ${
                     cashRegister
                       ? "bg-red-500/10 text-red-400 hover:bg-red-500/20"
                       : "bg-white text-black hover:bg-zinc-200"
@@ -654,13 +668,75 @@ export default function FinanceiroPage() {
                       });
                       setIsTxModalOpen(true);
                     }}
-                    className="h-8 px-3 rounded-lg text-xs bg-white/10 text-white hover:bg-white/20"
+                    className="h-10 rounded-lg bg-white/10 px-3 text-xs text-white transition-transform hover:bg-white/20 active:scale-95 sm:h-8"
                   >
                     + Novo Lançamento
                   </Button>
                 </div>
-                <div className="rounded-2xl border border-white/[0.06] overflow-hidden">
-                  <div className="overflow-x-auto">
+                <div className="overflow-hidden rounded-2xl border border-white/[0.06]">
+                  {/*
+                    Lista no celular, tabela no desktop.
+
+                    Cinco colunas em 560px de mínimo escondiam o valor do
+                    lançamento — a única coluna que importa de relance — atrás
+                    de uma rolagem lateral. No cartão, descrição e valor ficam
+                    na mesma linha, e o apagar tem alvo de dedo.
+                  */}
+                  <div className="divide-y divide-white/[0.04] md:hidden">
+                    {transactions.length === 0 ? (
+                      <p className="px-4 py-8 text-center text-sm text-neutral-600">
+                        Nenhum lançamento ainda.
+                      </p>
+                    ) : (
+                      transactions.map((tx) => {
+                        const isNeg = NEGATIVE_TYPES.includes(tx.type);
+                        return (
+                          <div key={tx.id} className="flex items-center gap-3 px-4 py-3.5">
+                            <div className="min-w-0 flex-1">
+                              <p className="truncate text-sm text-white">
+                                {tx.description || "-"}
+                              </p>
+                              <div className="mt-1.5 flex items-center gap-2">
+                                <span
+                                  className={`rounded px-1.5 py-0.5 text-[10px] font-bold ${
+                                    tx.type === "INCOME"
+                                      ? "bg-green-500/10 text-green-400"
+                                      : tx.type === "EXPENSE"
+                                        ? "bg-red-500/10 text-red-400"
+                                        : tx.type === "ADVANCE"
+                                          ? "bg-amber-500/10 text-amber-400"
+                                          : "bg-blue-500/10 text-blue-400"
+                                  }`}
+                                >
+                                  {TX_LABEL[tx.type]}
+                                </span>
+                                <span className="text-[11px] text-neutral-500">
+                                  {tx.payment_method}
+                                </span>
+                              </div>
+                            </div>
+                            <span
+                              className={`shrink-0 text-sm font-bold tabular-nums ${isNeg ? "text-red-400" : "text-green-400"}`}
+                            >
+                              {isNeg ? "-" : "+"}
+                              {formatCurrency(tx.amount)}
+                            </span>
+                            <button
+                              type="button"
+                              onClick={() => setTxToDelete(tx)}
+                              disabled={deletingTx}
+                              aria-label={`Apagar lançamento ${tx.description || ""}`}
+                              className="-mr-1 flex h-10 w-10 shrink-0 items-center justify-center rounded-lg text-neutral-600 transition-all hover:bg-red-500/10 hover:text-red-400 active:scale-90 active:bg-red-500/10 disabled:opacity-40"
+                            >
+                              <Trash2 className="h-4 w-4" />
+                            </button>
+                          </div>
+                        );
+                      })
+                    )}
+                  </div>
+
+                  <div className="hidden overflow-x-auto md:block">
                     <table className="w-full text-left text-sm min-w-[560px]">
                       <thead className="bg-white/[0.02] border-b border-white/[0.06] text-xs uppercase text-neutral-500">
                         <tr>
@@ -753,7 +829,7 @@ export default function FinanceiroPage() {
 
           {/* TAB: COMISSOES */}
           {activeTab === "comissoes" && (
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+            <div className="grid grid-cols-1 gap-3 md:grid-cols-2 md:gap-4 lg:grid-cols-3">
               {commissions.length === 0 ? (
                 <p className="text-neutral-500 text-sm">
                   Nenhum barbeiro cadastrado.
@@ -762,9 +838,9 @@ export default function FinanceiroPage() {
                 commissions.map((comm) => (
                   <div
                     key={comm.id}
-                    className="p-5 rounded-2xl border border-white/[0.06] bg-white/[0.02]"
+                    className="rounded-2xl border border-white/[0.06] bg-white/[0.02] p-4 sm:p-5"
                   >
-                    <h4 className="font-bold text-lg mb-4">{comm.name}</h4>
+                    <h4 className="mb-4 truncate text-lg font-bold">{comm.name}</h4>
                     <div className="space-y-2 mb-4">
                       <Row
                         label="Comissões geradas"
@@ -800,7 +876,7 @@ export default function FinanceiroPage() {
                           });
                           setIsTxModalOpen(true);
                         }}
-                        className="h-9 rounded-xl text-xs bg-white/10 text-white hover:bg-white/20"
+                        className="h-11 rounded-xl bg-white/10 text-xs text-white transition-transform hover:bg-white/20 active:scale-[0.97] sm:h-9"
                       >
                         Vale
                       </Button>
@@ -816,7 +892,7 @@ export default function FinanceiroPage() {
                           setIsTxModalOpen(true);
                         }}
                         disabled={comm.currentBalanceDue <= 0}
-                        className="h-9 rounded-xl text-xs bg-white text-black hover:bg-zinc-200 disabled:opacity-40"
+                        className="h-11 rounded-xl bg-white text-xs text-black transition-transform hover:bg-zinc-200 active:scale-[0.97] disabled:opacity-40 sm:h-9"
                       >
                         Pagar
                       </Button>
@@ -853,11 +929,11 @@ export default function FinanceiroPage() {
               className="w-full mt-1.5 h-10 px-3 bg-white/5 border border-white/10 rounded-xl text-sm focus:border-white/30 focus:outline-none"
             />
           </div>
-          <div className="flex gap-2 pt-2">
+          <div className="flex flex-col-reverse gap-2.5 pt-2 sm:flex-row sm:gap-3">
             <Button
               onClick={() => setIsCashModalOpen(false)}
               variant="outline"
-              className="flex-1 h-10 rounded-xl"
+              className="h-12 flex-1 rounded-xl active:scale-[0.98] sm:h-10"
               disabled={cashSaving}
             >
               Cancelar
@@ -865,7 +941,7 @@ export default function FinanceiroPage() {
             <Button
               onClick={handleCashRegister}
               disabled={cashSaving}
-              className="flex-1 h-10 rounded-xl bg-white text-black hover:bg-zinc-200"
+              className="h-12 flex-1 rounded-xl bg-white text-black transition-transform hover:bg-zinc-200 active:scale-[0.98] sm:h-10"
             >
               {cashSaving ? "Salvando..." : "Confirmar"}
             </Button>
@@ -924,7 +1000,8 @@ export default function FinanceiroPage() {
             </div>
           )}
 
-          <div className="grid grid-cols-2 gap-4">
+          {/* Valor e método: dois controles curtos, cabem lado a lado. */}
+          <div className="grid grid-cols-2 gap-3 sm:gap-4">
             <div>
               <label className="text-xs font-semibold text-neutral-400 uppercase">
                 Valor (R$)
@@ -975,11 +1052,11 @@ export default function FinanceiroPage() {
             />
           </div>
 
-          <div className="flex gap-2 pt-2">
+          <div className="flex flex-col-reverse gap-2.5 pt-2 sm:flex-row sm:gap-3">
             <Button
               onClick={() => setIsTxModalOpen(false)}
               variant="outline"
-              className="flex-1 h-10 rounded-xl"
+              className="h-12 flex-1 rounded-xl active:scale-[0.98] sm:h-10"
               disabled={txSaving}
             >
               Cancelar
@@ -987,7 +1064,7 @@ export default function FinanceiroPage() {
             <Button
               onClick={handleTransaction}
               disabled={txSaving}
-              className="flex-1 h-10 rounded-xl bg-white text-black hover:bg-zinc-200"
+              className="h-12 flex-1 rounded-xl bg-white text-black transition-transform hover:bg-zinc-200 active:scale-[0.98] sm:h-10"
             >
               {txSaving ? "Lançando..." : "Lançar"}
             </Button>
@@ -1022,13 +1099,13 @@ function MetricCard({
 }) {
   return (
     <div
-      className={`p-5 rounded-2xl border border-white/[0.06] ${highlight ? "bg-white/[0.04]" : "bg-white/[0.02]"}`}
+      className={`rounded-2xl border border-white/[0.06] p-3.5 sm:p-5 ${highlight ? "bg-white/[0.04]" : "bg-white/[0.02]"}`}
     >
-      <div className="flex items-center gap-2 text-neutral-400 mb-2">
-        {growingman}
-        <span className="text-xs font-semibold">{label}</span>
+      <div className="mb-2 flex items-center gap-1.5 text-neutral-400 sm:gap-2">
+        <span className="shrink-0">{growingman}</span>
+        <span className="text-[0.68rem] font-semibold leading-tight sm:text-xs">{label}</span>
       </div>
-      <p className={`text-2xl ${highlight ? "font-black" : "font-bold"}`}>
+      <p className={`text-xl sm:text-2xl ${highlight ? "font-black" : "font-bold"}`}>
         {value}
       </p>
     </div>

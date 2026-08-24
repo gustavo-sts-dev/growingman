@@ -107,16 +107,22 @@ export default function AnalisePage() {
   return (
     <div className="space-y-6">
       <div>
-        <h1 className="text-2xl font-semibold text-white">Análise</h1>
+        <h1 className="text-[1.6rem] font-semibold leading-tight text-white sm:text-2xl">Análise</h1>
         <p className="text-sm text-neutral-400 mt-1">
           Tudo que aconteceu na barbearia no período escolhido.
         </p>
       </div>
 
       {/* ── Filtros: uma linha só, acima de tudo que ela recorta ──────────── */}
-      <section className="rounded-xl border border-white/[0.06] bg-white/[0.02] p-4">
-        <div className="flex flex-wrap items-end gap-3">
-          <div className="flex gap-1.5">
+      <section className="rounded-xl border border-white/[0.06] bg-white/[0.02] p-3.5 sm:p-4">
+        {/*
+          No celular os filtros viram blocos empilhados de largura inteira; a
+          partir de `sm` voltam a ser a linha única de antes. Espremidos numa
+          linha só de 390px, os dois seletores caíam para menos de 100px cada e
+          o nome do profissional escolhido ficava ilegível.
+        */}
+        <div className="flex flex-col gap-3 sm:flex-row sm:flex-wrap sm:items-end">
+          <div className="rail w-full gap-1.5 sm:w-auto sm:overflow-visible">
             {ATALHOS.map((a) => {
               const ativo = from === diasAtras(a.dias) && to === ymd(new Date());
               return (
@@ -127,7 +133,7 @@ export default function AnalisePage() {
                     setFrom(diasAtras(a.dias));
                     setTo(ymd(new Date()));
                   }}
-                  className={`px-3 py-2 rounded-lg text-xs font-medium border transition-colors ${
+                  className={`flex-1 whitespace-nowrap rounded-lg border px-3 py-2.5 text-xs font-medium transition-all active:scale-95 sm:flex-none sm:py-2 ${
                     ativo
                       ? "bg-white text-black border-white"
                       : "border-white/[0.08] text-neutral-400 hover:text-neutral-200 hover:border-white/20"
@@ -139,32 +145,36 @@ export default function AnalisePage() {
             })}
           </div>
 
-          <Campo label="De">
-            <input
-              type="date"
-              value={from}
-              max={to}
-              onChange={(e) => setFrom(e.target.value)}
-              className="h-9 px-2 rounded-lg bg-black/40 border border-white/[0.08] text-sm text-neutral-200 [color-scheme:dark]"
-            />
-          </Campo>
+          {/* As duas datas dividem uma linha: são valores curtos e formam um
+              par — separá-las custaria uma linha inteira sem ganho nenhum. */}
+          <div className="grid grid-cols-2 gap-3 sm:contents">
+            <Campo label="De">
+              <input
+                type="date"
+                value={from}
+                max={to}
+                onChange={(e) => setFrom(e.target.value)}
+                className="h-11 w-full rounded-lg border border-white/[0.08] bg-black/40 px-2 text-sm text-neutral-200 [color-scheme:dark] sm:h-9 sm:w-auto"
+              />
+            </Campo>
 
-          <Campo label="Até">
-            <input
-              type="date"
-              value={to}
-              min={from}
-              max={ymd(new Date())}
-              onChange={(e) => setTo(e.target.value)}
-              className="h-9 px-2 rounded-lg bg-black/40 border border-white/[0.08] text-sm text-neutral-200 [color-scheme:dark]"
-            />
-          </Campo>
+            <Campo label="Até">
+              <input
+                type="date"
+                value={to}
+                min={from}
+                max={ymd(new Date())}
+                onChange={(e) => setTo(e.target.value)}
+                className="h-11 w-full rounded-lg border border-white/[0.08] bg-black/40 px-2 text-sm text-neutral-200 [color-scheme:dark] sm:h-9 sm:w-auto"
+              />
+            </Campo>
+          </div>
 
           <Campo label="Profissional">
             <select
               value={barberId}
               onChange={(e) => setBarberId(e.target.value)}
-              className="h-9 px-2 rounded-lg bg-black/40 border border-white/[0.08] text-sm text-neutral-200 min-w-[10rem]"
+              className="h-11 w-full rounded-lg border border-white/[0.08] bg-black/40 px-2 text-sm text-neutral-200 sm:h-9 sm:w-auto sm:min-w-[10rem]"
             >
               <option value="">Todos</option>
               {(barbers ?? []).map((b) => (
@@ -179,7 +189,7 @@ export default function AnalisePage() {
             <select
               value={serviceId}
               onChange={(e) => setServiceId(e.target.value)}
-              className="h-9 px-2 rounded-lg bg-black/40 border border-white/[0.08] text-sm text-neutral-200 min-w-[10rem]"
+              className="h-11 w-full rounded-lg border border-white/[0.08] bg-black/40 px-2 text-sm text-neutral-200 sm:h-9 sm:w-auto sm:min-w-[10rem]"
             >
               <option value="">Todos</option>
               {(services ?? []).map((x) => (
@@ -191,7 +201,7 @@ export default function AnalisePage() {
           </Campo>
 
           {loading && (
-            <Loader2 className="w-4 h-4 animate-spin text-neutral-500 mb-2.5" />
+            <Loader2 className="mx-auto h-4 w-4 animate-spin text-neutral-500 sm:mx-0 sm:mb-2.5" />
           )}
         </div>
       </section>
@@ -206,7 +216,7 @@ export default function AnalisePage() {
         }`}
       >
         {/* ── Números do topo ────────────────────────────────────────────── */}
-        <div className="grid gap-3 grid-cols-2 lg:grid-cols-4">
+        <div className="grid grid-cols-2 gap-2.5 sm:gap-3 lg:grid-cols-4">
           <Tile
             label="Faturamento"
             value={formatCurrency(s?.revenue ?? 0)}
@@ -255,7 +265,7 @@ export default function AnalisePage() {
           <RevenueTimeSeries points={data?.series ?? []} />
         </VizCard>
 
-        <div className="grid gap-6 lg:grid-cols-2">
+        <div className="grid gap-4 sm:gap-6 lg:grid-cols-2">
           {/* ── Por profissional ─────────────────────────────────────────── */}
           <VizCard
             title="Receita por profissional"
@@ -391,7 +401,7 @@ export default function AnalisePage() {
 
 function Campo({ label, children }: { label: string; children: React.ReactNode }) {
   return (
-    <label className="flex flex-col gap-1">
+    <label className="flex min-w-0 flex-col gap-1">
       <span className="text-[10px] font-semibold uppercase tracking-wider text-neutral-600">
         {label}
       </span>
@@ -414,14 +424,14 @@ function Tile({
   color: string;
 }) {
   return (
-    <div className="rounded-xl border border-white/[0.06] bg-white/[0.02] p-4">
-      <div className="flex items-center gap-2 mb-2">
-        <Growingman className="w-3.5 h-3.5" style={{ color }} />
-        <span className="text-xs text-neutral-500">{label}</span>
+    <div className="rounded-xl border border-white/[0.06] bg-white/[0.02] p-3.5 sm:p-4">
+      <div className="mb-2 flex items-center gap-2">
+        <Growingman className="h-3.5 w-3.5 shrink-0" style={{ color }} />
+        <span className="text-[0.7rem] leading-tight text-neutral-500 sm:text-xs">{label}</span>
       </div>
       {/* Figuras proporcionais no número grande: tabular deixa o valor frouxo. */}
-      <div className="text-2xl font-semibold text-white">{value}</div>
-      <div className="text-[11px] text-neutral-600 mt-0.5">{hint}</div>
+      <div className="text-xl font-semibold text-white sm:text-2xl">{value}</div>
+      <div className="mt-0.5 text-[11px] leading-tight text-neutral-600">{hint}</div>
     </div>
   );
 }

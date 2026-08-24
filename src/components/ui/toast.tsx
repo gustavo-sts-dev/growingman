@@ -71,14 +71,25 @@ export function ToastProvider({ children }: { children: React.ReactNode }) {
   return (
     <ToastContext.Provider value={value}>
       {children}
-      <div className="fixed bottom-6 right-6 z-[100] flex flex-col gap-2.5 w-full max-w-sm pointer-events-none">
+      {/*
+        Celular: faixa que desce do topo, presa às laterais e abaixo do entalhe
+        — é onde o sistema operacional coloca os avisos dele, e é o único canto
+        que não briga com o rodapé de navegação nem com o polegar.
+
+        Também corrige um estouro real: `right-6` combinado com `w-full` fazia a
+        pilha começar 24px fora da borda esquerda em telas de 390px, arrastando
+        a página inteira na horizontal.
+
+        Desktop: canto inferior direito, como antes.
+      */}
+      <div className="pointer-events-none fixed inset-x-3 top-[max(0.75rem,env(safe-area-inset-top))] z-[100] flex flex-col gap-2.5 sm:inset-x-auto sm:bottom-6 sm:right-6 sm:top-auto sm:w-full sm:max-w-sm">
         {toasts.map((t) => {
           const Growingman = ICONS[t.type];
           return (
             <div
               key={t.id}
               className={cn(
-                "pointer-events-auto flex items-start gap-3 rounded-2xl border bg-zinc-950/95 backdrop-blur-xl px-4 py-3.5 shadow-[0_8px_40px_rgba(0,0,0,0.5)] animate-[slideIn_0.2s_ease-out]",
+                "pointer-events-auto flex items-start gap-3 rounded-2xl border bg-zinc-950/95 backdrop-blur-xl px-4 py-3.5 shadow-[0_8px_40px_rgba(0,0,0,0.5)] animate-[bannerIn_0.24s_cubic-bezier(0.32,0.72,0,1)] sm:animate-[slideIn_0.2s_ease-out]",
                 ACCENT[t.type],
               )}
             >
@@ -93,7 +104,8 @@ export function ToastProvider({ children }: { children: React.ReactNode }) {
               </p>
               <button
                 onClick={() => remove(t.id)}
-                className="text-neutral-600 hover:text-white transition-colors shrink-0"
+                aria-label="Dispensar aviso"
+                className="-my-2 -mr-1.5 flex h-9 w-9 shrink-0 items-center justify-center rounded-lg text-neutral-600 transition-colors hover:text-white active:bg-white/10"
               >
                 <X className="w-4 h-4" />
               </button>

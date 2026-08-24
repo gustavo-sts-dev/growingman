@@ -72,7 +72,7 @@ export default function DashboardPage() {
 
   if (loading) {
     return (
-      <div className="max-w-5xl mx-auto space-y-8">
+      <div className="max-w-5xl mx-auto space-y-6 sm:space-y-8">
         <div className="animate-pulse space-y-4">
           <div className="h-10 bg-white/5 rounded-lg w-1/3" />
           <div className="h-20 bg-white/5 rounded-lg" />
@@ -126,6 +126,9 @@ export default function DashboardPage() {
       href: "/dashboard/agenda",
       color: "from-emerald-500/10 to-transparent",
       growingmanColor: "text-emerald-400",
+      // Ocupa as duas colunas do celular: é o número mais longo (moeda
+      // formatada) e o motivo pelo qual se abre esta tela.
+      wide: true,
     },
     {
       label: "Agendamentos",
@@ -174,14 +177,14 @@ export default function DashboardPage() {
           <p className="text-xs uppercase tracking-[0.18em] text-neutral-600 font-semibold mb-1.5">
             Visão Geral
           </p>
-          <h1 className="text-2xl sm:text-3xl font-black tracking-tight">
+          <h1 className="text-[1.75rem] font-black leading-tight tracking-tight sm:text-3xl">
             {tenant ? `${tenant.name}` : "Seu Painel"}
           </h1>
           <p className="text-neutral-500 text-sm mt-1">
             Bem-vindo de volta. Aqui está o resumo de hoje.
           </p>
         </div>
-        <div className="flex items-center gap-2 shrink-0 flex-wrap">
+        <div className="flex shrink-0 flex-wrap items-center gap-2">
           {appHref && (
             /*
               Copia, não navega.
@@ -195,20 +198,23 @@ export default function DashboardPage() {
               onClick={copiarLink}
               title="Copiar link público"
               aria-label={`Copiar link público: ${appUrl}`}
-              className="inline-flex items-center gap-2 h-9 px-4 rounded-xl border border-white/10 bg-white/[0.03] text-sm text-neutral-400 hover:text-white hover:border-white/20 transition-all font-medium"
+              className="inline-flex h-11 min-w-0 flex-1 items-center gap-2 rounded-xl border border-white/10 bg-white/[0.03] px-4 text-sm font-medium text-neutral-400 transition-all hover:border-white/20 hover:text-white active:scale-[0.98] sm:h-9 sm:flex-none"
             >
               {/* Só o ícone troca; o endereço continua visível. Trocar o texto por
                   "Copiado" faria o botão mudar de largura e a linha inteira pular. */}
               {linkCopiado ? (
-                <Check className="w-3.5 h-3.5 text-emerald-400" />
+                <Check className="w-3.5 h-3.5 shrink-0 text-emerald-400" />
               ) : (
-                <Copy className="w-3.5 h-3.5" />
+                <Copy className="w-3.5 h-3.5 shrink-0" />
               )}
-              {appUrl}
+              {/* O endereco publico e longo. Num botao que divide a linha com
+                  outro, ele precisa ceder por corte e nao por empurrao: sem
+                  isso a dupla estoura a largura da tela do celular. */}
+              <span className="truncate">{appUrl}</span>
             </button>
           )}
-          <Link href="/dashboard/agenda">
-            <Button className="h-9 px-4 rounded-xl text-sm font-semibold bg-white text-black hover:bg-zinc-100 shadow-[0_0_20px_rgba(255,255,255,0.15)]">
+          <Link href="/dashboard/agenda" className="shrink-0">
+            <Button className="h-11 rounded-xl bg-white px-4 text-sm font-semibold text-black shadow-[0_0_20px_rgba(255,255,255,0.15)] transition-transform hover:bg-zinc-100 active:scale-[0.98] sm:h-9">
               <Plus className="w-4 h-4 mr-1.5" /> Novo Agendamento
             </Button>
           </Link>
@@ -216,7 +222,16 @@ export default function DashboardPage() {
       </div>
 
       {/* ── Stats Grid ────────────────────────────────────── */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+      {/*
+        Duas colunas no celular, com o faturamento ocupando a linha inteira.
+
+        Empilhados um por linha, três cartões de 130px consumiam a tela toda
+        antes do gráfico: a "visão geral" não mostrava visão nenhuma sem rolar.
+        O dinheiro do dia é o número que se abre o app para ver, e é o mais
+        largo dos três; os outros dois são contagens curtas e dividem a linha
+        seguinte, como nos painéis de aplicativo.
+      */}
+      <div className="grid grid-cols-2 gap-3 md:grid-cols-3 md:gap-4">
         {statCards.map((card) => {
           const Icon = card.growingman;
 
@@ -224,16 +239,16 @@ export default function DashboardPage() {
             <Link
               key={card.label}
               href={card.href}
-              className="group"
+              className={`group ${card.wide ? "col-span-2 md:col-span-1" : ""}`}
             >
-              <div className="relative p-6 rounded-2xl border border-white/[0.06] bg-white/[0.02] hover:bg-white/[0.04] hover:border-white/[0.1] transition-all duration-300 overflow-hidden">
+              <div className="relative h-full overflow-hidden rounded-2xl border border-white/[0.06] bg-white/[0.02] p-4 transition-all duration-300 hover:border-white/[0.1] hover:bg-white/[0.04] active:scale-[0.98] sm:p-6">
                 {/* bg glow */}
                 <div
                   className={`absolute inset-0 bg-gradient-to-br ${card.color} opacity-60 group-hover:opacity-100 transition-opacity`}
                 />
 
                 <div className="relative">
-                  <div className="flex items-center justify-between mb-4">
+                  <div className="mb-3 flex items-center justify-between sm:mb-4">
                     <div
                       className={`w-9 h-9 rounded-xl bg-white/5 border border-white/[0.06] flex items-center justify-center ${card.growingmanColor}`}
                     >
@@ -241,10 +256,10 @@ export default function DashboardPage() {
                     </div>
                     <ChevronRight className="w-4 h-4 text-neutral-700 group-hover:text-neutral-400 group-hover:translate-x-0.5 transition-all" />
                   </div>
-                  <p className="text-neutral-500 text-xs font-medium uppercase tracking-wider mb-1.5">
+                  <p className="mb-1 text-[0.65rem] font-medium uppercase tracking-wider text-neutral-500 sm:mb-1.5 sm:text-xs">
                     {card.label}
                   </p>
-                  <p className="text-3xl font-black tracking-tight text-white">
+                  <p className="text-2xl font-black tracking-tight text-white sm:text-3xl">
                     {card.value}
                   </p>
                 </div>
@@ -262,7 +277,7 @@ export default function DashboardPage() {
         <h2 className="text-sm font-semibold text-neutral-500 uppercase tracking-wider mb-3">
           Acesso Rápido
         </h2>
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+        <div className="grid grid-cols-1 gap-2.5 md:grid-cols-3 md:gap-3">
           {quickLinks.map((item) => {
             const Icon = item.growingman;
 
@@ -270,7 +285,7 @@ export default function DashboardPage() {
               <Link
                 key={item.href}
                 href={item.href}
-                className="group flex items-center gap-4 p-4 rounded-2xl border border-white/[0.06] bg-white/[0.02] hover:bg-white/[0.05] hover:border-white/[0.12] transition-all duration-200"
+                className="group flex min-h-[4.25rem] items-center gap-4 rounded-2xl border border-white/[0.06] bg-white/[0.02] p-4 transition-all duration-200 hover:border-white/[0.12] hover:bg-white/[0.05] active:scale-[0.98] active:bg-white/[0.06]"
               >
                 <div className="w-10 h-10 rounded-xl bg-white/5 border border-white/[0.06] flex items-center justify-center text-neutral-400 group-hover:text-white group-hover:bg-white/10 transition-all shrink-0">
                   <Icon className="w-4 h-4" />
@@ -287,18 +302,20 @@ export default function DashboardPage() {
       </div>
 
       {/* ── CTA / App Link Banner ─────────────────────────── */}
-      <div className="relative rounded-2xl border border-white/[0.06] bg-white/[0.02] p-6 overflow-hidden">
+      <div className="relative overflow-hidden rounded-2xl border border-white/[0.06] bg-white/[0.02] p-5 sm:p-6">
         <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top_right,_rgba(255,255,255,0.04)_0%,_transparent_60%)]" />
-        <div className="relative flex items-center justify-between gap-6 flex-wrap">
-          <div className="flex items-center gap-4">
-            <div className="w-12 h-12 rounded-2xl bg-white/5 border border-white/[0.08] flex items-center justify-center">
+        <div className="relative flex flex-wrap items-center justify-between gap-5 sm:gap-6">
+          <div className="flex min-w-0 items-center gap-4">
+            <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl border border-white/[0.08] bg-white/5 sm:h-12 sm:w-12">
               <Flame className="w-5 h-5 text-orange-400" />
             </div>
-            <div>
+            <div className="min-w-0">
               <h3 className="font-bold text-white mb-0.5">
                 Compartilhe seu app
               </h3>
-              <p className="text-sm text-neutral-500">
+              {/* `break-words`: o link publico e uma palavra unica e longa, e
+                  sem quebra forcada ele empurra o cartao alem da tela. */}
+              <p className="break-words text-sm text-neutral-500">
                 {appUrl ? (
                   <>
                     Seu link público:{" "}
@@ -313,13 +330,13 @@ export default function DashboardPage() {
             </div>
           </div>
           {appHref && (
-            <div className="flex items-center gap-2 shrink-0">
+            <div className="flex w-full shrink-0 items-center gap-2 sm:w-auto">
               <Button
                 type="button"
                 variant="outline"
                 onClick={copiarLink}
                 aria-label="Copiar link público da barbearia"
-                className="h-9 px-4 rounded-xl border-white/10 bg-white/5 hover:bg-white/10 text-sm font-medium"
+                className="h-11 flex-1 rounded-xl border-white/10 bg-white/5 px-4 text-sm font-medium transition-transform hover:bg-white/10 active:scale-[0.98] sm:h-9 sm:flex-none"
               >
                 {linkCopiado ? (
                   <>
@@ -334,10 +351,10 @@ export default function DashboardPage() {
                 )}
               </Button>
 
-              <Link href={appHref} target="_blank">
+              <Link href={appHref} target="_blank" className="flex-1 sm:flex-none">
                 <Button
                   variant="outline"
-                  className="h-9 px-4 rounded-xl border-white/10 bg-white/5 hover:bg-white/10 text-sm font-medium"
+                  className="h-11 w-full rounded-xl border-white/10 bg-white/5 px-4 text-sm font-medium transition-transform hover:bg-white/10 active:scale-[0.98] sm:h-9"
                 >
                   <ExternalLink className="w-3.5 h-3.5 mr-1.5" />
                   Abrir página

@@ -349,7 +349,7 @@ export default function ConfiguracoesPage() {
       {/* Header */}
       <div>
         <p className="text-xs uppercase tracking-[0.18em] text-neutral-600 font-semibold mb-1.5">Configurações</p>
-        <h1 className="text-2xl sm:text-3xl font-black tracking-tight">Ajustes do App</h1>
+        <h1 className="text-[1.75rem] font-black leading-tight tracking-tight sm:text-3xl">Ajustes do App</h1>
         <p className="text-neutral-500 text-sm mt-1">
           Personalize a identidade visual e as políticas do seu app white-label.
         </p>
@@ -357,9 +357,9 @@ export default function ConfiguracoesPage() {
 
       {/* Preview strip */}
       {tenant && (
-        <div className="flex items-center gap-4 p-4 rounded-2xl border border-white/[0.06] bg-white/[0.02]">
+        <div className="flex items-center gap-3 rounded-2xl border border-white/[0.06] bg-white/[0.02] p-3.5 sm:gap-4 sm:p-4">
           <div
-            className="w-12 h-12 rounded-xl flex items-center justify-center shrink-0"
+            className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl sm:h-12 sm:w-12"
             style={{ backgroundColor: form.theme_accent }}
           >
             <Scissors className="w-5 h-5 text-black" />
@@ -371,7 +371,7 @@ export default function ConfiguracoesPage() {
           <a
             href={`/${form.slug}`}
             target="_blank"
-            className="ml-auto shrink-0 text-xs font-medium text-neutral-500 hover:text-white transition-colors underline underline-offset-2"
+            className="-mr-2 ml-auto flex h-11 shrink-0 items-center rounded-lg px-2 text-xs font-medium text-neutral-500 underline underline-offset-2 transition-colors hover:text-white active:text-white sm:h-auto sm:mr-0 sm:px-0"
           >
             Visualizar →
           </a>
@@ -379,7 +379,9 @@ export default function ConfiguracoesPage() {
       )}
 
       {/* Tabs */}
-      <div className="flex gap-1 p-1 rounded-xl bg-white/[0.03] border border-white/[0.06] w-full sm:w-fit overflow-x-auto">
+      {/* Trilho: cinco abas não cabem numa linha de 390px, e a barra de
+          rolagem do navegador desenhada por cima delas denunciava o site. */}
+      <div className="rail w-full gap-1 rounded-xl border border-white/[0.06] bg-white/[0.03] p-1 sm:w-fit sm:overflow-visible">
         {TABS.map((tab) => {
           const Icon = tab.growingman;
 
@@ -387,7 +389,7 @@ export default function ConfiguracoesPage() {
             <button
               key={tab.id}
               onClick={() => setActiveTab(tab.id)}
-              className={`flex items-center gap-2 px-3 sm:px-4 py-2 rounded-lg text-sm font-medium transition-all whitespace-nowrap shrink-0 ${
+              className={`flex shrink-0 items-center gap-2 whitespace-nowrap rounded-lg px-3 py-2.5 text-sm font-medium transition-all active:scale-95 sm:px-4 sm:py-2 ${
                 activeTab === tab.id
                   ? "bg-white text-black shadow-sm"
                   : "text-neutral-500 hover:text-white"
@@ -446,7 +448,10 @@ export default function ConfiguracoesPage() {
               label="Dias em que a barbearia abre"
               hint="Nos dias desmarcados nenhum horário é oferecido."
             >
-              <div className="flex flex-wrap gap-2">
+              {/* Sete botões numa linha só: `flex-1` divide a largura da tela
+                  em partes iguais em vez de deixá-los quebrar em duas linhas
+                  desalinhadas, e a altura sobe para 44px no dedo. */}
+              <div className="flex gap-1.5 sm:flex-wrap sm:gap-2">
                 {SEMANA.map(({ dia, curto }) => {
                   const aberto = abreNoDia(dia);
                   return (
@@ -455,7 +460,7 @@ export default function ConfiguracoesPage() {
                       type="button"
                       aria-pressed={aberto}
                       onClick={() => alternarDia(dia)}
-                      className={`h-10 min-w-[3.25rem] rounded-xl border px-3 text-sm font-medium transition-colors ${
+                      className={`h-11 flex-1 rounded-xl border px-1 text-sm font-medium transition-all active:scale-95 sm:h-10 sm:min-w-[3.25rem] sm:flex-none sm:px-3 ${
                         aberto
                           ? "border-white bg-white text-black"
                           : "border-white/[0.08] bg-white/[0.04] text-neutral-500 hover:border-white/25"
@@ -835,17 +840,19 @@ export default function ConfiguracoesPage() {
                 { id: "theme_accent", label: "Destaques / Ícones" }
               ] as const).map(field => (
                 <Field key={field.id} label={field.label}>
-                  <div className="flex items-center gap-3">
+                  <div className="flex items-center gap-2 sm:gap-3">
                     <input
                       type="color"
                       value={form[field.id]}
                       onChange={(e) => set(field.id, e.target.value)}
-                      className="w-10 h-10 rounded-xl border border-white/[0.08] bg-white/[0.04] cursor-pointer p-0.5"
+                      aria-label={`Escolher ${field.label}`}
+                      className="h-10 w-9 shrink-0 cursor-pointer rounded-xl border border-white/[0.08] bg-white/[0.04] p-0.5 sm:w-10"
                     />
                     <Input
                       value={form[field.id]}
                       onChange={(e) => set(field.id, e.target.value)}
-                      className="flex-1 bg-white/[0.04] border-white/[0.08] focus:border-white/25 rounded-xl h-10 font-mono text-xs uppercase px-2"
+                      aria-label={field.label}
+                      className="h-10 min-w-0 flex-1 rounded-xl border-white/[0.08] bg-white/[0.04] px-2 font-mono text-xs uppercase focus:border-white/25"
                     />
                   </div>
                 </Field>
@@ -860,12 +867,12 @@ export default function ConfiguracoesPage() {
 
           {/* Live preview */}
           <div
-            className="p-6 rounded-2xl border border-white/[0.06] overflow-hidden"
+            className="overflow-hidden rounded-2xl border border-white/[0.06] p-4 sm:p-6"
             style={{ backgroundColor: form.theme_bg }}
           >
             <p className="text-xs mb-4 font-sans uppercase tracking-wider" style={{ color: form.theme_text }}>Preview</p>
-            <div 
-              className="p-5 rounded-2xl border border-white/5" 
+            <div
+              className="rounded-2xl border border-white/5 p-4 sm:p-5"
               style={{ backgroundColor: form.theme_card }}
             >
               <h3
@@ -878,9 +885,9 @@ export default function ConfiguracoesPage() {
                 Experiência premium em cada detalhe.
               </p>
               
-              <div className="flex items-center gap-3">
+              <div className="flex flex-wrap items-center gap-3">
                 <button
-                  className="px-5 py-2.5 rounded-full text-sm font-bold transition-transform active:scale-95"
+                  className="rounded-full px-5 py-2.5 text-sm font-bold transition-transform active:scale-95"
                   style={{ backgroundColor: form.theme_button_bg, color: form.theme_button_text }}
                 >
                   Agendar Horário
@@ -1027,8 +1034,15 @@ export default function ConfiguracoesPage() {
         </div>
       )}
 
-      {/* Save button */}
-      <div className="flex items-center justify-between gap-4 pt-2 border-t border-white/[0.05]">
+      {/*
+        Salvar fica no fim do formulário, e não grudado no rodapé.
+
+        Uma barra flutuante foi tentada aqui — a tela é longa e a ideia era
+        deixar o botão sempre ao alcance —, mas ela passava por cima do campo
+        que estava sendo editado, e num formulário isso é pior do que rolar até
+        o fim: o botão tampava justamente o que se acabou de mexer.
+      */}
+      <div className="flex flex-col items-stretch gap-3 border-t border-white/[0.05] pt-4 sm:flex-row sm:items-center sm:justify-between sm:gap-4 sm:pt-2">
         {activeTab === "pagina" && (
           <p className="text-xs text-neutral-600">
             A prévia só fica pública depois de publicar.
@@ -1039,7 +1053,7 @@ export default function ConfiguracoesPage() {
           // Expediente incoerente é recusado pelo backend de qualquer forma;
           // barrar aqui evita a viagem de ida e volta só para levar erro.
           disabled={saving || saved || expedienteInvalido}
-          className={`h-10 px-6 rounded-xl text-sm font-semibold transition-all ${
+          className={`h-12 w-full rounded-xl px-6 text-sm font-semibold transition-all active:scale-[0.98] sm:w-auto md:h-10 ${
             saved
               ? "bg-green-500 text-white hover:bg-green-500"
               : "bg-white text-black hover:bg-zinc-100 shadow-[0_0_20px_rgba(255,255,255,0.12)]"

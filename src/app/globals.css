@@ -430,3 +430,140 @@ select {
     font-size: max(16px, 1em);
   }
 }
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   COMPORTAMENTO DE APLICATIVO NO TOQUE
+
+   O que separa uma página responsiva de algo que passa por app nativo não é a
+   largura das colunas — é o que acontece debaixo do dedo. Quatro detalhes
+   denunciam o navegador antes de qualquer layout: o realce cinza pintado sobre
+   o que se toca, o texto de um botão que entra em seleção quando se segura, a
+   página inteira balançando ao fim da rolagem e a barra de rolagem desenhada
+   por cima de um carrossel. As regras abaixo desligam os quatro.
+   ═══════════════════════════════════════════════════════════════════════════ */
+@layer base {
+  html {
+    /* Safari em paisagem aumenta a fonte por conta própria e desalinha a
+       grade toda; o app decide o tamanho do texto, não o sistema. */
+    -webkit-text-size-adjust: 100%;
+    text-size-adjust: 100%;
+  }
+
+  * {
+    -webkit-tap-highlight-color: transparent;
+  }
+
+  /* Comando não é texto para copiar: segurar o dedo aciona, não seleciona nem
+     abre o menu de contexto. O conteúdo da página continua selecionável. */
+  button,
+  [role="button"],
+  a,
+  label,
+  summary {
+    -webkit-touch-callout: none;
+  }
+
+  button,
+  [role="button"] {
+    -webkit-user-select: none;
+    user-select: none;
+  }
+}
+
+/*
+  Aplicada ao <body> pela casca do painel (efeito no layout), não aqui.
+
+  `overscroll-behavior` só tem efeito no elemento que rola de verdade, e no
+  painel esse elemento é o documento — a área de conteúdo tem altura definida,
+  então quem faz o "puxa e volta" do iOS é o body. Precisa então estar no body,
+  mas apenas no painel: na landing o puxar-para-recarregar é comportamento
+  legítimo de página, e desligá-lo em todo o site seria efeito colateral.
+*/
+.app-viewport {
+  overscroll-behavior-y: none;
+}
+
+/*
+  Altura da barra de abas do rodapé, em um lugar só.
+
+  A área de conteúdo do painel precisa reservar exatamente esse espaço embaixo:
+  a barra é `fixed`, não empurra nada, e sem a reserva o último cartão de toda
+  página nasceria por baixo dela. Escrever o número solto lá é convidar as duas
+  medidas a divergirem no dia em que a barra mudar de altura.
+
+  Vale `0px` por padrão — inclusive na landing e nas telas de acesso, que não
+  têm barra alguma — e só ganha altura dentro do painel, no celular. O default
+  fica em `:root` de propósito: a classe `.app-viewport` é aplicada ao <body>
+  depois de montar, e sem esse valor de partida o `calc()` seria inválido no
+  primeiro quadro e o recuo simplesmente não existiria.
+*/
+:root {
+  --app-tabbar: 0px;
+}
+
+@media (max-width: 767px) {
+  .app-viewport {
+    /* 3.9rem = a barra medida (ícone 22px + rótulo 10px + respiros + o fio de
+       1px do topo), com a faixa de gestos somada por fora. */
+    --app-tabbar: calc(3.9rem + env(safe-area-inset-bottom));
+  }
+}
+
+/** Carrossel horizontal sem a barra desenhada por cima (padrão de app). */
+@utility no-scrollbar {
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+  &::-webkit-scrollbar {
+    display: none;
+  }
+}
+
+/**
+ * Trilho horizontal com encaixe.
+ *
+ * Barras de filtro com seis opções quebravam em duas e três linhas no celular,
+ * empurrando o conteúdo para baixo e mudando de altura conforme a opção — é o
+ * que a captura de tela do pedido mostra. Num app elas deslizam. `proximity`
+ * (e não `mandatory`) porque o trilho também precisa poder parar entre dois
+ * itens quando o dedo dá um empurrão longo.
+ *
+ * `overscroll-x: contain` impede que o gesto vaze para o "voltar por arrasto"
+ * do navegador quando o trilho chega à ponta.
+ */
+@utility rail {
+  display: flex;
+  overflow-x: auto;
+  overscroll-behavior-x: contain;
+  scroll-snap-type: x proximity;
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+  &::-webkit-scrollbar {
+    display: none;
+  }
+  & > * {
+    scroll-snap-align: start;
+    flex-shrink: 0;
+  }
+}
+
+/* Folha que sobe do rodapé (modais no celular). A curva é a do iOS: sai rápido
+   e desacelera longamente, o que dá a impressão de peso. */
+@keyframes sheetIn {
+  from { transform: translateY(100%); }
+  to { transform: translateY(0); }
+}
+
+/* Aviso que desce do topo, como as notificações do sistema. */
+@keyframes bannerIn {
+  from { opacity: 0; transform: translateY(-120%); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  [class*="animate-[sheetIn"],
+  [class*="animate-[bannerIn"],
+  [class*="animate-[slideIn"],
+  [class*="animate-[scaleIn"] {
+    animation: none !important;
+  }
+}

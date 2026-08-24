@@ -111,13 +111,14 @@ export default function EstoquePage() {
   };
 
   return (
-    <div className="max-w-5xl mx-auto space-y-6">
-      <div className="flex items-start justify-between gap-4">
-        <div>
+    <div className="max-w-5xl mx-auto space-y-5 sm:space-y-6">
+      {/* Header — empilhado no celular; o botão vira alvo de largura inteira. */}
+      <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
+        <div className="min-w-0">
           <p className="text-xs uppercase tracking-[0.18em] text-neutral-600 font-semibold mb-1.5">
             Controle
           </p>
-          <h1 className="text-2xl sm:text-3xl font-black tracking-tight">
+          <h1 className="text-[1.75rem] font-black leading-tight tracking-tight sm:text-3xl">
             Estoque &amp; Produtos
           </h1>
           <p className="text-neutral-500 text-sm mt-1">
@@ -126,14 +127,14 @@ export default function EstoquePage() {
         </div>
         <Button
           onClick={() => setIsNewProductModalOpen(true)}
-          className="h-9 px-4 rounded-xl text-sm font-semibold bg-white text-black hover:bg-zinc-100 shadow-[0_0_20px_rgba(255,255,255,0.15)] shrink-0"
+          className="h-11 w-full shrink-0 rounded-xl bg-white px-4 text-sm font-semibold text-black shadow-[0_0_20px_rgba(255,255,255,0.15)] transition-transform hover:bg-zinc-100 active:scale-[0.98] sm:h-9 sm:w-auto"
         >
           <Plus className="w-4 h-4 mr-1.5" /> Novo Produto
         </Button>
       </div>
 
-      {/* Cards de resumo */}
-      <div className="grid grid-cols-3 gap-4">
+      {/* Cards de resumo — três números curtos numa linha só. */}
+      <div className="grid grid-cols-3 gap-2 sm:gap-4">
         <SummaryCard
           growingman={<Package className="w-4 h-4 text-white" />}
           label="Produtos"
@@ -158,11 +159,11 @@ export default function EstoquePage() {
       <div className="relative sm:max-w-sm">
         <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-neutral-500" />
         <input
-          type="text"
+          type="search"
           placeholder="Buscar produto..."
           value={search}
           onChange={(e) => setSearch(e.target.value)}
-          className="w-full h-10 pl-10 pr-4 bg-white/[0.02] border border-white/10 rounded-xl text-sm text-white placeholder:text-neutral-600 focus:outline-none focus:border-white/25"
+          className="h-11 w-full rounded-xl border border-white/10 bg-white/[0.02] pl-10 pr-4 text-sm text-white placeholder:text-neutral-600 focus:border-white/25 focus:outline-none sm:h-10"
         />
       </div>
 
@@ -200,7 +201,57 @@ export default function EstoquePage() {
             Nenhum produto encontrado com esse termo.
           </div>
         ) : (
-          <div className="overflow-x-auto">
+          <>
+          {/*
+            Lista no celular, tabela no desktop.
+
+            Quatro colunas com 560px de mínimo obrigavam a arrastar de lado só
+            para chegar ao botão de entrada — e o nome do produto saía de vista
+            no caminho, deixando a pessoa sem saber a que linha estava dando
+            entrada. No cartão, nome, preço, estoque e ação convivem na tela.
+          */}
+          <div className="divide-y divide-white/[0.04] md:hidden">
+            {visibleProducts.map((p) => (
+              <div key={p.id} className="flex items-center gap-3 px-4 py-3.5">
+                <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-lg border border-white/10 bg-white/5">
+                  <Package className="h-4 w-4 text-neutral-400" />
+                </div>
+                <div className="min-w-0 flex-1">
+                  <p className="truncate text-sm font-medium text-white">{p.name}</p>
+                  <div className="mt-1 flex items-center gap-2 text-xs">
+                    <span className="font-semibold text-neutral-300">
+                      {formatCurrency(Number(p.base_price))}
+                    </span>
+                    <span className="text-neutral-700">·</span>
+                    <span
+                      className={
+                        p.stock_quantity <= LOW_STOCK_THRESHOLD
+                          ? "font-semibold text-red-400"
+                          : "text-emerald-400"
+                      }
+                    >
+                      {p.stock_quantity <= LOW_STOCK_THRESHOLD
+                        ? `${p.stock_quantity} em estoque (baixo)`
+                        : `${p.stock_quantity} em estoque`}
+                    </span>
+                  </div>
+                </div>
+                <Button
+                  onClick={() => {
+                    setSelectedProduct(p);
+                    setStockToAdd(1);
+                  }}
+                  variant="outline"
+                  className="h-10 shrink-0 rounded-xl border-white/10 px-3 text-xs transition-transform hover:bg-white/10 active:scale-95"
+                  aria-label={`Dar entrada em ${p.name}`}
+                >
+                  <PlusCircle className="mr-1 h-3.5 w-3.5" /> Entrada
+                </Button>
+              </div>
+            ))}
+          </div>
+
+          <div className="hidden overflow-x-auto md:block">
             <table className="w-full text-left text-sm min-w-[560px]">
               <thead className="bg-white/[0.02] border-b border-white/[0.06] text-xs uppercase text-neutral-500 tracking-wider">
                 <tr>
@@ -257,6 +308,7 @@ export default function EstoquePage() {
               </tbody>
             </table>
           </div>
+          </>
         )}
       </div>
 
@@ -282,6 +334,8 @@ export default function EstoquePage() {
               className="w-full h-10 px-3 bg-white/[0.02] border border-white/10 rounded-xl text-sm focus:outline-none focus:border-white/25"
             />
           </div>
+          {/* Preço e estoque inicial são valores curtos: cabem lado a lado
+              mesmo em 390px. */}
           <div className="grid grid-cols-2 gap-4">
             <div>
               <label className="block text-sm text-neutral-400 mb-1">
@@ -318,11 +372,11 @@ export default function EstoquePage() {
               />
             </div>
           </div>
-          <div className="flex gap-3 pt-2">
+          <div className="flex flex-col-reverse gap-2.5 pt-2 sm:flex-row sm:gap-3">
             <Button
               onClick={() => setIsNewProductModalOpen(false)}
               variant="outline"
-              className="flex-1 rounded-xl"
+              className="h-12 flex-1 rounded-xl active:scale-[0.98] sm:h-10"
               disabled={creating}
             >
               Cancelar
@@ -330,7 +384,7 @@ export default function EstoquePage() {
             <Button
               onClick={handleCreateProduct}
               disabled={creating}
-              className="flex-1 rounded-xl bg-white text-black hover:bg-zinc-200"
+              className="h-12 flex-1 rounded-xl bg-white text-black transition-transform hover:bg-zinc-200 active:scale-[0.98] sm:h-10"
             >
               {creating ? "Salvando..." : "Salvar"}
             </Button>
@@ -370,11 +424,11 @@ export default function EstoquePage() {
               </p>
             )}
           </div>
-          <div className="flex gap-3 pt-2">
+          <div className="flex flex-col-reverse gap-2.5 pt-2 sm:flex-row sm:gap-3">
             <Button
               onClick={() => setSelectedProduct(null)}
               variant="outline"
-              className="flex-1 rounded-xl"
+              className="h-12 flex-1 rounded-xl active:scale-[0.98] sm:h-10"
               disabled={addingStock}
             >
               Cancelar
@@ -382,7 +436,7 @@ export default function EstoquePage() {
             <Button
               onClick={handleAddStock}
               disabled={addingStock}
-              className="flex-1 rounded-xl bg-emerald-500 text-black hover:bg-emerald-400"
+              className="h-12 flex-1 rounded-xl bg-emerald-500 text-black transition-transform hover:bg-emerald-400 active:scale-[0.98] sm:h-10"
             >
               {addingStock ? "Confirmando..." : `Confirmar (+${stockToAdd})`}
             </Button>
@@ -405,15 +459,15 @@ function SummaryCard({
   loading: boolean;
 }) {
   return (
-    <div className="p-4 rounded-2xl border border-white/[0.06] bg-white/[0.02]">
-      <div className="flex items-center gap-2 text-neutral-400 mb-2">
-        {growingman}
-        <span className="text-xs font-semibold">{label}</span>
+    <div className="rounded-2xl border border-white/[0.06] bg-white/[0.02] p-3 sm:p-4">
+      <div className="mb-2 flex items-center gap-1.5 text-neutral-400 sm:gap-2">
+        <span className="shrink-0">{growingman}</span>
+        <span className="text-[0.65rem] font-semibold leading-tight sm:text-xs">{label}</span>
       </div>
       {loading ? (
         <div className="h-7 w-12 bg-white/[0.05] rounded animate-pulse" />
       ) : (
-        <p className="text-2xl font-black">{value}</p>
+        <p className="text-xl font-black sm:text-2xl">{value}</p>
       )}
     </div>
   );

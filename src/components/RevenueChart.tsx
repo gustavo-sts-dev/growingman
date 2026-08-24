@@ -30,8 +30,8 @@ export function RevenueChart() {
   const totalBookings = series.reduce((s, p) => s + p.bookings, 0);
 
   return (
-    <div className="rounded-2xl border border-white/[0.06] bg-white/[0.02] p-5 sm:p-6">
-      <div className="flex items-center justify-between gap-4 mb-6 flex-wrap">
+    <div className="rounded-2xl border border-white/[0.06] bg-white/[0.02] p-4 sm:p-6">
+      <div className="mb-5 flex flex-wrap items-center justify-between gap-4 sm:mb-6">
         <div className="flex items-center gap-2">
           <div className="w-9 h-9 rounded-xl bg-white/5 border border-white/[0.06] flex items-center justify-center text-emerald-400">
             <TrendingUp className="w-4 h-4" />
@@ -41,7 +41,7 @@ export function RevenueChart() {
             <p className="text-xs text-neutral-500">Faturamento e agendamentos</p>
           </div>
         </div>
-        <div className="flex gap-5">
+        <div className="flex gap-5 sm:gap-5">
           <div>
             <p className="text-[11px] text-neutral-500 uppercase tracking-wider">Receita</p>
             <p className="text-lg font-black text-white">{formatCurrency(totalRevenue)}</p>

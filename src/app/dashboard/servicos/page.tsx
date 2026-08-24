@@ -181,15 +181,15 @@ export default function ServicesPage() {
   };
 
   return (
-    <div className="max-w-5xl mx-auto space-y-6">
-      {/* Header */}
-      <div className="flex items-start justify-between gap-4">
-        <div>
+    <div className="max-w-5xl mx-auto space-y-5 sm:space-y-6">
+      {/* Header — empilhado no celular; o botão vira alvo de largura inteira. */}
+      <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
+        <div className="min-w-0">
           <p className="text-xs uppercase tracking-[0.18em] text-neutral-600 font-semibold mb-1.5">Catálogo</p>
-          <h1 className="text-3xl font-black tracking-tight">Serviços</h1>
+          <h1 className="text-[1.75rem] font-black leading-tight tracking-tight sm:text-3xl">Serviços</h1>
           <p className="text-neutral-500 text-sm mt-1">Gerencie os serviços oferecidos pela sua barbearia.</p>
         </div>
-        <Button onClick={() => handleOpenModal()} className="h-9 px-4 rounded-xl text-sm font-semibold bg-white text-black hover:bg-zinc-100 shadow-[0_0_20px_rgba(255,255,255,0.15)] shrink-0">
+        <Button onClick={() => handleOpenModal()} className="h-11 w-full shrink-0 rounded-xl bg-white px-4 text-sm font-semibold text-black shadow-[0_0_20px_rgba(255,255,255,0.15)] transition-transform hover:bg-zinc-100 active:scale-[0.98] sm:h-9 sm:w-auto">
           <Plus className="w-4 h-4 mr-1.5" /> Novo Serviço
         </Button>
       </div>
@@ -199,19 +199,20 @@ export default function ServicesPage() {
         <div className="relative flex-1 lg:max-w-xs">
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-neutral-500" />
           <input
-            type="text"
+            type="search"
             placeholder="Buscar serviço..."
             value={search}
             onChange={(e) => setSearch(e.target.value)}
-            className="w-full h-10 pl-10 pr-4 bg-white/[0.02] border border-white/10 rounded-xl text-sm text-white placeholder:text-neutral-600 focus:outline-none focus:border-white/25"
+            className="h-11 w-full rounded-xl border border-white/10 bg-white/[0.02] pl-10 pr-4 text-sm text-white placeholder:text-neutral-600 focus:border-white/25 focus:outline-none lg:h-10"
           />
         </div>
 
-        <div className="flex items-center gap-2 flex-wrap">
+        <div className="flex flex-wrap items-center gap-2">
           <select
             value={categoryFilter}
             onChange={(e) => setCategoryFilter(e.target.value)}
-            className="h-9 px-3 bg-white/[0.03] border border-white/[0.06] rounded-xl text-xs font-semibold text-neutral-300 focus:outline-none focus:border-white/25 [&>option]:bg-zinc-900 [&>option]:text-white"
+            aria-label="Filtrar por categoria"
+            className="order-1 h-11 min-w-0 flex-1 rounded-xl border border-white/[0.06] bg-white/[0.03] px-3 text-xs font-semibold text-neutral-300 focus:border-white/25 focus:outline-none lg:h-9 lg:flex-none [&>option]:bg-zinc-900 [&>option]:text-white"
           >
             <option value="all">Todas categorias</option>
             {CATEGORIES.map((c) => (
@@ -219,7 +220,9 @@ export default function ServicesPage() {
             ))}
           </select>
 
-          <div className="flex gap-1 p-1 rounded-xl bg-white/[0.03] border border-white/[0.06]">
+          {/* Estado e ordenação disputam a linha com a categoria; o trilho
+              mantém tudo numa altura só em vez de quebrar a barra. */}
+          <div className="rail order-3 w-full gap-1 rounded-xl border border-white/[0.06] bg-white/[0.03] p-1 lg:order-2 lg:w-auto lg:overflow-visible">
             {([
               { key: "all", label: "Todos" },
               { key: "active", label: "Ativos" },
@@ -228,7 +231,7 @@ export default function ServicesPage() {
               <button
                 key={f.key}
                 onClick={() => setStatusFilter(f.key)}
-                className={`px-3 py-1.5 rounded-lg text-xs font-semibold transition-all ${
+                className={`flex-1 whitespace-nowrap rounded-lg px-3 py-2 text-xs font-semibold transition-all active:scale-95 lg:flex-none lg:py-1.5 ${
                   statusFilter === f.key ? "bg-white text-black" : "text-neutral-500 hover:text-white"
                 }`}
               >
@@ -237,11 +240,12 @@ export default function ServicesPage() {
             ))}
           </div>
 
-          <div className="flex items-center gap-1.5">
+          <div className="order-2 ml-auto flex shrink-0 items-center gap-1.5 lg:order-3">
             <select
               value={sortKey}
               onChange={(e) => setSortKey(e.target.value as SortKey)}
-              className="h-9 px-3 bg-white/[0.03] border border-white/[0.06] rounded-xl text-xs font-semibold text-neutral-300 focus:outline-none focus:border-white/25 [&>option]:bg-zinc-900 [&>option]:text-white"
+              aria-label="Ordenar por"
+              className="h-11 rounded-xl border border-white/[0.06] bg-white/[0.03] px-3 text-xs font-semibold text-neutral-300 focus:border-white/25 focus:outline-none lg:h-9 [&>option]:bg-zinc-900 [&>option]:text-white"
             >
               <option value="name">Nome</option>
               <option value="price">Preço</option>
@@ -249,7 +253,7 @@ export default function ServicesPage() {
             </select>
             <button
               onClick={() => setSortDir((d) => (d === "asc" ? "desc" : "asc"))}
-              className="w-9 h-9 rounded-xl bg-white/[0.03] border border-white/[0.06] flex items-center justify-center text-neutral-400 hover:text-white hover:border-white/20 transition-colors"
+              className="flex h-11 w-11 items-center justify-center rounded-xl border border-white/[0.06] bg-white/[0.03] text-neutral-400 transition-all hover:border-white/20 hover:text-white active:scale-95 lg:h-9 lg:w-9"
               aria-label={sortDir === "asc" ? "Crescente" : "Decrescente"}
             >
               {sortDir === "asc" ? <ArrowUp className="w-4 h-4" /> : <ArrowDown className="w-4 h-4" />}
@@ -288,7 +292,73 @@ export default function ServicesPage() {
             <p className="text-neutral-500 text-sm">Nenhum serviço encontrado com esses filtros.</p>
           </div>
         ) : (
-          <div className="overflow-x-auto">
+          <>
+          {/*
+            Cartões no celular, grade de colunas no desktop.
+
+            A grade tem 560px de largura mínima: no telefone ela obrigava a
+            arrastar de lado para ver preço e ações, com o nome do serviço
+            saindo de vista no caminho. Cada serviço vira um cartão que cabe
+            inteiro na tela, com duração e preço na mesma linha e as ações à
+            direita — sem rolagem horizontal alguma.
+          */}
+          <div className="divide-y divide-white/[0.04] md:hidden">
+            {list.map((svc) => (
+              <div
+                key={svc.id}
+                className={`flex items-center gap-3 px-4 py-3.5 ${svc.is_active ? "" : "opacity-50"}`}
+              >
+                {svc.image_url ? (
+                  /* eslint-disable-next-line @next/next/no-img-element */
+                  <img
+                    src={svc.image_url}
+                    alt={svc.name}
+                    className="h-11 w-11 shrink-0 rounded-lg border border-white/[0.08] object-cover"
+                  />
+                ) : (
+                  <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-lg border border-white/[0.08] bg-white/[0.03]">
+                    <Scissors className="h-4 w-4 text-neutral-600" />
+                  </div>
+                )}
+                <div className="min-w-0 flex-1">
+                  <div className="flex items-center gap-2">
+                    <p className="truncate text-sm font-semibold text-white">{svc.name}</p>
+                    {!svc.is_active && (
+                      <span className="inline-flex shrink-0 items-center gap-1 rounded bg-white/[0.05] px-1.5 py-0.5 text-[10px] font-semibold uppercase tracking-wide text-neutral-500">
+                        <EyeOff className="h-3 w-3" /> Inativo
+                      </span>
+                    )}
+                  </div>
+                  <div className="mt-1 flex items-center gap-2 text-xs">
+                    <span className="font-bold text-white">{formatCurrency(svc.base_price)}</span>
+                    <span className="text-neutral-700">·</span>
+                    <span className="flex items-center gap-1 text-neutral-500">
+                      <Clock className="h-3 w-3" />
+                      {formatDuration(svc.duration_minutes)}
+                    </span>
+                  </div>
+                </div>
+                <div className="flex shrink-0 items-center gap-1">
+                  <button
+                    onClick={() => handleOpenModal(svc)}
+                    className="flex h-10 w-10 items-center justify-center rounded-lg text-neutral-500 transition-all hover:bg-white/8 hover:text-white active:scale-95 active:bg-white/10"
+                    aria-label={`Editar ${svc.name}`}
+                  >
+                    <Edit2 className="h-4 w-4" />
+                  </button>
+                  <button
+                    onClick={() => setDeleteTarget(svc)}
+                    className="flex h-10 w-10 items-center justify-center rounded-lg text-neutral-500 transition-all hover:bg-red-500/10 hover:text-red-400 active:scale-95 active:bg-red-500/10"
+                    aria-label={`Excluir ${svc.name}`}
+                  >
+                    <Trash2 className="h-4 w-4" />
+                  </button>
+                </div>
+              </div>
+            ))}
+          </div>
+
+          <div className="hidden overflow-x-auto md:block">
             <div className="min-w-[560px]">
             <div className="grid grid-cols-[1fr_120px_120px_88px] gap-4 px-5 py-3 bg-white/[0.02] border-b border-white/[0.06] text-xs font-semibold uppercase tracking-wider text-neutral-600">
               <span>Serviço</span>
@@ -345,6 +415,7 @@ export default function ServicesPage() {
             ))}
             </div>
           </div>
+          </>
         )}
       </div>
 
@@ -398,6 +469,8 @@ export default function ServicesPage() {
               placeholder="Detalhes do serviço..."
             />
           </div>
+          {/* Duração e preço são valores curtos: continuam lado a lado até
+              no celular, onde meia largura ainda sobra para os dois. */}
           <div className="grid grid-cols-2 gap-4">
             <div>
               <label className="block text-sm text-neutral-400 mb-1">Duração (min)</label>
@@ -421,11 +494,11 @@ export default function ServicesPage() {
               {errors.price && <p className="text-red-400 text-xs mt-1">{errors.price}</p>}
             </div>
           </div>
-          <div className="flex gap-3 pt-4">
-            <Button onClick={() => setIsModalOpen(false)} variant="outline" className="flex-1 rounded-xl" disabled={saving}>
+          <div className="flex flex-col-reverse gap-2.5 pt-4 sm:flex-row sm:gap-3">
+            <Button onClick={() => setIsModalOpen(false)} variant="outline" className="h-12 flex-1 rounded-xl active:scale-[0.98] sm:h-10" disabled={saving}>
               Cancelar
             </Button>
-            <Button onClick={handleSave} disabled={saving} className="flex-1 rounded-xl bg-white text-black hover:bg-neutral-200">
+            <Button onClick={handleSave} disabled={saving} className="h-12 flex-1 rounded-xl bg-white text-black transition-transform hover:bg-neutral-200 active:scale-[0.98] sm:h-10">
               {saving ? "Salvando..." : "Salvar"}
             </Button>
           </div>

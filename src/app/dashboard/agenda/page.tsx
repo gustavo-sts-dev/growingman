@@ -599,112 +599,116 @@ export default function AgendaPage() {
   }, [bookings, statusFilter, barberFilter, bookingMatchesBarber]);
 
   return (
-    <div className="max-w-7xl mx-auto space-y-6 pb-20">
-      {/* Header */}
-      <div className="flex items-start justify-between gap-4">
-        <div>
+    <div className="max-w-7xl mx-auto space-y-5 sm:space-y-6">
+      {/*
+        Cabeçalho empilhado no celular.
+
+        Título e ações lado a lado numa tela de 390px espremiam os dois: o
+        subtítulo quebrava em quatro linhas para caber ao lado de um botão que
+        não encolhe. Empilhado, o texto usa a largura toda e as ações viram uma
+        dupla de botões largos — alvo generoso, do jeito que se toca num app.
+      */}
+      <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
+        <div className="min-w-0">
           <p className="text-xs uppercase tracking-[0.18em] text-neutral-600 font-semibold mb-1.5">
             Gestão de Horários
           </p>
-          <h1 className="text-3xl font-black tracking-tight">Agenda</h1>
+          <h1 className="text-[1.75rem] font-black leading-tight tracking-tight sm:text-3xl">Agenda</h1>
           <p className="text-neutral-500 text-sm mt-1">
             Visualize e gerencie os agendamentos por barbeiro e horário.
           </p>
         </div>
-        <div className="flex flex-col-reverse sm:flex-row gap-2 shrink-0">
+        <div className="flex shrink-0 gap-2 sm:flex-row-reverse">
+          <Button
+            onClick={() => setIsModalOpen(true)}
+            className="h-11 flex-1 rounded-xl bg-white px-4 text-sm font-semibold text-black transition-transform hover:bg-zinc-100 active:scale-[0.98] sm:h-9 sm:flex-none"
+          >
+            <Calendar className="w-4 h-4 mr-1.5" /> Novo Agendamento
+          </Button>
           {canManageBlocks && (
             <Button
               onClick={() => openBlockModal()}
               variant="outline"
               disabled={barbers.length === 0}
-              className="h-9 px-4 rounded-xl text-sm font-semibold border-white/10"
+              className="h-11 flex-1 rounded-xl border-white/10 px-4 text-sm font-semibold transition-transform active:scale-[0.98] sm:h-9 sm:flex-none"
             >
               <CalendarOff className="w-4 h-4 mr-1.5" /> Bloquear horário
             </Button>
           )}
-          <Button
-            onClick={() => setIsModalOpen(true)}
-            className="h-9 px-4 rounded-xl text-sm font-semibold bg-white text-black hover:bg-zinc-100"
-          >
-            <Calendar className="w-4 h-4 mr-1.5" /> Novo Agendamento
-          </Button>
         </div>
       </div>
 
       {/* Toolbar: data + visão + filtros */}
       <div className="space-y-3">
-        {/* Date Selector */}
-        <div className="flex items-center justify-center gap-4 p-4 rounded-2xl border border-white/[0.06] bg-white/[0.02]">
+        {/*
+          Seletor de data.
+
+          As setas de dia são o controle mais tocado desta tela e tinham 32px —
+          abaixo do alvo de 44px, e coladas no campo de data, que abre o seletor
+          nativo. Errar a mira significava abrir o calendário sem querer. Agora
+          cada seta ocupa o canto inteiro, com o campo respirando no meio.
+        */}
+        <div className="flex items-center justify-between gap-2 rounded-2xl border border-white/[0.06] bg-white/[0.02] p-1.5 sm:justify-center sm:gap-4 sm:p-4">
           <button
             onClick={() => changeDate(-1)}
-            className="w-8 h-8 rounded-lg hover:bg-white/[0.08] flex items-center justify-center text-neutral-400 hover:text-white transition-colors"
+            className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl text-neutral-400 transition-all hover:bg-white/[0.08] hover:text-white active:scale-90 active:bg-white/[0.12] sm:h-9 sm:w-9"
             aria-label="Dia anterior"
           >
             <ChevronLeft className="w-5 h-5" />
           </button>
-          <div className="flex items-center gap-2">
-            <Calendar className="w-4 h-4 text-neutral-500" />
+          <div className="flex min-w-0 items-center justify-center gap-2">
+            <Calendar className="hidden h-4 w-4 shrink-0 text-neutral-500 sm:block" />
             <input
               type="date"
               value={selectedDate}
               onChange={(e) => setSelectedDate(e.target.value)}
-              className="bg-transparent border-none text-lg font-bold text-white focus:outline-none"
+              className="min-w-0 border-none bg-transparent text-center text-base font-bold text-white focus:outline-none sm:text-lg"
             />
           </div>
           <button
             onClick={() => changeDate(1)}
-            className="w-8 h-8 rounded-lg hover:bg-white/[0.08] flex items-center justify-center text-neutral-400 hover:text-white transition-colors"
+            className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl text-neutral-400 transition-all hover:bg-white/[0.08] hover:text-white active:scale-90 active:bg-white/[0.12] sm:h-9 sm:w-9"
             aria-label="Próximo dia"
           >
             <ChevronRight className="w-5 h-5" />
           </button>
         </div>
 
-        {/* Filtros */}
-        <div className="flex flex-col lg:flex-row gap-3 lg:items-center lg:justify-between">
-          <div className="flex items-center gap-3 flex-wrap">
-            {/* Filtro barbeiro (oculto para o próprio barbeiro, que só vê a si) */}
-            {role !== "BARBER" && (
-              <select
-                value={barberFilter}
-                onChange={(e) => setBarberFilter(e.target.value)}
-                className="h-9 px-3 bg-white/[0.03] border border-white/[0.06] rounded-xl text-xs font-semibold text-neutral-300 focus:outline-none focus:border-white/25 [&>option]:bg-zinc-900 [&>option]:text-white"
-              >
-                <option value="all">Todos os barbeiros</option>
-                {barbers.map((b) => (
-                  <option
-                    key={b.id}
-                    value={b.id}
-                  >
-                    {b.name}
-                  </option>
-                ))}
-              </select>
-            )}
+        {/*
+          Filtros.
 
-            {/* Filtro status */}
-            <div className="flex gap-1 p-1 rounded-xl bg-white/[0.03] border border-white/[0.06] flex-wrap">
-              {STATUS_FILTERS.map((f) => (
-                <button
-                  key={f.key}
-                  onClick={() => setStatusFilter(f.key)}
-                  className={`px-3 py-1.5 rounded-lg text-xs font-semibold transition-all ${
-                    statusFilter === f.key
-                      ? "bg-white text-black"
-                      : "text-neutral-500 hover:text-white"
-                  }`}
+          `flex-wrap` com `order`: no celular a primeira linha leva o seletor de
+          profissional (que estica) e o alternador de visão (que não), e a barra
+          de status desce inteira para a segunda porque é `w-full`. No desktop,
+          onde tudo cabe, o `order` recoloca o alternador na direita e a linha
+          volta a ser uma só — mesma marcação, duas plantas.
+        */}
+        <div className="flex flex-wrap items-center gap-2 lg:gap-3">
+          {/* Filtro barbeiro (oculto para o próprio barbeiro, que só vê a si) */}
+          {role !== "BARBER" && (
+            <select
+              value={barberFilter}
+              onChange={(e) => setBarberFilter(e.target.value)}
+              aria-label="Filtrar por profissional"
+              className="order-1 h-11 min-w-0 flex-1 rounded-xl border border-white/[0.06] bg-white/[0.03] px-3 text-xs font-semibold text-neutral-300 focus:border-white/25 focus:outline-none lg:h-9 lg:flex-none [&>option]:bg-zinc-900 [&>option]:text-white"
+            >
+              <option value="all">Todos os barbeiros</option>
+              {barbers.map((b) => (
+                <option
+                  key={b.id}
+                  value={b.id}
                 >
-                  {f.label}
-                </button>
+                  {b.name}
+                </option>
               ))}
-            </div>
-          </div>
+            </select>
+          )}
 
           {/* Toggle de visão */}
-          <div className="flex gap-1 p-1 rounded-xl bg-white/[0.03] border border-white/[0.06] w-fit">
+          <div className="order-2 ml-auto flex w-fit shrink-0 gap-1 rounded-xl border border-white/[0.06] bg-white/[0.03] p-1 lg:order-3">
             <button
               onClick={() => setViewMode("grid")}
-              className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold transition-all ${
+              className={`flex items-center gap-1.5 rounded-lg px-3 py-2 text-xs font-semibold transition-all active:scale-95 lg:py-1.5 ${
                 viewMode === "grid"
                   ? "bg-white text-black"
                   : "text-neutral-500 hover:text-white"
@@ -714,7 +718,7 @@ export default function AgendaPage() {
             </button>
             <button
               onClick={() => setViewMode("list")}
-              className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold transition-all ${
+              className={`flex items-center gap-1.5 rounded-lg px-3 py-2 text-xs font-semibold transition-all active:scale-95 lg:py-1.5 ${
                 viewMode === "list"
                   ? "bg-white text-black"
                   : "text-neutral-500 hover:text-white"
@@ -722,6 +726,31 @@ export default function AgendaPage() {
             >
               <List className="w-3.5 h-3.5" /> Lista
             </button>
+          </div>
+
+          {/*
+            Filtro de status como trilho deslizante.
+
+            Seis opções não cabem em 390px: elas quebravam em duas e três linhas
+            dentro da pílula, e a barra mudava de altura conforme o filtro
+            escolhido — a página inteira pulava a cada toque. Deslizando, a
+            altura é sempre a mesma e o gesto é o das barras segmentadas do
+            sistema.
+          */}
+          <div className="rail order-3 w-full gap-1 rounded-xl border border-white/[0.06] bg-white/[0.03] p-1 lg:order-2 lg:w-auto lg:overflow-visible">
+            {STATUS_FILTERS.map((f) => (
+              <button
+                key={f.key}
+                onClick={() => setStatusFilter(f.key)}
+                className={`whitespace-nowrap rounded-lg px-3 py-2 text-xs font-semibold transition-all active:scale-95 lg:py-1.5 ${
+                  statusFilter === f.key
+                    ? "bg-white text-black"
+                    : "text-neutral-500 hover:text-white"
+                }`}
+              >
+                {f.label}
+              </button>
+            ))}
           </div>
         </div>
       </div>
@@ -739,34 +768,43 @@ export default function AgendaPage() {
         </div>
       ) : viewMode === "grid" ? (
         /* ── VISÃO GRADE ────────────────────────────────────── */
-        <div className="isolate rounded-2xl border border-white/[0.06] overflow-hidden">
+        <div className="relative isolate rounded-2xl border border-white/[0.06] overflow-hidden">
           <div className="overflow-x-auto overscroll-x-contain">
+            {/*
+              A largura mínima vem de uma variável CSS, não de `style` calculado
+              em JS.
+
+              O valor precisa mudar com o ponto de corte — 152px por coluna no
+              celular contra 180px no desktop —, e `style` inline não conhece
+              media query. Passando só a CONTAGEM de colunas para o CSS, a conta
+              acontece onde o ponto de corte existe.
+            */}
             <table
-              className="w-full table-fixed text-sm"
-              style={{ minWidth: 96 + visibleBarbers.length * 180 }}
+              className="w-full min-w-[calc(5rem+var(--agenda-cols)*9.5rem)] table-fixed text-sm sm:min-w-[calc(6rem+var(--agenda-cols)*11.25rem)]"
+              style={{ "--agenda-cols": visibleBarbers.length } as React.CSSProperties}
             >
               <colgroup>
-                <col className="w-24" />
+                <col className="w-20 sm:w-24" />
                 {visibleBarbers.map((barber) => (
                   <col
                     key={barber.id}
-                    className="w-[180px]"
+                    className="w-[9.5rem] sm:w-[180px]"
                   />
                 ))}
               </colgroup>
               <thead className="bg-white/[0.02] border-b border-white/[0.06]">
                 <tr>
-                  <th className="sticky left-0 z-10 w-24 border-r border-white/[0.06] bg-[#080808] px-4 py-3 text-left text-xs font-semibold uppercase text-neutral-500 whitespace-nowrap">
+                  <th className="sticky left-0 z-10 w-20 border-r border-white/[0.06] bg-[#080808] px-3 py-3 text-left text-xs font-semibold uppercase text-neutral-500 whitespace-nowrap sm:w-24 sm:px-4">
                     Horário
                   </th>
                   {visibleBarbers.map((barber) => (
                     <th
                       key={barber.id}
-                      className="px-4 py-3 text-center text-xs font-semibold uppercase text-neutral-500 min-w-[180px]"
+                      className="px-2 py-3 text-center text-xs font-semibold uppercase text-neutral-500 sm:px-4"
                     >
-                      <div className="flex items-center justify-center gap-2">
-                        <User className="w-3.5 h-3.5" />
-                        {barber.name}
+                      <div className="flex items-center justify-center gap-1.5 sm:gap-2">
+                        <User className="w-3.5 h-3.5 shrink-0" />
+                        <span className="truncate">{barber.name}</span>
                       </div>
                     </th>
                   ))}
@@ -791,9 +829,9 @@ export default function AgendaPage() {
                     key={time}
                     className="hover:bg-white/[0.01]"
                   >
-                    <td className="sticky left-0 z-10 w-24 border-r border-white/[0.06] bg-[#080808] px-4 py-2 font-semibold text-neutral-400 whitespace-nowrap">
+                    <td className="sticky left-0 z-10 w-20 border-r border-white/[0.06] bg-[#080808] px-3 py-2 font-semibold text-neutral-400 whitespace-nowrap sm:w-24 sm:px-4">
                       <div className="flex items-center gap-1.5">
-                        <Clock className="w-3.5 h-3.5 text-neutral-600" />
+                        <Clock className="hidden h-3.5 w-3.5 text-neutral-600 sm:block" />
                         {time}
                       </div>
                     </td>
@@ -814,7 +852,7 @@ export default function AgendaPage() {
                           >
                             <button
                               onClick={() => setDetailBooking(booking)}
-                              className={`w-full text-left p-2 rounded-lg border transition-opacity ${STATUS_STYLE[status]} ${
+                              className={`w-full rounded-lg border p-2.5 text-left transition-all active:scale-[0.97] ${STATUS_STYLE[status]} ${
                                 dimmed ? "opacity-30" : "hover:opacity-80"
                               }`}
                             >
@@ -839,7 +877,7 @@ export default function AgendaPage() {
                           <td key={barber.id} className="px-2 py-2">
                             <button
                               onClick={() => setSelectedBlock(block)}
-                              className="w-full p-2 rounded-lg border border-amber-500/15 bg-amber-500/[0.06] text-left hover:bg-amber-500/10 transition-colors"
+                              className="w-full rounded-lg border border-amber-500/15 bg-amber-500/[0.06] p-2.5 text-left transition-all hover:bg-amber-500/10 active:scale-[0.97]"
                             >
                               <p className="text-xs font-semibold text-amber-300 truncate">
                                 Bloqueado
@@ -867,7 +905,7 @@ export default function AgendaPage() {
                                 });
                                 setIsModalOpen(true);
                               }}
-                              className="w-full p-2 rounded-lg border border-dashed border-white/10 hover:border-emerald-500/30 hover:bg-emerald-500/5 transition-colors text-xs text-neutral-600 hover:text-emerald-400"
+                              className="w-full rounded-lg border border-dashed border-white/10 p-2.5 text-xs text-neutral-600 transition-all hover:border-emerald-500/30 hover:bg-emerald-500/5 hover:text-emerald-400 active:scale-[0.97] active:border-emerald-500/30 active:text-emerald-400"
                             >
                               Disponível
                             </button>
@@ -886,6 +924,20 @@ export default function AgendaPage() {
               </tbody>
             </table>
           </div>
+          {/*
+            Sombra na borda direita quando há mais colunas do que cabem.
+
+            A grade rola de lado no celular, e nada dizia isso: uma tabela que
+            termina reta na borda parece uma tabela inteira. O esmaecido é a
+            convenção de app para "continua" — e some sozinho quando só há um
+            profissional, porque aí não há nada a revelar.
+          */}
+          {visibleBarbers.length > 1 && (
+            <div
+              aria-hidden
+              className="pointer-events-none absolute inset-y-0 right-0 w-10 bg-gradient-to-l from-[#080808] to-transparent sm:hidden"
+            />
+          )}
         </div>
       ) : (
         /* ── VISÃO LISTA ────────────────────────────────────── */
@@ -902,9 +954,9 @@ export default function AgendaPage() {
                   <button
                     key={block.id}
                     onClick={() => setSelectedBlock(block)}
-                    className="w-full flex items-center gap-4 px-5 py-4 text-left hover:bg-amber-500/[0.04] transition-colors"
+                    className="flex w-full items-center gap-3 px-4 py-4 text-left transition-colors hover:bg-amber-500/[0.04] active:bg-amber-500/[0.08] sm:gap-4 sm:px-5"
                   >
-                    <div className="flex items-center gap-2 text-sm font-semibold text-amber-300 shrink-0">
+                    <div className="flex shrink-0 items-center gap-1.5 text-xs font-semibold text-amber-300 sm:gap-2 sm:text-sm">
                       <LockKeyhole className="w-3.5 h-3.5" />
                       {block.startTime}–{block.endTime}
                     </div>
@@ -935,10 +987,10 @@ export default function AgendaPage() {
                   <button
                     key={b.id}
                     onClick={() => setDetailBooking(b)}
-                    className="w-full flex items-center gap-4 px-5 py-4 hover:bg-white/[0.02] transition-colors text-left"
+                    className="flex w-full items-center gap-3 px-4 py-4 text-left transition-colors hover:bg-white/[0.02] active:bg-white/[0.05] sm:gap-4 sm:px-5"
                   >
-                    <div className="flex items-center gap-2 text-sm font-semibold text-neutral-300 shrink-0 w-16">
-                      <Clock className="w-3.5 h-3.5 text-neutral-600" />
+                    <div className="flex w-12 shrink-0 items-center gap-1.5 text-sm font-semibold text-neutral-300 sm:w-16 sm:gap-2">
+                      <Clock className="hidden h-3.5 w-3.5 text-neutral-600 sm:block" />
                       {slotOf(b.start_time)}
                     </div>
                     <div className="flex-1 min-w-0">
@@ -1071,17 +1123,22 @@ export default function AgendaPage() {
             />
           </div>
 
-          <div className="flex gap-3 pt-3">
+          {/*
+              Rodapé de ação da folha: empilhado no celular, com a ação
+              principal embaixo — é o que o polegar alcança primeiro numa folha
+              colada ao rodapé — e lado a lado no diálogo do desktop.
+          */}
+          <div className="flex flex-col-reverse gap-2.5 pt-3 sm:flex-row sm:gap-3">
             <Button
               variant="outline"
-              className="flex-1 rounded-xl"
+              className="h-12 flex-1 rounded-xl active:scale-[0.98] sm:h-10"
               disabled={blockSaving}
               onClick={() => setIsBlockModalOpen(false)}
             >
               Cancelar
             </Button>
             <Button
-              className="flex-1 rounded-xl bg-amber-300 text-black hover:bg-amber-200"
+              className="h-12 flex-1 rounded-xl bg-amber-300 text-black transition-transform hover:bg-amber-200 active:scale-[0.98] sm:h-10"
               disabled={blockSaving}
               onClick={handleCreateBlock}
             >
@@ -1116,7 +1173,7 @@ export default function AgendaPage() {
                 variant="outline"
                 disabled={blockDeleting}
                 onClick={handleDeleteBlock}
-                className="w-full rounded-xl border-red-500/20 text-red-400 hover:bg-red-500/10"
+                className="h-12 w-full rounded-xl border-red-500/20 text-red-400 transition-transform hover:bg-red-500/10 active:scale-[0.98] sm:h-10"
               >
                 <Trash2 className="w-4 h-4 mr-2" />
                 {blockDeleting ? "Liberando..." : "Liberar horário"}
@@ -1194,7 +1251,10 @@ export default function AgendaPage() {
           </div>
 
           {!newBooking.clientId && (
-            <div className="grid grid-cols-2 gap-4">
+            // Nome e telefone são campos de texto livre: lado a lado em 390px
+            // sobra menos de 150px para cada um, e o valor digitado desaparece
+            // pela esquerda enquanto se escreve.
+            <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
               <div>
                 <label className="block text-sm text-neutral-400 mb-1">
                   Nome
@@ -1233,11 +1293,11 @@ export default function AgendaPage() {
             <label className="block text-sm text-neutral-400 mb-1">
               Serviços
             </label>
-            <div className="space-y-2 max-h-40 overflow-y-auto">
+            <div className="max-h-56 space-y-2 overflow-y-auto overscroll-contain sm:max-h-40">
               {services.map((s) => (
                 <label
                   key={s.id}
-                  className="flex items-center gap-2 p-2 rounded-lg hover:bg-white/[0.02] cursor-pointer"
+                  className="flex min-h-[44px] cursor-pointer items-center gap-3 rounded-lg p-2 transition-colors hover:bg-white/[0.02] active:bg-white/[0.05]"
                 >
                   <input
                     type="checkbox"
@@ -1261,7 +1321,7 @@ export default function AgendaPage() {
                         });
                       }
                     }}
-                    className="w-4 h-4"
+                    className="h-[1.15rem] w-[1.15rem] shrink-0 accent-white"
                   />
                   <div className="flex-1 flex items-center justify-between">
                     <span className="text-sm text-white">{s.name}</span>
@@ -1274,11 +1334,11 @@ export default function AgendaPage() {
             </div>
           </div>
 
-          <div className="flex gap-3 pt-4">
+          <div className="flex flex-col-reverse gap-2.5 pt-4 sm:flex-row sm:gap-3">
             <Button
               onClick={() => setIsModalOpen(false)}
               variant="outline"
-              className="flex-1 rounded-xl"
+              className="h-12 flex-1 rounded-xl active:scale-[0.98] sm:h-10"
               disabled={saving}
             >
               Cancelar
@@ -1286,7 +1346,7 @@ export default function AgendaPage() {
             <Button
               onClick={handleCreateBooking}
               disabled={saving}
-              className="flex-1 rounded-xl bg-white text-black hover:bg-neutral-200"
+              className="h-12 flex-1 rounded-xl bg-white text-black transition-transform hover:bg-neutral-200 active:scale-[0.98] sm:h-10"
             >
               {saving ? "Criando..." : "Criar Agendamento"}
             </Button>
@@ -1415,7 +1475,7 @@ export default function AgendaPage() {
                   Este corte já foi pago online. A receita já está no caixa.
                 </p>
                 <Button
-                  className="w-full"
+                  className="h-12 w-full rounded-xl transition-transform active:scale-[0.98] sm:h-10"
                   disabled={checkoutSaving}
                   onClick={() => handleCheckout(checkoutBooking)}
                 >
@@ -1433,7 +1493,7 @@ export default function AgendaPage() {
                       key={m.key}
                       disabled={checkoutSaving}
                       onClick={() => handleCheckout(checkoutBooking, m.key)}
-                      className="flex items-center justify-center gap-2 py-3 px-4 rounded-xl text-sm font-semibold bg-emerald-500/10 text-emerald-400 hover:bg-emerald-500/20 disabled:opacity-50 transition-colors"
+                      className="flex min-h-[3rem] items-center justify-center gap-2 rounded-xl bg-emerald-500/10 px-4 py-3 text-sm font-semibold text-emerald-400 transition-all hover:bg-emerald-500/20 active:scale-[0.97] disabled:opacity-50"
                     >
                       {m.label}
                     </button>
@@ -1482,7 +1542,7 @@ function StatusButton({
     <button
       onClick={onClick}
       disabled={disabled}
-      className={`flex items-center justify-center gap-2 h-10 rounded-xl text-xs font-semibold transition-colors disabled:opacity-40 ${className}`}
+      className={`flex h-12 items-center justify-center gap-2 rounded-xl text-xs font-semibold transition-all active:scale-[0.97] disabled:opacity-40 sm:h-10 ${className}`}
     >
       {growingman}
       {label}

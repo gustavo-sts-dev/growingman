@@ -27,12 +27,12 @@ export default function MeuDesempenhoPage() {
   const isEmpty = !loading && (s?.totalBookings ?? 0) === 0;
 
   return (
-    <div className="max-w-4xl mx-auto space-y-6">
+    <div className="max-w-4xl mx-auto space-y-5 sm:space-y-6">
       <div>
         <p className="text-xs uppercase tracking-[0.18em] text-neutral-600 font-semibold mb-1.5">
           Minha Performance
         </p>
-        <h1 className="text-2xl sm:text-3xl font-black tracking-tight">
+        <h1 className="text-[1.75rem] font-black leading-tight tracking-tight sm:text-3xl">
           Meu Desempenho
         </h1>
         <p className="text-neutral-500 text-sm mt-1">
@@ -41,7 +41,7 @@ export default function MeuDesempenhoPage() {
       </div>
 
       {/* Cards de atendimentos */}
-      <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+      <div className="grid grid-cols-2 gap-3 lg:grid-cols-4 lg:gap-4">
         <StatCard
           growingman={<BarChart3 className="w-4 h-4 text-white" />}
           label="Agendamentos"
@@ -69,8 +69,8 @@ export default function MeuDesempenhoPage() {
       </div>
 
       {/* Financeiro */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-        <div className="p-5 rounded-2xl border border-white/[0.06] bg-white/[0.02]">
+      <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 sm:gap-4">
+        <div className="rounded-2xl border border-white/[0.06] bg-white/[0.02] p-4 sm:p-5">
           <div className="flex items-center gap-2 text-neutral-400 mb-2">
             <DollarSign className="w-4 h-4 text-emerald-400" />
             <span className="text-xs font-semibold">Receita Gerada</span>
@@ -87,7 +87,7 @@ export default function MeuDesempenhoPage() {
           </p>
         </div>
 
-        <div className="p-5 rounded-2xl border border-white/[0.06] bg-white/[0.02]">
+        <div className="rounded-2xl border border-white/[0.06] bg-white/[0.02] p-4 sm:p-5">
           <div className="flex items-center gap-2 text-neutral-400 mb-2">
             <Wallet className="w-4 h-4 text-blue-400" />
             <span className="text-xs font-semibold">Comissão Estimada</span>
@@ -137,10 +137,10 @@ function StatCard({
   loading: boolean;
 }) {
   return (
-    <div className="p-4 rounded-2xl border border-white/[0.06] bg-white/[0.02]">
-      <div className="flex items-center gap-2 text-neutral-400 mb-2">
-        {growingman}
-        <span className="text-xs font-semibold">{label}</span>
+    <div className="rounded-2xl border border-white/[0.06] bg-white/[0.02] p-3.5 sm:p-4">
+      <div className="mb-2 flex items-center gap-2 text-neutral-400">
+        <span className="shrink-0">{growingman}</span>
+        <span className="text-[0.7rem] font-semibold leading-tight sm:text-xs">{label}</span>
       </div>
       {loading ? (
         <div className="h-7 w-10 bg-white/[0.05] rounded animate-pulse" />
