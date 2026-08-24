@@ -2,24 +2,12 @@
 
 import { useState } from "react";
 import Link from "next/link";
-import { ArrowLeft, ArrowRight, Check, Copy, ExternalLink, Loader2 } from "lucide-react";
+import { ArrowLeft, ArrowRight, Check, Copy, ExternalLink, Loader2, Mail, RefreshCw } from "lucide-react";
 import { Field, FormAlert, TextInput, btn } from "@/components/brand/ui";
 import { apiUrl, siteHost } from "@/lib/config";
 import { PRECO_BASE_FMT, PRECO_POR_PROFISSIONAL_FMT } from "@/lib/pricing";
 
-type PixPayment = {
-  paymentId: string;
-  invoiceUrl: string;
-  dueDate: string;
-  value: number;
-  qrCodeBase64: string;
-  qrCodePayload: string;
-};
-
-const STEP_LABELS = ["Responsável", "Barbearia", "Pagamento"];
-
-/** Fora de produção o backend dispensa a cobrança — a última etapa vira confirmação. */
-const STEP_LABELS_SEM_COBRANCA = ["Responsável", "Barbearia", "Conclusão"];
+const STEP_LABELS = ["Responsável", "Barbearia", "Confirmar e-mail"];
 
 function normalizeSlug(value: string) {
   return value
@@ -40,12 +28,9 @@ export default function OnboardingFlow() {
   const [tenantSlug, setTenantSlug] = useState("");
   const [referralCode, setReferralCode] = useState("");
   const [isLoading, setIsLoading] = useState(false);
+  const [isResending, setIsResending] = useState(false);
+  const [resendCooldown, setResendCooldown] = useState(false);
   const [errorMsg, setErrorMsg] = useState("");
-  const [copied, setCopied] = useState(false);
-  const [pixData, setPixData] = useState<PixPayment | null>(null);
-  const [billingRequired, setBillingRequired] = useState(true);
-  /** Preenchido quando a barbearia pegou uma das vagas de cortesia de lançamento. */
-  const [trial, setTrial] = useState<{ months: number; endsAt: string } | null>(null);
 
   const validateOwner = () => {
     const documentLength = adminCpfCnpj.replace(/\D/g, "").length;
@@ -66,7 +51,7 @@ export default function OnboardingFlow() {
     setStep(2);
   };
 
-  const handleCreateAccount = async () => {
+  const handleInitiate = async () => {
     if (tenantName.trim().length < 3) {
       setErrorMsg("Informe o nome da barbearia.");
       return;
@@ -80,74 +65,54 @@ export default function OnboardingFlow() {
     setErrorMsg("");
 
     try {
-      const response = await fetch(apiUrl("/tenants/onboarding"), {
+      const response = await fetch(apiUrl("/tenants/onboarding/initiate"), {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           adminName: adminName.trim(),
-          adminEmail: adminEmail.trim(),
+          adminEmail: adminEmail.trim().toLowerCase(),
           adminCpfCnpj: adminCpfCnpj.replace(/\D/g, ""),
           adminPassword,
           tenantName: tenantName.trim(),
           tenantSlug,
-          // Opcional. Vazio não vai como "": o backend trata ausência, não string vazia.
           ...(referralCode ? { referralCode } : {}),
         }),
       });
 
       const data = await response.json().catch(() => null);
       if (!response.ok) {
-        throw new Error(data?.message || "Não foi possível criar a cobrança.");
+        throw new Error(data?.message || "Não foi possível iniciar o cadastro.");
       }
 
-      // Fora de produção o backend cria a conta sem gerar cobrança. Este flag
-      // distingue "cobrança dispensada" de "cobrança que falhou" — sem ele, a
-      // ausência de QR Code cairia no erro logo abaixo.
-      if (data?.billingRequired === false) {
-        setBillingRequired(false);
-        // Duas razões distintas para não haver cobrança: cortesia de lançamento
-        // (produção) ou a flag de ambiente desligada (dev). O texto muda.
-        setTrial(
-          data?.trialMonths && data?.trialEndsAt
-            ? { months: data.trialMonths, endsAt: data.trialEndsAt }
-            : null,
-        );
-        setStep(3);
-        return;
-      }
-
-      const payment = data?.payment as Partial<PixPayment> | undefined;
-      if (
-        !payment?.paymentId ||
-        !payment.invoiceUrl ||
-        !payment.qrCodeBase64 ||
-        !payment.qrCodePayload
-      ) {
-        throw new Error("A cobrança foi criada sem um QR Code válido. Tente novamente.");
-      }
-
-      setPixData(payment as PixPayment);
       setStep(3);
     } catch (error) {
-      setErrorMsg(error instanceof Error ? error.message : "Não foi possível criar a conta.");
+      setErrorMsg(error instanceof Error ? error.message : "Não foi possível iniciar o cadastro.");
     } finally {
       setIsLoading(false);
     }
   };
 
-  const copyPixPayload = async () => {
-    if (!pixData?.qrCodePayload) return;
-    await navigator.clipboard.writeText(pixData.qrCodePayload);
-    setCopied(true);
-    window.setTimeout(() => setCopied(false), 2500);
+  const handleResend = async () => {
+    if (resendCooldown || isResending) return;
+    setIsResending(true);
+
+    try {
+      await fetch(apiUrl("/tenants/onboarding/resend"), {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email: adminEmail.trim().toLowerCase() }),
+      });
+    } finally {
+      setIsResending(false);
+      // Cooldown de 30s para não virar spam
+      setResendCooldown(true);
+      window.setTimeout(() => setResendCooldown(false), 30_000);
+    }
   };
 
   return (
     <div className="mx-auto w-full max-w-xl">
-      <Stepper
-        current={step}
-        labels={billingRequired ? STEP_LABELS : STEP_LABELS_SEM_COBRANCA}
-      />
+      <Stepper current={step} labels={STEP_LABELS} />
 
       {/* Borda em gradiente: o mesmo destaque do cartão de plano da landing */}
       <div className="mt-8 rounded-[1.6rem] bg-[linear-gradient(160deg,#c9c3b6_0%,#e4e0d8_45%,rgba(228,224,216,0)_100%)] p-px shadow-[0_40px_90px_-55px_rgba(13,12,10,0.75)] sm:mt-10 sm:rounded-[1.85rem]">
@@ -264,21 +229,17 @@ export default function OnboardingFlow() {
                     value={referralCode}
                     placeholder="Ex.: ABCD2345"
                     maxLength={16}
-                    // Os códigos são gerados e comparados em caixa alta; normalizar
-                    // aqui evita que quem digitar minúsculo perca o desconto de
-                    // quem o indicou.
                     onChange={(event) =>
                       setReferralCode(event.target.value.toUpperCase().replace(/[^A-Z0-9]/g, ""))
                     }
                   />
                   <p className="mt-1.5 text-[0.72rem] leading-4 text-[#8a857c]">
-                    Recebeu o código de outra barbearia? Ela ganha desconto quando
-                    você assinar.
+                    Recebeu o código de outra barbearia? Ela ganha desconto quando você assinar.
                   </p>
                 </Field>
               </div>
 
-              {/* Resumo da cobrança, no mesmo padrão da seção de plano */}
+              {/* Resumo da cobrança */}
               <div className="rounded-[1.15rem] border border-[#e4e0d8] bg-[#faf9f6] p-4 sm:p-5">
                 <div className="flex items-end justify-between gap-3">
                   <div>
@@ -295,7 +256,8 @@ export default function OnboardingFlow() {
                   </p>
                 </div>
                 <p className="mt-3 border-t border-[#eae7e0] pt-3 text-[0.78rem] leading-5 text-[#8a857c]">
-                  A primeira fatura é só a base, porque a barbearia ainda não tem profissional cadastrado. A cobrança Pix vence em 3 dias.
+                  A primeira fatura é só a base, porque a barbearia ainda não tem profissional
+                  cadastrado. A cobrança Pix vence em 3 dias.
                 </p>
               </div>
 
@@ -304,17 +266,17 @@ export default function OnboardingFlow() {
               <button
                 type="button"
                 disabled={isLoading}
-                onClick={handleCreateAccount}
+                onClick={handleInitiate}
                 className={`${btn.primary} w-full`}
               >
                 {isLoading ? (
                   <>
                     <Loader2 className="size-4 animate-spin" aria-hidden="true" />
-                    Gerando cobrança…
+                    Enviando e-mail…
                   </>
                 ) : (
                   <>
-                    Criar conta e gerar Pix
+                    Continuar
                     <ArrowRight className="size-3.5" aria-hidden="true" />
                   </>
                 )}
@@ -322,101 +284,86 @@ export default function OnboardingFlow() {
             </div>
           )}
 
-          {step === 3 && !billingRequired && (
+          {step === 3 && (
             <div className="space-y-6">
               <StepHeader
-                eyebrow={trial ? "Cortesia de lançamento" : "Conta criada"}
-                title={
-                  trial ? `${trial.months} meses por nossa conta` : "Barbearia cadastrada"
-                }
-                text={
-                  trial
-                    ? `Você pegou uma das vagas de lançamento. Nada a pagar até ${new Date(
-                        trial.endsAt,
-                      ).toLocaleDateString("pt-BR")} — o painel já está liberado.`
-                    : "A cobrança da assinatura está desativada neste ambiente, então o acesso já está liberado."
-                }
+                eyebrow="Quase lá!"
+                title="Confirme seu e-mail"
+                text={`Enviamos um link de confirmação para ${adminEmail}. Clique nele para concluir o cadastro e criar sua conta.`}
               />
 
-              <div className="flex items-center gap-3.5 rounded-[1.15rem] border border-[#e4e0d8] bg-[#faf9f6] p-4 sm:p-5">
-                <span
-                  aria-hidden="true"
-                  className="grid size-9 shrink-0 place-items-center rounded-full bg-[#0d0c0a] text-white"
-                >
-                  <Check className="size-4" strokeWidth={3} />
-                </span>
-                <p className="min-w-0 text-[0.9rem] leading-6 text-[#3a3733]">
-                  Página pública em{" "}
-                  <span className="font-semibold break-all text-[#0d0c0a]">
-                    {siteHost()}/{tenantSlug}
+              {/* Ícone de e-mail animado */}
+              <div className="flex justify-center py-2">
+                <div className="relative grid size-20 place-items-center rounded-full bg-[#f3f1ec]">
+                  <Mail className="size-9 text-[#0d0c0a]" aria-hidden="true" />
+                  <span
+                    aria-hidden="true"
+                    className="absolute -right-1 -top-1 flex size-5 items-center justify-center rounded-full bg-[#0d0c0a] text-[0.6rem] font-bold text-white shadow-sm"
+                  >
+                    1
                   </span>
-                </p>
+                </div>
               </div>
 
-              <p className="border-t border-[#eae7e0] pt-6 text-[0.9rem] leading-6 text-[#6f6b64]">
-                Entre com o e-mail e a senha cadastrados para abrir o painel.
+              <div className="rounded-[1.15rem] border border-[#e4e0d8] bg-[#faf9f6] p-4 sm:p-5 space-y-2">
+                <p className="text-[0.82rem] leading-5 text-[#3a3733] font-medium">O que fazer agora:</p>
+                <ol className="space-y-1.5 text-[0.82rem] leading-5 text-[#6f6b64]">
+                  <li className="flex items-start gap-2">
+                    <span className="mt-0.5 grid size-4 shrink-0 place-items-center rounded-full bg-[#0d0c0a] text-[0.55rem] font-bold text-white">1</span>
+                    Abra o e-mail enviado para <strong className="text-[#0d0c0a] break-all">{adminEmail}</strong>
+                  </li>
+                  <li className="flex items-start gap-2">
+                    <span className="mt-0.5 grid size-4 shrink-0 place-items-center rounded-full bg-[#0d0c0a] text-[0.55rem] font-bold text-white">2</span>
+                    Clique em <strong className="text-[#0d0c0a]">"Confirmar e-mail e criar conta"</strong>
+                  </li>
+                  <li className="flex items-start gap-2">
+                    <span className="mt-0.5 grid size-4 shrink-0 place-items-center rounded-full bg-[#0d0c0a] text-[0.55rem] font-bold text-white">3</span>
+                    Pronto — sua barbearia estará criada e o painel liberado
+                  </li>
+                </ol>
+              </div>
+
+              <p className="text-center text-[0.8rem] text-[#8a857c]">
+                Não recebeu o e-mail? Verifique a pasta de spam.
               </p>
 
-              <Link href="/login" className={`${btn.primary} w-full`}>
-                Ir para entrar
-                <ArrowRight className="size-3.5" aria-hidden="true" />
-              </Link>
-            </div>
-          )}
+              <button
+                type="button"
+                disabled={isResending || resendCooldown}
+                onClick={handleResend}
+                className={`${btn.secondary} w-full`}
+              >
+                {isResending ? (
+                  <>
+                    <Loader2 className="size-3.5 animate-spin" aria-hidden="true" />
+                    Reenviando…
+                  </>
+                ) : resendCooldown ? (
+                  <>
+                    <Check className="size-3.5" aria-hidden="true" />
+                    E-mail reenviado
+                  </>
+                ) : (
+                  <>
+                    <RefreshCw className="size-3.5" aria-hidden="true" />
+                    Reenviar e-mail
+                  </>
+                )}
+              </button>
 
-          {step === 3 && billingRequired && pixData && (
-            <div className="space-y-6">
-              <StepHeader
-                eyebrow="Cobrança gerada"
-                title={`Pague R$ ${pixData.value.toFixed(2).replace(".", ",")} via Pix`}
-                text={`Escaneie o QR Code ou copie o código. Vencimento em ${new Date(
-                  `${pixData.dueDate}T12:00:00`,
-                ).toLocaleDateString("pt-BR")}.`}
-              />
-
-              <div className="mx-auto w-full max-w-64 rounded-[1.15rem] border border-[#e4e0d8] bg-white p-4 shadow-[0_20px_44px_-34px_rgba(13,12,10,0.55)]">
-                {/* O Asaas fornece a imagem do QR Code em Base64. */}
-                {/* eslint-disable-next-line @next/next/no-img-element */}
-                <img
-                  src={`data:image/png;base64,${pixData.qrCodeBase64}`}
-                  alt="QR Code da cobrança Pix"
-                  className="aspect-square h-auto w-full"
-                />
-              </div>
-
-              <div className="space-y-3">
-                <button type="button" onClick={copyPixPayload} className={`${btn.secondary} w-full`}>
-                  {copied ? (
-                    <>
-                      <Check className="size-3.5" aria-hidden="true" />
-                      Código copiado
-                    </>
-                  ) : (
-                    <>
-                      <Copy className="size-3.5" aria-hidden="true" />
-                      Copiar código Pix
-                    </>
-                  )}
-                </button>
-                <a
-                  href={pixData.invoiceUrl}
-                  target="_blank"
-                  rel="noreferrer"
-                  className={`${btn.secondary} w-full`}
+              <p className="border-t border-[#eae7e0] pt-4 text-center text-[0.78rem] text-[#8a857c]">
+                Precisa corrigir o e-mail?{" "}
+                <button
+                  type="button"
+                  onClick={() => {
+                    setErrorMsg("");
+                    setStep(1);
+                  }}
+                  className="font-medium text-[#0d0c0a] underline underline-offset-2 hover:no-underline"
                 >
-                  Abrir cobrança no Asaas
-                  <ExternalLink className="size-3.5" aria-hidden="true" />
-                </a>
-              </div>
-
-              <p className="border-t border-[#eae7e0] pt-6 text-[0.9rem] leading-6 text-[#6f6b64]">
-                Depois do pagamento, entre com o e-mail e a senha cadastrados.
+                  Voltar ao início
+                </button>
               </p>
-
-              <Link href="/login" className={`${btn.primary} w-full`}>
-                Ir para entrar
-                <ArrowRight className="size-3.5" aria-hidden="true" />
-              </Link>
             </div>
           )}
         </section>
