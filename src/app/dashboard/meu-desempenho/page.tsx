@@ -27,7 +27,7 @@ export default function MeuDesempenhoPage() {
   const isEmpty = !loading && (s?.totalBookings ?? 0) === 0;
 
   return (
-    <div className="max-w-4xl mx-auto space-y-5 sm:space-y-6">
+    <div className="space-y-5 sm:space-y-6">
       <div>
         <p className="text-xs uppercase tracking-[0.18em] text-neutral-600 font-semibold mb-1.5">
           Minha Performance

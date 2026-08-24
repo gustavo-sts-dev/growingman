@@ -695,7 +695,23 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
             nasceria por baixo dela. `--app-tabbar` vale zero no desktop, então
             a mesma expressão serve para os dois. */}
         <div className="flex-1 overflow-y-auto overflow-x-clip overscroll-contain p-4 pb-[calc(var(--app-tabbar)+1.5rem)] sm:p-6 sm:pb-[calc(var(--app-tabbar)+1.5rem)] md:p-8">
-          {children}
+          {/*
+            Largura da coluna de conteúdo: definida AQUI, uma vez, e não em cada
+            página.
+
+            Cada tela tinha escolhido a sua — 4xl no desempenho, 5xl na maioria,
+            6xl nos clientes, 7xl na agenda, e os Ajustes ainda alternavam entre
+            3xl e 6xl conforme a aba. Navegando entre elas no desktop, a coluna
+            inteira mudava de largura a cada troca: o menu ficava parado e o
+            conteúdo pulava de lugar. Com um valor só, a página troca e a moldura
+            fica onde estava.
+
+            72rem: largura suficiente para a grade da agenda e para as tabelas de
+            cinco colunas respirarem, sem esticar um parágrafo além do que se lê
+            confortavelmente. O `mx-auto` vive neste wrapper e não no scroller
+            para que a barra de rolagem continue na borda da janela.
+          */}
+          <div className="mx-auto w-full max-w-6xl">{children}</div>
         </div>
       </main>
 

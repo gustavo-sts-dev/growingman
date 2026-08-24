@@ -599,7 +599,7 @@ export default function AgendaPage() {
   }, [bookings, statusFilter, barberFilter, bookingMatchesBarber]);
 
   return (
-    <div className="max-w-7xl mx-auto space-y-5 sm:space-y-6">
+    <div className="space-y-5 sm:space-y-6">
       {/*
         Cabeçalho empilhado no celular.
 

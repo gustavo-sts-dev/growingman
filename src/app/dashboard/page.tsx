@@ -72,7 +72,7 @@ export default function DashboardPage() {
 
   if (loading) {
     return (
-      <div className="max-w-5xl mx-auto space-y-6 sm:space-y-8">
+      <div className="space-y-6 sm:space-y-8">
         <div className="animate-pulse space-y-4">
           <div className="h-10 bg-white/5 rounded-lg w-1/3" />
           <div className="h-20 bg-white/5 rounded-lg" />
@@ -170,7 +170,7 @@ export default function DashboardPage() {
   ];
 
   return (
-    <div className="max-w-5xl mx-auto space-y-8">
+    <div className="space-y-6 sm:space-y-8">
       {/* ── Header ────────────────────────────────────────── */}
       <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-4">
         <div>
@@ -207,8 +207,8 @@ export default function DashboardPage() {
               ) : (
                 <Copy className="w-3.5 h-3.5 shrink-0" />
               )}
-              {/* O endereco publico e longo. Num botao que divide a linha com
-                  outro, ele precisa ceder por corte e nao por empurrao: sem
+              {/* O endereço público é longo. Num botão que divide a linha com
+                  outro, ele precisa ceder por corte e não por empurrão: sem
                   isso a dupla estoura a largura da tela do celular. */}
               <span className="truncate">{appUrl}</span>
             </button>
@@ -313,8 +313,8 @@ export default function DashboardPage() {
               <h3 className="font-bold text-white mb-0.5">
                 Compartilhe seu app
               </h3>
-              {/* `break-words`: o link publico e uma palavra unica e longa, e
-                  sem quebra forcada ele empurra o cartao alem da tela. */}
+              {/* `break-words`: o link público é uma palavra única e longa, e
+                  sem quebra forçada ele empurra o cartão para fora da tela. */}
               <p className="break-words text-sm text-neutral-500">
                 {appUrl ? (
                   <>

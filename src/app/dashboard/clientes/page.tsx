@@ -113,7 +113,7 @@ export default function ClientesPage() {
   };
 
   return (
-    <div className="max-w-6xl mx-auto space-y-5 sm:space-y-6">
+    <div className="space-y-5 sm:space-y-6">
       {/* Header */}
       <div>
         <p className="text-xs uppercase tracking-[0.18em] text-neutral-600 font-semibold mb-1.5">

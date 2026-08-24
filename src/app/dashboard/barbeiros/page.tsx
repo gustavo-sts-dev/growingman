@@ -213,7 +213,7 @@ export default function BarbersPage() {
   };
 
   return (
-    <div className="max-w-5xl mx-auto space-y-5 sm:space-y-6">
+    <div className="space-y-5 sm:space-y-6">
       {/* Header — empilhado no celular: título e ação não disputam a mesma
           linha de 390px, e o botão vira alvo de largura inteira. */}
       <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">

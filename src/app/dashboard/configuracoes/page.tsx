@@ -345,7 +345,7 @@ export default function ConfiguracoesPage() {
   };
 
   return (
-    <div className={`${activeTab === "pagina" ? "max-w-6xl" : "max-w-3xl"} mx-auto space-y-6 sm:space-y-8`}>
+    <div className="space-y-6 sm:space-y-8">
       {/* Header */}
       <div>
         <p className="text-xs uppercase tracking-[0.18em] text-neutral-600 font-semibold mb-1.5">Configurações</p>
