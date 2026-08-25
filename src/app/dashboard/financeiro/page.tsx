@@ -24,6 +24,7 @@ import {
   Search,
   PackageX,
   Trash2,
+  CalendarDays,
 } from "lucide-react";
 
 type TabKey = "overview" | "pdv" | "caixa" | "comissoes";
@@ -52,6 +53,11 @@ interface Transaction {
   amount: string | number;
   payment_method: string;
   description: string | null;
+  booking?: {
+    id: string;
+    status: string;
+    client?: { name: string } | null;
+  } | null;
 }
 
 interface Commission {
@@ -696,7 +702,7 @@ export default function FinanceiroPage() {
                               <p className="truncate text-sm text-white">
                                 {tx.description || "-"}
                               </p>
-                              <div className="mt-1.5 flex items-center gap-2">
+                              <div className="mt-1.5 flex items-center gap-2 flex-wrap">
                                 <span
                                   className={`rounded px-1.5 py-0.5 text-[10px] font-bold ${
                                     tx.type === "INCOME"
@@ -713,6 +719,12 @@ export default function FinanceiroPage() {
                                 <span className="text-[11px] text-neutral-500">
                                   {tx.payment_method}
                                 </span>
+                                {tx.booking?.client?.name && (
+                                  <span className="inline-flex items-center gap-1 rounded px-1.5 py-0.5 text-[10px] font-semibold bg-cyan-500/10 text-cyan-400">
+                                    <CalendarDays className="w-3 h-3" />
+                                    {tx.booking.client.name}
+                                  </span>
+                                )}
                               </div>
                             </div>
                             <span
@@ -777,7 +789,15 @@ export default function FinanceiroPage() {
                                 className="hover:bg-white/[0.02]"
                               >
                                 <td className="px-5 py-3 text-white">
-                                  {tx.description || "-"}
+                                  <div>
+                                    {tx.description || "-"}
+                                    {tx.booking?.client?.name && (
+                                      <span className="ml-2 inline-flex items-center gap-1 rounded px-1.5 py-0.5 text-[10px] font-semibold bg-cyan-500/10 text-cyan-400">
+                                        <CalendarDays className="w-3 h-3" />
+                                        {tx.booking.client.name}
+                                      </span>
+                                    )}
+                                  </div>
                                 </td>
                                 <td className="px-5 py-3">
                                   <span
@@ -1075,7 +1095,11 @@ export default function FinanceiroPage() {
       <ConfirmDialog
         open={!!txToDelete}
         title="Apagar lançamento"
-        message={`Apagar "${txToDelete?.description || "este lançamento"}"? O valor sai do caixa e não há como desfazer.`}
+        message={
+          txToDelete?.booking?.status === "COMPLETED"
+            ? `Apagar "${txToDelete?.description || "este lançamento"}"? Como esta receita veio de um atendimento, o agendamento${txToDelete?.booking?.client?.name ? ` de ${txToDelete.booking.client.name}` : ""} voltará para CONFIRMADO (comissão e pontos serão revertidos).`
+            : `Apagar "${txToDelete?.description || "este lançamento"}"? O valor sai do caixa e não há como desfazer.`
+        }
         confirmLabel="Apagar"
         destructive
         loading={deletingTx}

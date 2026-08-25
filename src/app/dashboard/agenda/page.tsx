@@ -28,6 +28,7 @@ import {
   CalendarOff,
   LockKeyhole,
   Trash2,
+  DollarSign,
 } from "lucide-react";
 
 /**
@@ -1399,6 +1400,14 @@ export default function AgendaPage() {
                   }
                 </span>
               </div>
+              {normalizeBookingStatus(detailBooking.status) === "completed" && (
+                <div className="flex items-center gap-2 rounded-lg bg-emerald-500/10 border border-emerald-500/20 px-3 py-2 mt-1">
+                  <DollarSign className="w-4 h-4 text-emerald-400 shrink-0" />
+                  <span className="text-xs font-semibold text-emerald-400">
+                    Receita lançada no caixa
+                  </span>
+                </div>
+              )}
             </div>
 
             <div className="pt-2 border-t border-white/[0.06]">
