@@ -5,7 +5,7 @@ import {
   siteSectionOrder,
 } from "@/lib/site-layout";
 import { bookingHref, type TemplateProps, formatPrice } from "./types";
-import { PolicyLinks } from "./PolicyLinks";
+import { TenantFooterLinks } from "./TenantFooterLinks";
 
 /**
  * MINIMALISTA — silêncio e tipografia.
@@ -214,7 +214,7 @@ export function MinimalTemplate({ tenant, services, barbers }: TemplateProps) {
           style={{ borderColor: line, color: "var(--theme-text)", order: 100 }}
         >
           <span style={{ color: "var(--theme-title)" }}>{tenant.name}</span>
-          <PolicyLinks tenant={tenant} />
+          <TenantFooterLinks tenant={tenant} />
           <span>Growingman</span>
         </footer>
       </div>

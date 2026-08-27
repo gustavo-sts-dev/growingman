@@ -92,7 +92,10 @@ export function OtpLogin({ tenantId, tenantSlug, tenantName }: OtpLoginProps) {
         throw new Error(data?.message || "Código inválido.");
       }
       // Sucesso — volta para a página da barbearia (sessão criada via cookie).
-      router.push(`/${tenantSlug}`);
+      // Leva para a área do cliente, e não de volta à home: quem acabou de
+      // entrar veio ver os próprios horários — devolver à vitrine faz o login
+      // parecer que não aconteceu.
+      router.push(`/${tenantSlug}/meus-agendamentos`);
     } catch (e) {
       setError(e instanceof Error ? e.message : "Erro ao validar código.");
     } finally {

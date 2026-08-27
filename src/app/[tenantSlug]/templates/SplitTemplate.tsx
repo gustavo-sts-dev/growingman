@@ -8,7 +8,7 @@ import {
   siteSectionOrder,
 } from "@/lib/site-layout";
 import { bookingHref, type TemplateProps, formatPrice } from "./types";
-import { PolicyLinks } from "./PolicyLinks";
+import { TenantFooterLinks } from "./TenantFooterLinks";
 
 /**
  * CONVERSÃO (split) — feito para agendar rápido.
@@ -219,7 +219,7 @@ export function SplitTemplate({ tenant, services, barbers }: TemplateProps) {
             className="mt-8 flex flex-wrap items-center gap-x-5 gap-y-2 text-xs"
             style={{ color: "var(--theme-text)", opacity: 0.7, order: 100 }}
           >
-            <PolicyLinks tenant={tenant} />
+            <TenantFooterLinks tenant={tenant} />
             <span>Powered by Growingman</span>
           </div>
         </div>

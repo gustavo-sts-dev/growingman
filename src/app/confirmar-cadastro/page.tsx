@@ -29,8 +29,8 @@ type ConfirmResult =
   | {
       status: "success";
       billingRequired: boolean;
-      trialEndsAt: string | null;
-      trialMonths: number | null;
+      /** Piloto de lançamento: paga metade nos primeiros meses. */
+      pilot: { percent: number; months: number } | null;
       payment: Partial<PixPayment> | null;
     };
 
@@ -63,8 +63,7 @@ export default function ConfirmarCadastro() {
         setResult({
           status: "success",
           billingRequired: data.billingRequired ?? false,
-          trialEndsAt: data.trialEndsAt ?? null,
-          trialMonths: data.trialMonths ?? null,
+          pilot: data.pilot ?? null,
           payment: data.payment ?? null,
         });
       } catch {
@@ -116,24 +115,27 @@ export default function ConfirmarCadastro() {
     );
   }
 
-  // ── Sucesso sem cobrança (trial ou dev) ────────────────────────────────────
+  /*
+    Sucesso sem cobrança.
+
+    Antes isto cobria dois casos: a cortesia de lançamento e o ambiente de
+    desenvolvimento. A piloto agora PAGA (metade), então só resta o segundo —
+    quando `BILLING_ENABLED` está desligada.
+  */
   if (!result.billingRequired) {
-    const isTrial = Boolean(result.trialMonths && result.trialEndsAt);
 
     return (
       <Card>
         <div className="space-y-6">
           <header>
             <p className="text-[0.65rem] font-semibold uppercase tracking-[0.22em] text-[#6f6b64]">
-              {isTrial ? "Cortesia de lançamento" : "Conta criada"}
+              Conta criada
             </p>
             <h1 className="mt-3 font-heading text-[clamp(1.45rem,3.4vw,1.9rem)] font-semibold leading-[1.12] tracking-[-0.03em] text-[#0d0c0a]">
-              {isTrial ? `${result.trialMonths} meses por nossa conta` : "Barbearia cadastrada"}
+              Barbearia cadastrada
             </h1>
             <p className="mt-2.5 text-[0.9rem] leading-6 text-[#6f6b64]">
-              {isTrial
-                ? `Você pegou uma das vagas de lançamento. Nada a pagar até ${new Date(result.trialEndsAt!).toLocaleDateString("pt-BR")} — o painel já está liberado.`
-                : "Sua conta foi criada com sucesso. Faça login para acessar o painel."}
+              Sua conta foi criada com sucesso. Faça login para acessar o painel.
             </p>
           </header>
 
@@ -170,8 +172,11 @@ export default function ConfirmarCadastro() {
     <Card>
       <div className="space-y-6">
         <header>
+          {/* A piloto precisa VER que o valor já vem com desconto. Sem isto ela
+              lê "Pague R$ 35" sem saber que são 50% de abatimento, e o
+              benefício passa despercebido justamente na tela que decide. */}
           <p className="text-[0.65rem] font-semibold uppercase tracking-[0.22em] text-[#6f6b64]">
-            Cobrança gerada
+            {result.pilot ? "Vaga de lançamento" : "Cobrança gerada"}
           </p>
           <h1 className="mt-3 font-heading text-[clamp(1.45rem,3.4vw,1.9rem)] font-semibold leading-[1.12] tracking-[-0.03em] text-[#0d0c0a]">
             {pix?.value
@@ -179,7 +184,9 @@ export default function ConfirmarCadastro() {
               : "Conta criada com sucesso"}
           </h1>
           <p className="mt-2.5 text-[0.9rem] leading-6 text-[#6f6b64]">
-            {pix?.dueDate
+            {result.pilot && pix?.dueDate
+              ? `Você pegou uma das vagas de lançamento: ${result.pilot.percent}% de desconto pelos primeiros ${result.pilot.months} meses, já aplicado neste valor. Vencimento em ${new Date(`${pix.dueDate}T12:00:00`).toLocaleDateString("pt-BR")}.`
+              : pix?.dueDate
               ? `Escaneie o QR Code ou copie o código. Vencimento em ${new Date(`${pix.dueDate}T12:00:00`).toLocaleDateString("pt-BR")}.`
               : "Acesse o painel e conclua o pagamento quando quiser."}
           </p>

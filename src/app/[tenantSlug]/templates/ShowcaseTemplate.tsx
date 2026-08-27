@@ -7,7 +7,7 @@ import {
   siteSectionOrder,
 } from "@/lib/site-layout";
 import { bookingHref, type TemplateProps, formatPrice } from "./types";
-import { PolicyLinks } from "./PolicyLinks";
+import { TenantFooterLinks } from "./TenantFooterLinks";
 
 /**
  * VITRINE (showcase) — imersivo e fotográfico.
@@ -290,7 +290,7 @@ export function ShowcaseTemplate({ tenant, services, barbers }: TemplateProps) {
         <span style={{ ...cond, color: "var(--theme-title)" }}>
           {tenant.name}
         </span>
-        <PolicyLinks tenant={tenant} />
+        <TenantFooterLinks tenant={tenant} />
         <span>Powered by Growingman</span>
       </footer>
     </div>

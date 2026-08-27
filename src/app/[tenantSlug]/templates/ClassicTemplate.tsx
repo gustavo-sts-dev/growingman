@@ -15,7 +15,7 @@ import {
   siteSectionOrder,
 } from "@/lib/site-layout";
 import { bookingHref, type TemplateProps, formatPrice, realStats } from "./types";
-import { PolicyLinks } from "./PolicyLinks";
+import { TenantFooterLinks } from "./TenantFooterLinks";
 
 /**
  * CLÁSSICO — barbearia premium tradicional.
@@ -410,7 +410,7 @@ function ClassicFooter({
           >
             {tenant.name}
           </span>
-          <PolicyLinks tenant={tenant} />
+          <TenantFooterLinks tenant={tenant} />
           <p>
             Powered by{" "}
             <span
