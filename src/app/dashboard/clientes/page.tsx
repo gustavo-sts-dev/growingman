@@ -2,6 +2,11 @@
 
 import { useMemo, useState } from "react";
 import { useResource } from "@/lib/use-resource";
+import { apiPut } from "@/lib/api";
+import { formatPhone, onlyDigits } from "@/lib/format";
+import { Modal } from "@/components/ui/modal";
+import { Button } from "@/components/ui/button";
+import { useToast } from "@/components/ui/toast";
 import type { Client } from "@/lib/types";
 import {
   Users,
@@ -12,7 +17,23 @@ import {
   UserPlus,
   ArrowUp,
   ArrowDown,
+  Pencil,
+  MessageCircle,
 } from "lucide-react";
+
+/**
+ * Link de conversa no WhatsApp.
+ *
+ * Devolve `null` sem telefone — a alternativa seria um botão que abre o
+ * WhatsApp em branco, e um botão que não faz o que promete é pior que um botão
+ * ausente. O 55 só entra quando falta: número já salvo com DDI não vira 5555.
+ */
+function whatsappLink(phone: string | null): string | null {
+  const d = onlyDigits(phone);
+  if (d.length < 10) return null;
+  const comDdi = d.length <= 11 ? `55${d}` : d;
+  return `https://wa.me/${comDdi}`;
+}
 
 /** Categoriza um cliente pelo tempo de ausência (mesma regra usada na tabela). */
 type RetentionStatus = "new" | "active" | "absent";
@@ -42,9 +63,11 @@ const SORT_OPTIONS: { key: SortKey; label: string }[] = [
 ];
 
 export default function ClientesPage() {
-  const { data, loading } = useResource<{ clients: Client[] }>("/crm/clients", {
-    clients: [],
-  });
+  const toast = useToast();
+  const { data, loading, reload } = useResource<{ clients: Client[] }>(
+    "/crm/clients",
+    { clients: [] },
+  );
   const [search, setSearch] = useState("");
   const [statusFilter, setStatusFilter] = useState<StatusFilter>("all");
   const [sortKey, setSortKey] = useState<SortKey>("name");
@@ -102,6 +125,53 @@ export default function ClientesPage() {
       }
     });
   }, [clients, search, statusFilter, sortKey, sortDir]);
+
+  // ── Edição de cadastro ──────────────────────────────────
+  const [editing, setEditing] = useState<Client | null>(null);
+  const [form, setForm] = useState({ name: "", phone: "", email: "" });
+  const [saving, setSaving] = useState(false);
+
+  const openEdit = (client: Client) => {
+    setEditing(client);
+    setForm({
+      name: client.name,
+      phone: formatPhone(client.phone),
+      email: client.email ?? "",
+    });
+  };
+
+  const saveEdit = async () => {
+    if (!editing) return;
+    if (form.name.trim().length < 2) {
+      toast.error("Informe o nome do cliente.");
+      return;
+    }
+    const digits = onlyDigits(form.phone);
+    // Vazio é permitido (apaga o telefone). Preenchido pela metade não é: um
+    // número truncado some da busca do agendamento sem avisar ninguém.
+    if (digits && digits.length < 10) {
+      toast.error("Telefone incompleto. Deixe em branco ou complete o número.");
+      return;
+    }
+
+    setSaving(true);
+    try {
+      await apiPut(`/crm/clients/${editing.id}`, {
+        name: form.name.trim(),
+        phone: digits,
+        email: form.email.trim(),
+      });
+      toast.success("Cadastro atualizado.");
+      setEditing(null);
+      reload();
+    } catch (e) {
+      toast.error(
+        e instanceof Error ? e.message : "Não foi possível salvar.",
+      );
+    } finally {
+      setSaving(false);
+    }
+  };
 
   const toggleSort = (key: SortKey) => {
     if (sortKey === key) {
@@ -280,12 +350,18 @@ export default function ClientesPage() {
                     </div>
                     <div className="min-w-0 flex-1">
                       <p className="truncate font-semibold text-white">{client.name}</p>
-                      <p className="truncate text-xs text-neutral-500">{client.phone}</p>
+                      <p className="truncate text-xs text-neutral-500">
+                        {client.phone ? formatPhone(client.phone) : "sem telefone"}
+                      </p>
                     </div>
                     <div className="flex shrink-0 items-center gap-1 font-semibold text-amber-500">
                       <Star className="h-3.5 w-3.5 fill-amber-500" />
                       <span className="text-sm tabular-nums">{client.points}</span>
                     </div>
+                  </div>
+
+                  <div className="mt-3 flex gap-2">
+                    <ClientActions client={client} onEdit={openEdit} full />
                   </div>
                   <div className="mt-2.5 flex flex-wrap items-center gap-x-3 gap-y-1.5 pl-13 text-xs text-neutral-500">
                     <RetentionBadge client={client} />
@@ -338,13 +414,14 @@ export default function ClientesPage() {
                     onClick={() => toggleSort("no_shows")}
                     align="right"
                   />
+                  <th className="px-5 py-3 text-right font-semibold">Ações</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-white/[0.04]">
                 {visibleClients.length === 0 ? (
                   <tr>
                     <td
-                      colSpan={5}
+                      colSpan={6}
                       className="px-5 py-12 text-center text-neutral-500"
                     >
                       <div className="flex flex-col items-center gap-3">
@@ -375,7 +452,9 @@ export default function ClientesPage() {
                               {client.name}
                             </p>
                             <p className="text-xs text-neutral-500">
-                              {client.phone}
+                              {client.phone
+                                ? formatPhone(client.phone)
+                                : "sem telefone"}
                             </p>
                           </div>
                         </div>
@@ -407,6 +486,11 @@ export default function ClientesPage() {
                           {client.no_shows}
                         </span>
                       </td>
+                      <td className="px-5 py-4">
+                        <div className="flex items-center justify-end gap-1.5">
+                          <ClientActions client={client} onEdit={openEdit} />
+                        </div>
+                      </td>
                     </tr>
                   ))
                 )}
@@ -416,11 +500,147 @@ export default function ClientesPage() {
           </>
         )}
       </div>
+
+      <Modal
+        open={editing !== null}
+        onClose={() => setEditing(null)}
+        title="Editar cliente"
+        description="Corrige o cadastro. O histórico de visitas e a fidelidade não mudam."
+      >
+        <div className="space-y-4">
+          <div>
+            <label className="mb-1 block text-sm text-neutral-400">Nome</label>
+            <input
+              type="text"
+              value={form.name}
+              onChange={(e) => setForm({ ...form, name: e.target.value })}
+              className="h-10 w-full rounded-xl border border-white/10 bg-white/[0.02] px-3 text-sm focus:border-white/25 focus:outline-none"
+              placeholder="Nome do cliente"
+            />
+          </div>
+
+          <div>
+            <label className="mb-1 block text-sm text-neutral-400">
+              Telefone <span className="text-neutral-600">(opcional)</span>
+            </label>
+            <input
+              type="tel"
+              inputMode="numeric"
+              value={form.phone}
+              onChange={(e) =>
+                setForm({ ...form, phone: formatPhone(e.target.value) })
+              }
+              className="h-10 w-full rounded-xl border border-white/10 bg-white/[0.02] px-3 text-sm focus:border-white/25 focus:outline-none"
+              placeholder="(00) 00000-0000"
+            />
+            {/*
+              Trocar o telefone não é editar um rótulo: é ele que identifica o
+              cliente ao agendar e que recebe o PIN de acesso. Dizer isso aqui
+              custa uma linha e evita a descoberta pelo caminho ruim.
+            */}
+            <p className="mt-1.5 text-xs text-neutral-600">
+              É por ele que o cliente é reconhecido ao agendar e recebe o código
+              de acesso.
+            </p>
+          </div>
+
+          <div>
+            <label className="mb-1 block text-sm text-neutral-400">
+              E-mail <span className="text-neutral-600">(opcional)</span>
+            </label>
+            <input
+              type="email"
+              value={form.email}
+              onChange={(e) => setForm({ ...form, email: e.target.value })}
+              className="h-10 w-full rounded-xl border border-white/10 bg-white/[0.02] px-3 text-sm focus:border-white/25 focus:outline-none"
+              placeholder="cliente@email.com"
+            />
+          </div>
+
+          <div className="flex flex-col-reverse gap-2.5 pt-2 sm:flex-row sm:gap-3">
+            <Button
+              onClick={() => setEditing(null)}
+              variant="outline"
+              className="h-12 flex-1 rounded-xl active:scale-[0.98] sm:h-10"
+              disabled={saving}
+            >
+              Cancelar
+            </Button>
+            <Button
+              onClick={saveEdit}
+              className="h-12 flex-1 rounded-xl active:scale-[0.98] sm:h-10"
+              disabled={saving}
+            >
+              {saving ? "Salvando..." : "Salvar"}
+            </Button>
+          </div>
+        </div>
+      </Modal>
     </div>
   );
 }
 
 /* ── Componentes auxiliares ─────────────────────────────── */
+
+/**
+ * Editar e falar no WhatsApp.
+ *
+ * `full` estica os botões: no cartão do celular eles ocupam a linha inteira
+ * (alvo de toque grande), na tabela ficam compactos ao lado dos números.
+ */
+function ClientActions({
+  client,
+  onEdit,
+  full = false,
+}: {
+  client: Client;
+  onEdit: (c: Client) => void;
+  full?: boolean;
+}) {
+  const wa = whatsappLink(client.phone);
+  const base = full
+    ? "flex h-10 flex-1 items-center justify-center gap-1.5 rounded-lg border text-xs font-semibold transition-colors"
+    : "flex h-8 w-8 items-center justify-center rounded-lg border transition-colors";
+
+  return (
+    <>
+      <button
+        type="button"
+        onClick={() => onEdit(client)}
+        title="Editar cadastro"
+        className={`${base} border-white/[0.08] text-neutral-400 hover:bg-white/[0.04] hover:text-white`}
+      >
+        <Pencil className="h-3.5 w-3.5" />
+        {full && "Editar"}
+      </button>
+
+      {/*
+        Sem telefone o botão não vira link: fica desabilitado e explica por quê.
+        Esconder deixaria a linha diferente das outras sem motivo visível.
+      */}
+      {wa ? (
+        <a
+          href={wa}
+          target="_blank"
+          rel="noopener noreferrer"
+          title={`Falar com ${client.name} no WhatsApp`}
+          className={`${base} border-emerald-500/20 bg-emerald-500/[0.06] text-emerald-400 hover:bg-emerald-500/15`}
+        >
+          <MessageCircle className="h-3.5 w-3.5" />
+          {full && "WhatsApp"}
+        </a>
+      ) : (
+        <span
+          title="Cliente sem telefone cadastrado"
+          className={`${base} cursor-not-allowed border-white/[0.04] text-neutral-700`}
+        >
+          <MessageCircle className="h-3.5 w-3.5" />
+          {full && "Sem telefone"}
+        </span>
+      )}
+    </>
+  );
+}
 
 function SummaryCard({
   growingman,

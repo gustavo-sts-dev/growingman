@@ -200,6 +200,10 @@ export default function AgendaPage() {
     time: "",
     clientName: "",
     clientPhone: "",
+    // Encaixe: aceita marcar por cima de um horário ocupado. Fica desligado por
+    // padrão — sobrepor sem querer é o erro que a checagem de conflito existe
+    // para evitar, e aqui ela só sai de cena a pedido.
+    encaixe: false,
   });
   const [saving, setSaving] = useState(false);
 
@@ -378,11 +382,11 @@ export default function AgendaPage() {
       toast.error("Preencha barbeiro, horário e ao menos um serviço.");
       return;
     }
-    if (
-      !newBooking.clientId &&
-      (!newBooking.clientName || !newBooking.clientPhone)
-    ) {
-      toast.error("Selecione um cliente ou preencha nome e telefone.");
+    // Telefone não é mais exigido: quem chega no balcão sem deixar contato
+    // ainda precisa aparecer na agenda do barbeiro. O nome continua obrigatório
+    // — sem ele o atendimento não identifica ninguém.
+    if (!newBooking.clientId && !newBooking.clientName) {
+      toast.error("Selecione um cliente ou informe ao menos o nome.");
       return;
     }
 
@@ -398,11 +402,18 @@ export default function AgendaPage() {
         serviceIds: newBooking.serviceIds,
         date: selectedDate,
         time: newBooking.time,
+        // Só vai quando marcado: sem o campo, o backend aplica a checagem de
+        // conflito normalmente (fail-closed dos dois lados).
+        ...(newBooking.encaixe ? { encaixe: true } : {}),
         ...(newBooking.clientId
           ? { clientId: newBooking.clientId }
           : {
               customerName: newBooking.clientName,
-              customerPhone: onlyDigits(newBooking.clientPhone),
+              // Campo vazio é omitido, não mandado como "": o schema aceita
+              // ausência, mas "" reprovaria no mínimo de 10 dígitos.
+              ...(onlyDigits(newBooking.clientPhone)
+                ? { customerPhone: onlyDigits(newBooking.clientPhone) }
+                : {}),
             }),
       };
 
@@ -416,6 +427,7 @@ export default function AgendaPage() {
         time: "",
         clientName: "",
         clientPhone: "",
+        encaixe: false,
       });
       void fetchBookings();
       void fetchAvailability();
@@ -561,10 +573,52 @@ export default function AgendaPage() {
     [],
   );
 
-  const getBookingAtSlot = (barberId: string, time: string) =>
-    bookings.find(
-      (b) => slotOf(b.start_time) === time && bookingMatchesBarber(b, barberId),
-    );
+  /**
+   * Agendamentos que começam DENTRO deste slot — não só os que casam com ele.
+   *
+   * A comparação era `slotOf(start) === time`, exata. Um encaixe às 14:17 não
+   * casa com nenhum slot da grade e simplesmente não era desenhado: o barbeiro
+   * abria a agenda e o cliente não estava lá. Agora o slot das 14:00 recolhe
+   * tudo que começa entre 14:00 e 14:29.
+   *
+   * Devolve LISTA porque encaixe é, por definição, mais de um no mesmo lugar.
+   * Com `find` o segundo sumia — trocar um sumiço por outro.
+   */
+  const getBookingsAtSlot = (barberId: string, time: string) => {
+    const passo = dayGrid?.intervalMinutes || 30;
+    const inicio = timeToMinutes(time);
+    return bookings
+      .filter((b) => {
+        if (!bookingMatchesBarber(b, barberId)) return false;
+        const min = timeToMinutes(slotOf(b.start_time));
+        return min >= inicio && min < inicio + passo;
+      })
+      .sort((a, b) => a.start_time.localeCompare(b.start_time));
+  };
+
+  /**
+   * Encaixes que caem fora da grade inteira (antes de abrir, depois de fechar,
+   * ou em dia fechado). Não há célula para eles; sem esta lista, some.
+   */
+  const foraDaGrade = useMemo(() => {
+    const slots = dayGrid?.slots ?? [];
+    const passo = dayGrid?.intervalMinutes || 30;
+    // Dia fechado (grade vazia): não existe slot nenhum, então TUDO que houver
+    // marcado está fora dela — é justamente o caso do encaixe no domingo.
+    const primeiro = slots.length > 0 ? timeToMinutes(slots[0]) : null;
+    const ultimo =
+      slots.length > 0 ? timeToMinutes(slots[slots.length - 1]) + passo : null;
+
+    return bookings
+      .filter((b) => {
+        if (barberFilter !== "all" && !bookingMatchesBarber(b, barberFilter))
+          return false;
+        if (primeiro === null || ultimo === null) return true;
+        const min = timeToMinutes(slotOf(b.start_time));
+        return min < primeiro || min >= ultimo;
+      })
+      .sort((a, b) => a.start_time.localeCompare(b.start_time));
+  }, [bookings, dayGrid, barberFilter, bookingMatchesBarber]);
 
   const isSlotAvailable = (barberId: string, time: string) =>
     availability[barberId]?.includes(time) ?? false;
@@ -837,38 +891,60 @@ export default function AgendaPage() {
                       </div>
                     </td>
                     {visibleBarbers.map((barber) => {
-                      const booking = getBookingAtSlot(barber.id, time);
+                      const slotBookings = getBookingsAtSlot(barber.id, time);
                       const block = getBlockAtSlot(barber.id, time);
                       const available = isSlotAvailable(barber.id, time);
 
-                      if (booking) {
-                        const status = normalizeBookingStatus(booking.status);
-                        // Esmaece se não casar com o filtro de status ativo.
-                        const dimmed =
-                          statusFilter !== "all" && status !== statusFilter;
+                      if (slotBookings.length > 0) {
                         return (
                           <td
                             key={barber.id}
                             className="px-2 py-2"
                           >
-                            <button
-                              onClick={() => setDetailBooking(booking)}
-                              className={`w-full rounded-lg border p-2.5 text-left transition-all active:scale-[0.97] ${STATUS_STYLE[status]} ${
-                                dimmed ? "opacity-30" : "hover:opacity-80"
-                              }`}
-                            >
-                              <p className="text-xs font-semibold truncate">
-                                {booking.client.name}
-                              </p>
-                              <p className="text-[10px] text-neutral-500 truncate">
-                                {booking.items
-                                  .map((i) => i.catalog_item.name)
-                                  .join(", ")}
-                              </p>
-                              <p className="text-[9px] uppercase tracking-wide mt-0.5 opacity-80">
-                                {BOOKING_STATUS_LABEL[status]}
-                              </p>
-                            </button>
+                            <div className="flex flex-col gap-1.5">
+                              {slotBookings.map((booking) => {
+                                const status = normalizeBookingStatus(
+                                  booking.status,
+                                );
+                                // Esmaece se não casar com o filtro de status ativo.
+                                const dimmed =
+                                  statusFilter !== "all" &&
+                                  status !== statusFilter;
+                                const inicio = slotOf(booking.start_time);
+                                // Só mostra a hora quando ela não é a da linha:
+                                // repetir "14:00" numa linha rotulada 14:00 é
+                                // ruído; "14:17" é a informação que falta.
+                                const horaPropria = inicio !== time;
+                                return (
+                                  <button
+                                    key={booking.id}
+                                    onClick={() => setDetailBooking(booking)}
+                                    className={`w-full rounded-lg border p-2.5 text-left transition-all active:scale-[0.97] ${STATUS_STYLE[status]} ${
+                                      dimmed ? "opacity-30" : "hover:opacity-80"
+                                    }`}
+                                  >
+                                    <div className="flex items-center gap-1.5">
+                                      {horaPropria && (
+                                        <span className="shrink-0 rounded bg-black/30 px-1 py-0.5 text-[9px] font-bold tabular-nums">
+                                          {inicio}
+                                        </span>
+                                      )}
+                                      <p className="truncate text-xs font-semibold">
+                                        {booking.client.name}
+                                      </p>
+                                    </div>
+                                    <p className="text-[10px] text-neutral-500 truncate">
+                                      {booking.items
+                                        .map((i) => i.catalog_item.name)
+                                        .join(", ")}
+                                    </p>
+                                    <p className="text-[9px] uppercase tracking-wide mt-0.5 opacity-80">
+                                      {BOOKING_STATUS_LABEL[status]}
+                                    </p>
+                                  </button>
+                                );
+                              })}
+                            </div>
                           </td>
                         );
                       }
@@ -938,6 +1014,44 @@ export default function AgendaPage() {
               aria-hidden
               className="pointer-events-none absolute inset-y-0 right-0 w-10 bg-gradient-to-l from-[#080808] to-transparent sm:hidden"
             />
+          )}
+
+          {/*
+            Encaixes fora do expediente desenhado.
+
+            Um atendimento marcado às 19:30 numa grade que fecha às 18:00 não
+            tem célula onde morar. Sem esta faixa ele existiria no banco e não
+            na tela — o pior tipo de agendamento, o que ninguém vê.
+          */}
+          {foraDaGrade.length > 0 && (
+            <div className="mt-3 rounded-xl border border-white/[0.06] bg-white/[0.02] p-3">
+              <p className="mb-2 text-[11px] font-semibold uppercase tracking-wide text-neutral-500">
+                Fora do expediente
+              </p>
+              <div className="flex flex-wrap gap-2">
+                {foraDaGrade.map((b) => {
+                  const status = normalizeBookingStatus(b.status);
+                  const dimmed =
+                    statusFilter !== "all" && status !== statusFilter;
+                  return (
+                    <button
+                      key={b.id}
+                      onClick={() => setDetailBooking(b)}
+                      className={`flex items-center gap-2 rounded-lg border px-2.5 py-2 text-left transition-all active:scale-[0.97] ${STATUS_STYLE[status]} ${
+                        dimmed ? "opacity-30" : "hover:opacity-80"
+                      }`}
+                    >
+                      <span className="rounded bg-black/30 px-1 py-0.5 text-[10px] font-bold tabular-nums">
+                        {slotOf(b.start_time)}
+                      </span>
+                      <span className="max-w-[10rem] truncate text-xs font-semibold">
+                        {b.client.name}
+                      </span>
+                    </button>
+                  );
+                })}
+              </div>
+            </div>
           )}
         </div>
       ) : (
@@ -1226,6 +1340,34 @@ export default function AgendaPage() {
               }
               className="w-full h-10 px-3 bg-white/[0.02] border border-white/10 rounded-xl text-sm focus:outline-none focus:border-white/25"
             />
+
+            {/*
+              Encaixe.
+
+              O campo de horário sempre aceitou qualquer valor; o que o backend
+              recusava era marcar em cima de alguém. Esta opção é o pedido
+              explícito de fazer exatamente isso — por isso é uma escolha
+              visível, com o aviso do lado, e não um comportamento silencioso.
+            */}
+            <label className="mt-2.5 flex cursor-pointer items-start gap-2.5 rounded-lg border border-white/[0.06] bg-white/[0.02] p-2.5 transition-colors hover:bg-white/[0.04]">
+              <input
+                type="checkbox"
+                checked={newBooking.encaixe}
+                onChange={(e) =>
+                  setNewBooking({ ...newBooking, encaixe: e.target.checked })
+                }
+                className="mt-0.5 h-[1.15rem] w-[1.15rem] shrink-0 accent-amber-400"
+              />
+              <span className="min-w-0">
+                <span className="block text-sm font-medium text-white">
+                  Encaixe
+                </span>
+                <span className="mt-0.5 block text-xs text-neutral-500">
+                  Marca no horário digitado mesmo que ele já esteja ocupado ou
+                  fora do expediente.
+                </span>
+              </span>
+            </label>
           </div>
 
           <div>
@@ -1272,7 +1414,8 @@ export default function AgendaPage() {
               </div>
               <div>
                 <label className="block text-sm text-neutral-400 mb-1">
-                  Telefone
+                  Telefone{" "}
+                  <span className="text-neutral-600">(opcional)</span>
                 </label>
                 <input
                   type="text"

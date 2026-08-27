@@ -288,7 +288,8 @@ export interface BlockedSlot {
 export interface Client {
   id: string;
   name: string;
-  phone: string;
+  /** Nulo para quem foi atendido de balcão sem deixar contato. */
+  phone: string | null;
   email: string | null;
   points: number;
   no_shows: number;
