@@ -226,6 +226,9 @@ export default function AgendaPage() {
     null,
   );
   const [statusSaving, setStatusSaving] = useState(false);
+  // Exclusão de cancelado: confirmação própria, porque é irreversível.
+  const [excluindo, setExcluindo] = useState<AgendaBooking | null>(null);
+  const [excluindoSalvando, setExcluindoSalvando] = useState(false);
 
   // Checkout: concluir um atendimento exige informar como o cliente pagou — é o
   // que lança a receita no caixa e registra a comissão do barbeiro. Corte já pago
@@ -529,6 +532,29 @@ export default function AgendaPage() {
       toast.error(e instanceof Error ? e.message : "Erro ao atualizar status.");
     } finally {
       setStatusSaving(false);
+    }
+  };
+
+  /**
+   * Apaga de vez um agendamento cancelado.
+   *
+   * Quem decide se PODE apagar é o backend — ele recusa o que tem sinal pago ou
+   * lançamento no caixa. A tela só relata o motivo, em vez de esconder o botão
+   * por uma regra duplicada aqui que sairia de sincronia na primeira mudança.
+   */
+  const handleDelete = async (booking: AgendaBooking) => {
+    setExcluindoSalvando(true);
+    try {
+      await apiDelete(`/bookings/${booking.id}`);
+      toast.success("Agendamento excluído.");
+      setExcluindo(null);
+      setDetailBooking(null);
+      void fetchBookings();
+      void fetchAvailability();
+    } catch (e) {
+      toast.error(e instanceof Error ? e.message : "Erro ao excluir.");
+    } finally {
+      setExcluindoSalvando(false);
     }
   };
 
@@ -1589,6 +1615,62 @@ export default function AgendaPage() {
                   onClick={() => handleUpdateStatus(detailBooking, "cancelled")}
                 />
               </div>
+
+              {/*
+                Excluir só aparece no que já está cancelado — é o único estado em
+                que apagar não perde informação de um atendimento que aconteceu
+                ou ainda vai acontecer. Fica separado dos botões de status, e não
+                na grade deles, porque não é uma transição: é o fim do registro.
+              */}
+              {normalizeBookingStatus(detailBooking.status) === "cancelled" &&
+                role !== "BARBER" && (
+                  <button
+                    type="button"
+                    onClick={() => setExcluindo(detailBooking)}
+                    className="mt-3 flex min-h-11 w-full items-center justify-center gap-2 rounded-xl border border-white/[0.08] text-sm font-semibold text-neutral-400 transition-colors hover:border-red-500/30 hover:bg-red-500/10 hover:text-red-400"
+                  >
+                    <Trash2 className="h-4 w-4" />
+                    Excluir da agenda
+                  </button>
+                )}
+            </div>
+          </div>
+        )}
+      </Modal>
+
+      {/* Confirmação de exclusão: some da agenda e não volta. */}
+      <Modal
+        open={!!excluindo}
+        onClose={() => setExcluindo(null)}
+        title="Excluir agendamento?"
+      >
+        {excluindo && (
+          <div className="space-y-4">
+            <p className="text-sm text-neutral-400">
+              O agendamento cancelado de{" "}
+              <span className="font-semibold text-white">
+                {excluindo.client.name}
+              </span>{" "}
+              às {slotOf(excluindo.start_time)} sai da agenda e do histórico.
+              Não dá para desfazer.
+            </p>
+
+            <div className="flex flex-col-reverse gap-2.5 pt-2 sm:flex-row sm:gap-3">
+              <Button
+                onClick={() => setExcluindo(null)}
+                variant="outline"
+                className="h-12 flex-1 rounded-xl active:scale-[0.98] sm:h-10"
+                disabled={excluindoSalvando}
+              >
+                Manter
+              </Button>
+              <Button
+                onClick={() => handleDelete(excluindo)}
+                className="h-12 flex-1 rounded-xl bg-red-500/15 text-red-400 hover:bg-red-500/25 active:scale-[0.98] sm:h-10"
+                disabled={excluindoSalvando}
+              >
+                {excluindoSalvando ? "Excluindo..." : "Excluir"}
+              </Button>
             </div>
           </div>
         )}
