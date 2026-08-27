@@ -1,16 +1,12 @@
-import Link from "next/link";
 import type { PublicTenant } from "./types";
 
 /**
- * Rodapé compartilhado pelos cinco templates da página pública.
+ * Rodapé compartilhado pelos cinco templates da página pública: os documentos
+ * legais da barbearia.
  *
- * Reúne o que precisa estar acessível de qualquer página da barbearia: a área do
- * cliente e os documentos legais.
- *
- * Chamava-se `TenantFooterLinks` e só trazia política e termos — mas ele também
- * retornava `null` quando a barbearia não preenchia nenhum dos dois, e pôr o
- * acesso do cliente lá dentro o esconderia justamente das barbearias sem
- * documento publicado.
+ * "Meus agendamentos" morava aqui e subiu para o hero (ver
+ * `MeusAgendamentosLink`). Em templates de página curta os dois apareciam juntos
+ * na mesma tela, e o mesmo atalho duas vezes lado a lado lê como engano.
  *
  * LGPD (Art. 9º): o aviso que de fato informa o titular fica no fluxo de
  * agendamento, junto do botão que entrega os dados. Estes links são o
@@ -25,6 +21,10 @@ export function TenantFooterLinks({ tenant }: { tenant: PublicTenant }) {
     { href: tenant.terms_of_service_url, label: "Termos de Uso" },
   ].filter((l): l is { href: string; label: string } => Boolean(l.href));
 
+  // Sem documento publicado não há rodapé: um <nav> vazio ainda ocupa espaço no
+  // layout e é anunciado por leitor de tela como uma navegação sem destino.
+  if (politicas.length === 0) return null;
+
   const classe =
     "underline underline-offset-2 transition-opacity hover:opacity-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-current focus-visible:ring-offset-2";
 
@@ -33,12 +33,6 @@ export function TenantFooterLinks({ tenant }: { tenant: PublicTenant }) {
       aria-label="Links da barbearia"
       className="flex flex-wrap items-center gap-x-4 gap-y-1 text-xs opacity-70"
     >
-      {/* Sempre presente: é por aqui que o cliente chega aos próprios horários.
-          A página pede a sessão — quem não tiver cai no login. */}
-      <Link href={`/${tenant.slug}/meus-agendamentos`} className={classe} style={{ color: "inherit" }}>
-        Meus agendamentos
-      </Link>
-
       {politicas.map((link) => (
         <a
           key={link.label}

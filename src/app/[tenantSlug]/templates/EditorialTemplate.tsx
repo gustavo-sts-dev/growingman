@@ -7,6 +7,7 @@ import {
 } from "@/lib/site-layout";
 import { bookingHref, type TemplateProps, formatPrice } from "./types";
 import { TenantFooterLinks } from "./TenantFooterLinks";
+import { MeusAgendamentosLink } from "./MeusAgendamentosLink";
 
 /**
  * REVISTA (editorial) — cara de editorial de moda.
@@ -94,6 +95,7 @@ export function EditorialTemplate({
             >
               {sub}
             </p>
+            <div className="flex flex-wrap items-center gap-x-8 gap-y-2">
             <Link
               href={`/${tenant.slug}/agendar`}
               className="-mx-1 inline-flex min-h-11 items-center border-b px-1 py-3 text-sm uppercase tracking-[0.2em] transition-opacity hover:opacity-70 sm:tracking-[0.25em]"
@@ -104,6 +106,12 @@ export function EditorialTemplate({
             >
               Agendar um horário →
             </Link>
+              <MeusAgendamentosLink
+                slug={tenant.slug}
+                className="inline-flex min-h-11 items-center text-xs uppercase tracking-[0.18em] opacity-60 transition-opacity hover:opacity-100"
+                style={{ color: "var(--theme-text)" }}
+              />
+            </div>
           </div>
         </div>
       </section>

@@ -6,6 +6,7 @@ import {
 } from "@/lib/site-layout";
 import { bookingHref, type TemplateProps, formatPrice } from "./types";
 import { TenantFooterLinks } from "./TenantFooterLinks";
+import { MeusAgendamentosLink } from "./MeusAgendamentosLink";
 
 /**
  * MINIMALISTA — silêncio e tipografia.
@@ -63,13 +64,22 @@ export function MinimalTemplate({ tenant, services, barbers }: TemplateProps) {
           >
             {sub}
           </p>
-          <Link
-            href={`/${tenant.slug}/agendar`}
-            className={`inline-flex min-h-11 items-center border-b pb-1.5 text-sm uppercase tracking-[0.25em] transition-opacity hover:opacity-60 sm:tracking-[0.3em] ${heroCentered ? "self-center" : "self-start"}`}
-            style={{ color: "var(--theme-title)", borderColor: line }}
+          <div
+            className={`flex flex-wrap items-center gap-x-8 gap-y-3 ${heroCentered ? "justify-center self-center" : "self-start"}`}
           >
-            Agendar
-          </Link>
+            <Link
+              href={`/${tenant.slug}/agendar`}
+              className="inline-flex min-h-11 items-center border-b pb-1.5 text-sm uppercase tracking-[0.25em] transition-opacity hover:opacity-60 sm:tracking-[0.3em]"
+              style={{ color: "var(--theme-title)", borderColor: line }}
+            >
+              Agendar
+            </Link>
+            <MeusAgendamentosLink
+              slug={tenant.slug}
+              className="inline-flex min-h-11 items-center pb-1.5 text-xs uppercase tracking-[0.2em] opacity-60 transition-opacity hover:opacity-100"
+              style={{ color: "var(--theme-text)" }}
+            />
+          </div>
         </section>
 
         {/* SERVICES — hairline list */}

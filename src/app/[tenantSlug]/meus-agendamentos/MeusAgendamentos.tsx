@@ -75,8 +75,10 @@ export function MeusAgendamentos({
     try {
       setAgendamentos(await apiGet<Agendamento[]>("/bookings/my"));
     } catch (err) {
-      // Sem sessão de cliente a API devolve 401. Mandar para o login é a única
-      // saída útil — insistir na tela vazia não diz o que fazer.
+      // Rede de segurança. No caminho comum o próprio apiFetch já redireciona
+      // para `/<slug>/entrar` ao ver o 401 (ver destinoDeLogin). Isto cobre o
+      // caso em que outra requisição está renovando o token e esta recebe o 401
+      // original de volta, sem redirecionamento.
       const msg = err instanceof Error ? err.message : "";
       if (/401|não autenticado|unauthorized/i.test(msg)) {
         router.replace(`/${tenantSlug}/entrar`);

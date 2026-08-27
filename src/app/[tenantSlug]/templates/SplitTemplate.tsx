@@ -9,6 +9,7 @@ import {
 } from "@/lib/site-layout";
 import { bookingHref, type TemplateProps, formatPrice } from "./types";
 import { TenantFooterLinks } from "./TenantFooterLinks";
+import { MeusAgendamentosLink } from "./MeusAgendamentosLink";
 
 /**
  * CONVERSÃO (split) — feito para agendar rápido.
@@ -81,16 +82,28 @@ export function SplitTemplate({ tenant, services, barbers }: TemplateProps) {
             >
               {sub}
             </p>
-            <Link
-              href={`/${tenant.slug}/agendar`}
-              className="inline-flex min-h-12 w-full items-center justify-center rounded-2xl px-8 py-4 text-base font-bold transition-all hover:opacity-90 sm:w-auto"
-              style={{
-                backgroundColor: "var(--theme-button-bg)",
-                color: "var(--theme-button-text)",
-              }}
+            <div
+              // `items-start` importa: sem ele o link vira filho esticado da
+              // coluna e seu texto sai centralizado sob o botão, brigando com o
+              // título e o subtítulo, que são alinhados à esquerda.
+              className={`flex flex-col gap-3 sm:flex-row sm:items-center sm:gap-5 ${heroCentered ? "items-center sm:justify-center" : "items-start"}`}
             >
-              Agendar horário
-            </Link>
+              <Link
+                href={`/${tenant.slug}/agendar`}
+                className="inline-flex min-h-12 w-full items-center justify-center rounded-2xl px-8 py-4 text-base font-bold transition-all hover:opacity-90 sm:w-auto"
+                style={{
+                  backgroundColor: "var(--theme-button-bg)",
+                  color: "var(--theme-button-text)",
+                }}
+              >
+                Agendar horário
+              </Link>
+              <MeusAgendamentosLink
+                slug={tenant.slug}
+                className="inline-flex min-h-11 items-center justify-center text-sm font-semibold underline underline-offset-4 opacity-70 transition-opacity hover:opacity-100"
+                style={{ color: "var(--theme-title)" }}
+              />
+            </div>
 
           </div>
           <p

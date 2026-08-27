@@ -8,6 +8,7 @@ import {
 } from "@/lib/site-layout";
 import { bookingHref, type TemplateProps, formatPrice } from "./types";
 import { TenantFooterLinks } from "./TenantFooterLinks";
+import { MeusAgendamentosLink } from "./MeusAgendamentosLink";
 
 /**
  * VITRINE (showcase) — imersivo e fotográfico.
@@ -93,6 +94,18 @@ export function ShowcaseTemplate({ tenant, services, barbers }: TemplateProps) {
           >
             {sub}
           </p>
+
+          {/* "Agendar" ja esta na barra de topo; aqui vai so o atalho de quem volta. */}
+          <div className={`mt-6 flex ${heroCentered ? "justify-center" : ""}`}>
+            <MeusAgendamentosLink
+              slug={tenant.slug}
+              className="inline-flex min-h-11 items-center border-b pb-1 text-xs uppercase tracking-[0.25em] opacity-70 transition-opacity hover:opacity-100"
+              style={{
+                color: "var(--theme-title)",
+                borderColor: "var(--theme-accent)",
+              }}
+            />
+          </div>
 
         </div>
       </section>

@@ -16,6 +16,7 @@ import {
 } from "@/lib/site-layout";
 import { bookingHref, type TemplateProps, formatPrice, realStats } from "./types";
 import { TenantFooterLinks } from "./TenantFooterLinks";
+import { MeusAgendamentosLink } from "./MeusAgendamentosLink";
 
 /**
  * CLÁSSICO — barbearia premium tradicional.
@@ -107,16 +108,23 @@ export function ClassicTemplate({ tenant, services, barbers }: TemplateProps) {
           >
             {sub}
           </p>
-          <Link
-            href={`/${tenant.slug}/agendar`}
-            className="inline-flex w-full max-w-xs items-center justify-center gap-2.5 rounded-full px-8 py-4 text-sm font-bold shadow-xl transition-all hover:opacity-90 sm:w-auto"
-            style={{
-              backgroundColor: "var(--theme-button-bg)",
-              color: "var(--theme-button-text)",
-            }}
-          >
-            Agendar Agora <CalendarGrowingman className="w-4 h-4" />
-          </Link>
+          <div className="flex flex-col items-start gap-4 sm:flex-row sm:items-center sm:gap-6">
+            <Link
+              href={`/${tenant.slug}/agendar`}
+              className="inline-flex w-full max-w-xs items-center justify-center gap-2.5 rounded-full px-8 py-4 text-sm font-bold shadow-xl transition-all hover:opacity-90 sm:w-auto"
+              style={{
+                backgroundColor: "var(--theme-button-bg)",
+                color: "var(--theme-button-text)",
+              }}
+            >
+              Agendar Agora <CalendarGrowingman className="w-4 h-4" />
+            </Link>
+            <MeusAgendamentosLink
+              slug={tenant.slug}
+              className="inline-flex min-h-11 items-center text-sm font-semibold underline underline-offset-4 opacity-70 transition-opacity hover:opacity-100"
+              style={{ color: "var(--theme-title)" }}
+            />
+          </div>
         </div>
       </section>
 

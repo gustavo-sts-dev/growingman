@@ -5,7 +5,7 @@
  * 1. Faz a requisição com o access token. Backend gerencia cookies HttpOnly
  * 2. Se receber 401, tenta POST /api/auth/refresh (backend usa cookie refreshToken HttpOnly)
  * 3. Se refresh ok → backend seta novo accessToken cookie + repeats a requisição
- * 4. Se refresh falhar → redireciona para /login
+ * 4. Se refresh falhar → redireciona para o login DA ÁREA (ver destinoDeLogin)
  *
  * NOTA: accessToken e refreshToken são HttpOnly, não acessíveis via JS.
  * Confiamos em cookies + credentials: 'include' para o fetch enviar automaticamente.
@@ -88,7 +88,7 @@ export async function apiFetch(
         await fetch(`${API_BASE}/auth/logout`, { method: "POST", credentials: "include" });
       } catch {}
       if (typeof window !== "undefined") {
-        window.location.replace("/login");
+        window.location.replace(destinoDeLogin(window.location.pathname));
       }
       // Retorna a resposta 401 original para não travar o caller
       return response;
@@ -103,6 +103,42 @@ export async function apiFetch(
       resolve(success ? makeRequest() : response);
     });
   });
+}
+
+/**
+ * Rotas de primeiro nível que pertencem à PLATAFORMA, não a uma barbearia.
+ *
+ * Tudo o que não está aqui é `/[tenantSlug]/...` — é assim que o roteador do
+ * Next já resolve a árvore de `src/app`. Ao criar uma pasta nova na raiz de
+ * `src/app`, acrescente-a aqui: sem isso o nome dela seria lido como slug de
+ * barbearia e um 401 mandaria o usuário para `/<pasta>/entrar`.
+ */
+const ROTAS_DA_PLATAFORMA = new Set([
+  "admin",
+  "api",
+  "confirmar-cadastro",
+  "dashboard",
+  "login",
+  "onboarding",
+  "recuperar-senha",
+  "redefinir-senha",
+]);
+
+/**
+ * Para onde mandar quem tomou 401.
+ *
+ * Existem DOIS logins neste sistema e eles não se substituem: `/login` é
+ * e-mail e senha do dono da barbearia, `/<slug>/entrar` é telefone e código
+ * para o cliente. Mandar cliente para `/login` mostra a ele um formulário que
+ * ele não tem como preencher — era o que acontecia ao abrir "Meus
+ * agendamentos" sem sessão.
+ *
+ * Exportado para poder ser testado sem navegador.
+ */
+export function destinoDeLogin(pathname: string): string {
+  const slug = pathname.split("/").filter(Boolean)[0];
+  if (!slug || ROTAS_DA_PLATAFORMA.has(slug)) return "/login";
+  return `/${slug}/entrar`;
 }
 
 /**
