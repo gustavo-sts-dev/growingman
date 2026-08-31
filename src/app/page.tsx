@@ -16,7 +16,7 @@ import { Steps } from "@/components/landing/Steps";
  */
 export default function LandingPage() {
   return (
-    <div className="gm min-h-screen overflow-x-clip antialiased">
+    <div className="gm min-h-dvh overflow-x-hidden overflow-y-visible antialiased">
       <LandingHeader />
       <main>
         <Hero />
