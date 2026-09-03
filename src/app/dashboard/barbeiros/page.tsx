@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Modal, ConfirmDialog } from "@/components/ui/modal";
 import {
@@ -15,6 +15,7 @@ import {
   Percent,
   BarChart3,
   Loader2,
+  Scissors,
 } from "lucide-react";
 
 import { apiGet, apiPost, apiPut, apiDelete } from "@/lib/api";
@@ -23,6 +24,7 @@ import { useToast } from "@/components/ui/toast";
 import { formatCurrency } from "@/lib/format";
 import { ImageUpload } from "@/components/ui/ImageUpload";
 import type {
+  AuthUser,
   Barber,
   BarberStats,
   CreateBarberInput,
@@ -42,6 +44,29 @@ export default function BarbersPage() {
 
   const [search, setSearch] = useState("");
   const [statusFilter, setStatusFilter] = useState<StatusFilter>("all");
+
+  /*
+    Quem está logado. Serve para saber se o próprio dono já é um dos
+    profissionais da lista — depois que ele passou a poder atender, o cadastro
+    dele aparece aqui como qualquer outro.
+  */
+  const [me, setMe] = useState<AuthUser | null>(null);
+  const [alternandoSelf, setAlternandoSelf] = useState(false);
+  const [confirmarSaida, setConfirmarSaida] = useState(false);
+
+  useEffect(() => {
+    apiGet<AuthUser>("/auth/me")
+      .then(setMe)
+      // Sem o /me a faixa do dono simplesmente não aparece; o resto da página
+      // continua funcionando.
+      .catch(() => undefined);
+  }, []);
+
+  /* O dono é profissional quando a conta dele está na lista de barbeiros. */
+  const souProfissional = useMemo(
+    () => !!me && barbers.some((b) => b.id === me.id),
+    [me, barbers],
+  );
 
   // Modal de desempenho (stats)
   const [statsBarber, setStatsBarber] = useState<Barber | null>(null);
@@ -197,6 +222,40 @@ export default function BarbersPage() {
     }
   };
 
+  /**
+   * O dono também atende.
+   *
+   * O alvo é sempre quem está logado — a rota é `/barbers/me` e o id sai do
+   * token, nunca daqui. Não cria um segundo cadastro: pendura um perfil de
+   * profissional na conta que ele já usa para entrar no painel.
+   */
+  const handleEntrarComoProfissional = async () => {
+    setAlternandoSelf(true);
+    try {
+      await apiPost("/barbers/me", {});
+      toast.success("Pronto — você já aparece como profissional.");
+      fetchBarbers();
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : "Erro ao entrar como profissional.");
+    } finally {
+      setAlternandoSelf(false);
+    }
+  };
+
+  const handleSairDeProfissional = async () => {
+    setAlternandoSelf(true);
+    try {
+      await apiDelete("/barbers/me");
+      toast.success("Você não aparece mais como profissional.");
+      setConfirmarSaida(false);
+      fetchBarbers();
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : "Erro ao sair da agenda.");
+    } finally {
+      setAlternandoSelf(false);
+    }
+  };
+
   const handleConfirmDelete = async () => {
     if (!deleteTarget) return;
     setDeleting(true);
@@ -233,6 +292,41 @@ export default function BarbersPage() {
           <Plus className="w-4 h-4 mr-1.5" /> Novo Profissional
         </Button>
       </div>
+
+
+      {/*
+        "Eu também atendo" — só para o dono.
+
+        Fica no fluxo da página, logo abaixo do cabeçalho: é uma decisão que se
+        toma uma vez, não algo que precise acompanhar a rolagem.
+      */}
+      {me?.role === "TENANT_ADMIN" && (
+        <div className="flex flex-col gap-3 rounded-xl border border-white/[0.06] bg-white/[0.02] p-4 sm:flex-row sm:items-center sm:justify-between">
+          <div className="min-w-0">
+            <p className="flex items-center gap-2 text-sm font-semibold text-white">
+              <Scissors className="h-4 w-4 shrink-0 text-neutral-400" />
+              {souProfissional ? "Você atende nesta barbearia" : "Você também atende?"}
+            </p>
+            <p className="mt-1 text-xs text-neutral-500">
+              {souProfissional
+                ? "Você aparece na agenda e na página pública, e clientes podem marcar com você. Não há cobrança pela sua própria agenda."
+                : "Apareça na agenda e na página pública para receber agendamentos. Sua mensalidade não muda — o dono não conta como profissional adicional."}
+            </p>
+          </div>
+          <Button
+            onClick={
+              souProfissional
+                ? () => setConfirmarSaida(true)
+                : handleEntrarComoProfissional
+            }
+            disabled={alternandoSelf}
+            className="h-10 w-full shrink-0 rounded-xl border border-white/15 bg-transparent px-4 text-sm font-semibold text-white transition-colors hover:bg-white/[0.06] disabled:opacity-60 sm:w-auto"
+          >
+            {alternandoSelf && <Loader2 className="mr-1.5 h-4 w-4 animate-spin" />}
+            {souProfissional ? "Parar de atender" : "Também vou atender"}
+          </Button>
+        </div>
+      )}
 
       {/* Cards de resumo — três números curtos numa linha só, apertados no
           celular e folgados a partir de `sm`. Empilhá-los custaria meia tela
@@ -615,6 +709,16 @@ export default function BarbersPage() {
       </Modal>
 
       {/* Confirmação de exclusão */}
+      <ConfirmDialog
+        open={confirmarSaida}
+        title="Parar de atender"
+        message="Você sai da agenda e da página pública, e clientes deixam de marcar com você. Sua conta de dono continua igual, e dá para voltar quando quiser."
+        confirmLabel="Parar de atender"
+        loading={alternandoSelf}
+        onConfirm={handleSairDeProfissional}
+        onCancel={() => setConfirmarSaida(false)}
+      />
+
       <ConfirmDialog
         open={!!deleteTarget}
         title="Excluir profissional"
