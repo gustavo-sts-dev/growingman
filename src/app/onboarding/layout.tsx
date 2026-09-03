@@ -2,7 +2,7 @@ import { BrandHeader } from "@/components/brand/ui";
 
 export default function OnboardingLayout({ children }: { children: React.ReactNode }) {
   return (
-    <div className="gm flex min-h-screen flex-col overflow-x-clip antialiased">
+    <div className="gm flex min-h-dvh flex-col overflow-x-hidden overflow-y-visible antialiased">
       <BrandHeader actionHref="/login" actionLabel="Já tenho conta" />
 
       <main className="relative flex flex-1 items-start px-3 pb-16 pt-8 sm:px-6 sm:pb-24 sm:pt-12">

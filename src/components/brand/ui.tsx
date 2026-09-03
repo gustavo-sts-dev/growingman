@@ -102,10 +102,7 @@ export function Wordmark({ tone = "light" }: { tone?: "light" | "dark" }) {
       <span
         aria-hidden="true"
         className={cn(
-          "block size-8 shrink-0 overflow-hidden rounded-[0.6rem] sm:size-9 sm:rounded-[0.65rem]",
-          tone === "light"
-            ? "shadow-[0_8px_18px_-8px_rgba(13,12,10,0.8)]"
-            : "shadow-[0_0_18px_rgba(255,255,255,0.18)]",
+          "block size-8 shrink-0 overflow-hidden rounded-[0.6rem] sm:size-9 sm:rounded-[0.65rem]"
         )}
       >
         {/* `<img>` cru, como o resto do app. */}

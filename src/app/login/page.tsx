@@ -61,7 +61,7 @@ export default function LoginPage() {
   };
 
   return (
-    <div className="gm min-h-screen overflow-x-clip antialiased">
+    <div className="gm min-h-dvh overflow-x-hidden overflow-y-visible antialiased">
       <BrandHeader actionHref="/onboarding" actionLabel="Criar conta" />
 
       <main className="relative px-3 pb-16 pt-6 sm:px-6 sm:pb-24 sm:pt-10">

@@ -1366,14 +1366,19 @@ export default function AgendaPage() {
               }
               className="w-full h-10 px-3 bg-white/[0.02] border border-white/10 rounded-xl text-sm focus:outline-none focus:border-white/25"
             />
-
             {/*
               Encaixe.
 
               O campo de horário sempre aceitou qualquer valor; o que o backend
-              recusava era marcar em cima de alguém. Esta opção é o pedido
-              explícito de fazer exatamente isso — por isso é uma escolha
-              visível, com o aviso do lado, e não um comportamento silencioso.
+              recusava era marcar em cima de alguém, fora do expediente ou num
+              horário que já passou. Esta opção é o pedido explícito de fazer
+              exatamente isso — por isso é uma escolha visível, com o aviso do
+              lado, e não um comportamento silencioso.
+
+              O passado entra aqui porque encaixe quase sempre é lançado DEPOIS
+              do atendimento começar: quem chega sem hora marcada é registrado
+              às 15h10 com início às 15h. Sem isso a recepção precisava inventar
+              um horário futuro, e a agenda passava a mentir sobre o que houve.
             */}
             <label className="mt-2.5 flex cursor-pointer items-start gap-2.5 rounded-lg border border-white/[0.06] bg-white/[0.02] p-2.5 transition-colors hover:bg-white/[0.04]">
               <input
@@ -1389,8 +1394,8 @@ export default function AgendaPage() {
                   Encaixe
                 </span>
                 <span className="mt-0.5 block text-xs text-neutral-500">
-                  Marca no horário digitado mesmo que ele já esteja ocupado ou
-                  fora do expediente.
+                  Marca no horário digitado mesmo que ele já esteja ocupado, fora
+                  do expediente ou já tenha passado.
                 </span>
               </span>
             </label>
