@@ -24,6 +24,9 @@ export const metadata: Metadata = {
   },
   description:
     "Agenda online, equipe, clientes, serviços, estoque e financeiro em um só sistema para barbearias.",
+  // PWA: torna o painel instalável e habilita o Web Push de agendamento. O
+  // service worker é registrado no layout da área logada (dashboard/layout.tsx).
+  manifest: "/manifest.webmanifest",
   // Ícone NÃO declarado aqui, de propósito.
   //
   // Havia `icons: { icon: ... }` convivendo com um `app/favicon.ico`, e os dois

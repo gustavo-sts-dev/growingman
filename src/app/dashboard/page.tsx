@@ -123,7 +123,7 @@ export default function DashboardPage() {
       label: "Faturamento Hoje",
       value: formatCurrency(stats.revenueToday),
       growingman: TrendingUp,
-      href: "/dashboard/agenda",
+      href: "/dashboard/financeiro",
       color: "from-emerald-500/10 to-transparent",
       growingmanColor: "text-emerald-400",
       // Ocupa as duas colunas do celular: é o número mais longo (moeda
@@ -142,7 +142,7 @@ export default function DashboardPage() {
       label: "Novos Clientes",
       value: stats.newCustomersToday,
       growingman: Users,
-      href: "/dashboard/agenda",
+      href: "/dashboard/clientes",
       color: "from-violet-500/10 to-transparent",
       growingmanColor: "text-violet-400",
     },

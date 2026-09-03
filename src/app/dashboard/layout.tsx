@@ -11,6 +11,7 @@ import {
 import { cn } from "@/lib/utils";
 import { Input } from "@/components/ui/input";
 import { TenantLogo } from "@/components/TenantLogo";
+import { PushToggle } from "@/components/PushToggle";
 import { apiGet, logoutSession } from "@/lib/api";
 import type { AuthUser, Tenant } from "@/lib/types";
 
@@ -600,6 +601,10 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
 
         {/* Bottom: User + Logout */}
         <div className="shrink-0 space-y-1 border-t border-white/[0.06] p-3">
+          {/* Notificações push (agendamento). Some sozinho se o navegador não
+              suporta ou a chave VAPID não está configurada. */}
+          <PushToggle />
+
           {/* Quick link to public page */}
           <Link
             href={appSlug ? `/${appSlug}` : "/"}
