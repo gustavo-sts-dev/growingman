@@ -1221,7 +1221,10 @@ export function BookingFlow({
                 T={T}
                 selecionados={produtosEscolhidos.map((p) => p.id)}
                 onToggle={alternarProduto}
-                className="-mr-6 border-t pt-5 mt-5"
+                className="border-t pt-5 mt-5"
+                // Só o carrossel sangra até a borda. No `className` a margem
+                // esticava a seção inteira e jogava a seta do dropdown para fora.
+                bleedClassName="-mr-6"
                 style={T.border}
               />
 

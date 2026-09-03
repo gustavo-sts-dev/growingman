@@ -41,6 +41,7 @@ export function ProductShowcase({
   tenantId,
   T,
   className = "",
+  bleedClassName = "",
   style,
   selecionados,
   onToggle,
@@ -52,6 +53,16 @@ export function ProductShowcase({
   onToggle: (produto: ShowcaseProduct) => void;
   /** Espaçamento fica com quem posiciona: o componente não sabe onde será usado. */
   className?: string;
+  /**
+   * Sangria lateral aplicada SÓ à faixa de cards.
+   *
+   * Para o próximo card espiar na borda — o sinal de "tem mais para o lado" — a
+   * faixa precisa passar por cima do padding de quem contém o componente, e só o
+   * chamador sabe qual é esse padding. Vem separada do `className` porque a
+   * sangria é do carrossel, não da seção: junto no container raiz, ela esticava
+   * também o cabeçalho e jogava a seta do dropdown para fora do card.
+   */
+  bleedClassName?: string;
   /**
    * Estilo do container. A borda separadora precisa vir daqui, e não de um
    * wrapper do chamador: sem produto o componente devolve `null`, e aí um
@@ -120,16 +131,15 @@ export function ProductShowcase({
           </p>
 
           {/*
-            Rolagem horizontal com encaixe.
-            O recuo lateral vem do `className` do chamador, e não daqui: para o
-            próximo card espiar na borda — que é o que sinaliza "tem mais para o
-            lado" — a faixa precisa sangrar por cima do padding de quem a contém, e
-            só o chamador sabe qual é esse padding.
+            Rolagem horizontal com encaixe. A sangria lateral vem do
+            `bleedClassName` do chamador (ver a prop) e se aplica só a esta
+            faixa: é ela que precisa passar por cima do padding do card para o
+            próximo produto espiar na borda.
             `overscroll-x-contain` impede que o gesto continue na página e dispare o
             "voltar" do navegador.
           */}
           <div
-            className="flex snap-x snap-mandatory gap-3 overflow-x-auto overscroll-x-contain pb-2"
+            className={`flex snap-x snap-mandatory gap-3 overflow-x-auto overscroll-x-contain pb-2 ${bleedClassName}`}
             style={{ scrollbarWidth: "thin" }}
           >
             {produtos.map((p) => (
