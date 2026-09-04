@@ -240,6 +240,18 @@
    Paleta monocromática — preto, off-white, cinzas e branco — com escopo em
    `.gm`. O app continua no tema escuro: nada aqui vaza para o dashboard.
    ========================================================================== */
+/*
+ * Largura da coluna do site, em um lugar só.
+ *
+ * Barra do topo, herói, seções e rodapé leem daqui — antes o número estava
+ * escrito à mão em cinco arquivos, e mudar a medida exigia lembrar de todos.
+ * Fica em `:root`, e não em `.gm`, porque as telas de acesso (login, cadastro)
+ * usam a mesma coluna e vivem fora daquela classe.
+ */
+:root {
+  --gm-site-max: 1280px;
+}
+
 .gm {
   --gm-ink: #0d0c0a;
   --gm-ink-soft: #3a3733;
@@ -286,34 +298,159 @@
 }
 
 /* ──────────────────────────────────────────────────────────────────────────
-   Malha do herói.
+   Malha do herói — a rampa da referência, na nossa escala.
 
-   A referência acende o rodapé inteiro porque roxo é COR: mesmo fraco, continua
-   sendo roxo. A nossa paleta é neutra, e a mesma rampa em cinza vira NÉVOA —
-   uma mancha suja atravessando o cartão. Luz neutra só lê como luz quando tem
-   um corpo na frente para recortá-la.
-
-   Então a luz aqui não é uma faixa: é uma poça no canto inferior esquerdo, logo
-   atrás da quina do painel. O painel a ocupa, e o que sobra é contorno — que o
-   olho lê como luz por trás de um objeto, não como sujeira no fundo.
+   A curva é vertical: preta nos 30% de cima, acende do meio para baixo e
+   termina clara na borda inferior. As paradas são a escada de luminância do
+   roxo original, degrau por degrau, trocada por cinzas quentes. Por cima só
+   duas correções com alfa: o fio de luz na aresta superior esquerda e o canto
+   superior direito um degrau mais fechado.
    ────────────────────────────────────────────────────────────────────────── */
 .gm-aurora {
   background-color: #050504;
   background-image:
-    /* fio de luz na aresta superior esquerda */
-    radial-gradient(56% 40% at 0% 0%, rgba(255, 255, 255, 0.075) 0%, rgba(255, 255, 255, 0) 62%),
-    /* a poça: núcleo fora do cartão, só a cúpula dela aparece */
+    radial-gradient(58% 42% at 0% 0%, rgba(255, 255, 255, 0.085) 0%, rgba(255, 255, 255, 0) 62%),
+    radial-gradient(52% 46% at 100% 0%, rgba(0, 0, 0, 0.55) 0%, rgba(0, 0, 0, 0) 62%),
     radial-gradient(
-      62% 40% at 44% 108%,
-      #f7f4ec 0%,
-      rgba(230, 225, 213, 0.6) 19%,
-      rgba(152, 146, 135, 0.3) 41%,
-      rgba(62, 59, 54, 0.1) 62%,
-      rgba(5, 5, 4, 0) 80%
+      120% 68% at 56% 108%,
+      rgba(246, 244, 239, 0.5) 0%,
+      rgba(228, 224, 216, 0.22) 34%,
+      rgba(111, 107, 100, 0) 68%
     ),
-    /* respiro atrás do painel: impede o rodapé direito de morrer no preto chapado */
-    radial-gradient(70% 30% at 82% 108%, rgba(146, 139, 128, 0.22) 0%, rgba(5, 5, 4, 0) 72%),
-    linear-gradient(180deg, #050504 0%, #080807 44%, #0d0b0a 72%, #131110 88%, #191612 100%);
+    linear-gradient(
+      180deg,
+      #050504 0%,
+      #070706 14%,
+      #0d0b09 26%,
+      #17140f 36%,
+      #241f19 45%,
+      #332d25 53%,
+      #443d33 61%,
+      #575046 69%,
+      #6f685d 76%,
+      #8b8378 83%,
+      #a9a196 89%,
+      #c5bdb1 94%,
+      #ddd6ca 100%
+    );
+}
+
+/* ──────────────────────────────────────────────────────────────────────────
+   Palco do herói — tela cheia, com a geometria medida na referência.
+
+   Não é um cartão: a malha ocupa a janela inteira, de borda a borda, e a barra
+   do topo flutua por cima. As medidas abaixo saíram da imagem (2000 × 1144),
+   convertidas para porcentagem da JANELA:
+
+     etiqueta   x 272  → 13,6%      y 337 → 29,5%
+     título     corpo 70px → 3,5% da largura, entrelinha 1,14
+     painel     x 1040 → 52%        y 200 → 17,5%, altura 58,5%
+
+   O palco é um `container`, então tudo lá dentro é medido em `cqw` — porcentagem
+   da largura da janela. A composição escala em bloco: em qualquer tela as peças
+   guardam a mesma relação entre si, que é o que faz a imagem ser reconhecível.
+   ────────────────────────────────────────────────────────────────────────── */
+@media (min-width: 1024px) {
+  .gm-stage {
+    container-type: inline-size;
+  }
+
+  .gm-stage-copy {
+    position: absolute;
+    left: 13.6%;
+    top: 29.5%;
+    /*
+      28,4% no original. Aqui precisa de mais: "O cliente marca sozinho." tem 24
+      caracteres contra os 11 de "PCI DSS for", e em 32% o título quebrava em
+      três linhas — o que descia o bloco inteiro e desalinhava do painel.
+      36% é o limite: a coluna termina em 49,6%, e o painel começa em 52%.
+    */
+    width: 36%;
+    padding: 0;
+  }
+
+  /*
+    A moldura do painel. A proporção (920 × 670 na referência) é fixa e a altura
+    sai da largura — assim o zoom do mock depende só da largura da janela, e não
+    de cada combinação de largura e altura. `max-height` segura o caso da tela
+    baixa: em vez de o painel furar o rodapé, o mock é cortado mais embaixo.
+  */
+  .gm-stage-shot {
+    position: absolute;
+    /*
+      Sangra para fora da tela (`right: -3%`).
+
+      No original o painel para 2% antes da borda porque ali existe um CARTÃO, e
+      esses 2% são a margem dele. Sem o cartão essa margem não representa mais
+      nada — vira uma tira de fundo sobrando na direita. Aqui quem corta o painel
+      é a própria janela, que é o equivalente em tela cheia.
+
+      A proporção é 674 × 436, a do nosso mock, e não a 920 × 670 do original:
+      com 51% de largura ela devolve 58,5% de altura, que é exatamente a fatia
+      que o painel ocupa lá — mesma moldura, sem espremer o conteúdo.
+
+      Sem `max-height` de propósito: com `aspect-ratio` no meio, o navegador
+      TRANSFERE o limite de altura para a largura, e o painel encolhia uns 100px.
+    */
+    left: 52%;
+    right: -3%;
+    top: 17.5%;
+    aspect-ratio: 674 / 436;
+    width: auto;
+    height: auto;
+    margin: 0;
+    overflow: hidden;
+    border-radius: 1.1cqw 0 0 1.1cqw;
+  }
+}
+
+/*
+  O zoom do mock.
+
+  A moldura é PROPORCIONAL e o nosso mock tem altura praticamente fixa (~436px:
+  os tamanhos internos dele são rem, não porcentagem). Encaixar um no outro sem
+  escala deixa buraco embaixo em tela grande e estoura em tela pequena — foi
+  essa a faixa morta das versões anteriores.
+
+  Então ele é desenhado sempre com 674px de largura e recebe uma escala por
+  faixa de janela. 674 é 436 ÷ 0,6465, a razão altura/largura da própria
+  moldura: com esse número a largura escalada cobre a moldura no mesmo passo em
+  que a altura a preenche. Cada valor está ~3% acima do exato, para SEMPRE
+  sobrar e ser cortado — sobra vira recorte, falta vira buraco.
+*/
+@media (min-width: 1024px) {
+  .gm-stage {
+    --gm-shot-k: 0.81;
+  }
+  .gm-stage-shot > * {
+    width: 674px;
+    transform-origin: top left;
+    transform: scale(var(--gm-shot-k));
+  }
+}
+@media (min-width: 1152px) {
+  .gm-stage { --gm-shot-k: 0.92; }
+}
+@media (min-width: 1280px) {
+  .gm-stage { --gm-shot-k: 1.02; }
+}
+@media (min-width: 1440px) {
+  .gm-stage { --gm-shot-k: 1.15; }
+}
+@media (min-width: 1600px) {
+  .gm-stage { --gm-shot-k: 1.27; }
+}
+@media (min-width: 1792px) {
+  .gm-stage { --gm-shot-k: 1.42; }
+}
+@media (min-width: 1920px) {
+  .gm-stage { --gm-shot-k: 1.53; }
+}
+@media (min-width: 2200px) {
+  .gm-stage { --gm-shot-k: 1.75; }
+}
+@media (min-width: 2560px) {
+  .gm-stage { --gm-shot-k: 2.04; }
 }
 
 /* Véu radial: garante contraste do texto branco sobre a malha */
