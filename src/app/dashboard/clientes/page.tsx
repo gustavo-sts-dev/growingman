@@ -2,7 +2,7 @@
 
 import { useMemo, useState } from "react";
 import { useResource } from "@/lib/use-resource";
-import { apiPut } from "@/lib/api";
+import { apiDelete, apiPut } from "@/lib/api";
 import { formatPhone, onlyDigits } from "@/lib/format";
 import { Modal } from "@/components/ui/modal";
 import { Button } from "@/components/ui/button";
@@ -19,6 +19,7 @@ import {
   ArrowDown,
   Pencil,
   MessageCircle,
+  Trash2,
 } from "lucide-react";
 
 /**
@@ -170,6 +171,35 @@ export default function ClientesPage() {
       );
     } finally {
       setSaving(false);
+    }
+  };
+
+  // ── Exclusão ────────────────────────────────────────────
+  const [deleting, setDeleting] = useState<Client | null>(null);
+  const [removing, setRemoving] = useState(false);
+
+  const confirmDelete = async () => {
+    if (!deleting) return;
+    setRemoving(true);
+    try {
+      // O backend decide entre apagar e anonimizar conforme o histórico; a
+      // resposta diz qual foi para a mensagem não prometer o que não houve.
+      const { anonymized } = await apiDelete<{ anonymized: boolean }>(
+        `/crm/clients/${deleting.id}`,
+      );
+      toast.success(
+        anonymized
+          ? "Cliente removido. O histórico de atendimentos foi preservado sem identificação."
+          : "Cliente excluído.",
+      );
+      setDeleting(null);
+      reload();
+    } catch (e) {
+      toast.error(
+        e instanceof Error ? e.message : "Não foi possível excluir.",
+      );
+    } finally {
+      setRemoving(false);
     }
   };
 
@@ -361,7 +391,7 @@ export default function ClientesPage() {
                   </div>
 
                   <div className="mt-3 flex gap-2">
-                    <ClientActions client={client} onEdit={openEdit} full />
+                    <ClientActions client={client} onEdit={openEdit} onDelete={setDeleting} full />
                   </div>
                   <div className="mt-2.5 flex flex-wrap items-center gap-x-3 gap-y-1.5 pl-13 text-xs text-neutral-500">
                     <RetentionBadge client={client} />
@@ -488,7 +518,7 @@ export default function ClientesPage() {
                       </td>
                       <td className="px-5 py-4">
                         <div className="flex items-center justify-end gap-1.5">
-                          <ClientActions client={client} onEdit={openEdit} />
+                          <ClientActions client={client} onEdit={openEdit} onDelete={setDeleting} />
                         </div>
                       </td>
                     </tr>
@@ -576,6 +606,62 @@ export default function ClientesPage() {
           </div>
         </div>
       </Modal>
+
+      <Modal
+        open={deleting !== null}
+        onClose={() => setDeleting(null)}
+        title="Excluir cliente"
+        description="O cadastro sai da lista e o cliente deixa de ser reconhecido ao agendar."
+      >
+        <div className="space-y-4">
+          <p className="text-sm text-neutral-300">
+            Excluir{" "}
+            <span className="font-semibold text-white">{deleting?.name}</span>?
+          </p>
+
+          {/*
+            O que acontece com o histórico depende de haver histórico, e a
+            diferença importa para quem decide. Cuidado com o critério: aqui só
+            temos `last_visit`, que conta atendimentos CONCLUÍDOS, enquanto o
+            backend anonimiza diante de qualquer agendamento — inclusive um em
+            aberto. Por isso o texto sem visita não promete exclusão total: ele
+            descreve o que é certo nos dois casos, e o aviso final de sucesso
+            diz qual dos dois aconteceu.
+          */}
+          {deleting?.last_visit ? (
+            <p className="rounded-xl border border-amber-500/20 bg-amber-500/[0.06] p-3 text-xs leading-relaxed text-amber-200/90">
+              Este cliente tem atendimentos concluídos. Eles continuam no
+              faturamento, mas deixam de ser identificados — e nome, telefone e
+              e-mail são apagados. Não dá para desfazer.
+            </p>
+          ) : (
+            <p className="rounded-xl border border-white/[0.08] bg-white/[0.02] p-3 text-xs leading-relaxed text-neutral-400">
+              Nome, telefone e e-mail são apagados e o cliente sai da lista. Se
+              houver algum agendamento ligado a ele, o registro é mantido sem
+              identificação para não abrir buraco no histórico. Não dá para
+              desfazer.
+            </p>
+          )}
+
+          <div className="flex flex-col-reverse gap-2.5 pt-2 sm:flex-row sm:gap-3">
+            <Button
+              onClick={() => setDeleting(null)}
+              variant="outline"
+              className="h-12 flex-1 rounded-xl active:scale-[0.98] sm:h-10"
+              disabled={removing}
+            >
+              Cancelar
+            </Button>
+            <Button
+              onClick={confirmDelete}
+              className="h-12 flex-1 rounded-xl bg-red-600 text-white hover:bg-red-500 active:scale-[0.98] sm:h-10"
+              disabled={removing}
+            >
+              {removing ? "Excluindo..." : "Excluir"}
+            </Button>
+          </div>
+        </div>
+      </Modal>
     </div>
   );
 }
@@ -583,7 +669,7 @@ export default function ClientesPage() {
 /* ── Componentes auxiliares ─────────────────────────────── */
 
 /**
- * Editar e falar no WhatsApp.
+ * Editar, falar no WhatsApp e excluir.
  *
  * `full` estica os botões: no cartão do celular eles ocupam a linha inteira
  * (alvo de toque grande), na tabela ficam compactos ao lado dos números.
@@ -591,10 +677,12 @@ export default function ClientesPage() {
 function ClientActions({
   client,
   onEdit,
+  onDelete,
   full = false,
 }: {
   client: Client;
   onEdit: (c: Client) => void;
+  onDelete: (c: Client) => void;
   full?: boolean;
 }) {
   const wa = whatsappLink(client.phone);
@@ -638,6 +726,21 @@ function ClientActions({
           {full && "Sem telefone"}
         </span>
       )}
+
+      {/*
+        Vermelho e por último: é a única ação daqui que não dá para desfazer.
+        Quem confirma passa antes pelo modal, que diz o que vai acontecer com o
+        histórico.
+      */}
+      <button
+        type="button"
+        onClick={() => onDelete(client)}
+        title="Excluir cliente"
+        className={`${base} border-red-500/20 text-red-400/80 hover:bg-red-500/10 hover:text-red-400`}
+      >
+        <Trash2 className="h-3.5 w-3.5" />
+        {full && "Excluir"}
+      </button>
     </>
   );
 }
