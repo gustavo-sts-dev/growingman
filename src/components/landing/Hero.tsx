@@ -27,13 +27,13 @@ export function Hero() {
     <section className="gm-stage gm-aurora gm-grain relative -mt-[68px] flex min-h-svh flex-col overflow-hidden pb-16 pt-[92px] sm:-mt-[84px] sm:pb-20 sm:pt-[108px] lg:block lg:pb-0 lg:pt-0">
       {/* Coluna do texto */}
       <div className="gm-stage-copy relative z-10 px-5 sm:px-8">
-        <p className="gm-rise inline-flex items-center rounded-full bg-white/[0.09] px-3 py-1.5 text-[0.72rem] font-medium tracking-tight text-white/80 lg:px-[0.9cqw] lg:py-[0.4cqw] lg:text-[max(0.72rem,0.7cqw)]">
+        <p className="gm-rise inline-flex items-center rounded-full bg-white/[0.09] px-3 py-1.5 text-[0.72rem] font-medium tracking-tight text-white/80 lg:px-[0.9cqw] lg:py-[0.4cqw] lg:text-[max(0.72rem,0.78cqw)]">
           Sistema para barbearias
         </p>
 
         {/* Duas linhas declaradas: o fecho começa linha, como no original */}
         <h1
-          className="gm-rise mt-5 font-heading text-[2.1rem] font-semibold leading-[1.14] tracking-[-0.035em] text-white sm:text-[2.6rem] lg:mt-[1.45cqw] lg:text-[max(2rem,3.05cqw)]"
+          className="gm-rise mt-5 font-heading text-[2.1rem] font-semibold leading-[1.14] tracking-[-0.035em] text-white sm:text-[2.6rem] lg:mt-[1.45cqw] lg:text-[max(2rem,3.45cqw)]"
           style={{ animationDelay: "60ms" }}
         >
           <span className="block">O cliente marca sozinho.</span>
@@ -43,7 +43,7 @@ export function Hero() {
         </h1>
 
         <p
-          className="gm-rise mt-5 max-w-[32rem] text-pretty text-[0.95rem] leading-7 text-white/80 sm:text-[1rem] lg:mt-[1.9cqw] lg:max-w-none lg:text-[max(0.95rem,0.95cqw)] lg:leading-[2]"
+          className="gm-rise mt-5 max-w-[32rem] text-pretty text-[0.95rem] leading-7 text-white/80 sm:text-[1rem] lg:mt-[1.9cqw] lg:max-w-none lg:text-[max(0.95rem,1.02cqw)] lg:leading-[2]"
           style={{ animationDelay: "140ms" }}
         >
           Um link com a cara da sua barbearia recebe agendamento a qualquer hora e o WhatsApp lembra
@@ -53,7 +53,7 @@ export function Hero() {
         <div className="gm-rise mt-7 lg:mt-[1.8cqw]" style={{ animationDelay: "220ms" }}>
           <Link
             href="/onboarding"
-            className="inline-flex h-12 items-center gap-1 rounded-full bg-white px-6 text-[0.85rem] font-semibold tracking-tight text-[#0d0c0a] shadow-[0_18px_40px_-18px_rgba(0,0,0,0.9)] transition-colors hover:bg-[#f3f1ec] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/70 lg:h-[max(2.75rem,2.4cqw)] lg:gap-[0.3cqw] lg:px-[1.6cqw] lg:text-[max(0.8rem,0.8cqw)]"
+            className="inline-flex h-12 items-center gap-1 rounded-full bg-white px-6 text-[0.85rem] font-semibold tracking-tight text-[#0d0c0a] shadow-[0_18px_40px_-18px_rgba(0,0,0,0.9)] transition-colors hover:bg-[#f3f1ec] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/70 lg:h-[max(2.75rem,2.6cqw)] lg:gap-[0.3cqw] lg:px-[1.6cqw] lg:text-[max(0.8rem,0.85cqw)]"
           >
             Criar minha barbearia
             <ChevronRight className="size-4 lg:size-[max(0.9rem,0.9cqw)]" aria-hidden="true" />

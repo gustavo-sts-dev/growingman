@@ -357,15 +357,20 @@
 
   .gm-stage-copy {
     position: absolute;
-    left: 13.6%;
-    top: 29.5%;
     /*
-      28,4% no original. Aqui precisa de mais: "O cliente marca sozinho." tem 24
-      caracteres contra os 11 de "PCI DSS for", e em 32% o título quebrava em
-      três linhas — o que descia o bloco inteiro e desalinhava do painel.
-      36% é o limite: a coluna termina em 49,6%, e o painel começa em 52%.
+      Mais à esquerda e mais larga que os 13,6% / 28,4% do original.
+
+      O inglês do original cabe numa coluna estreita; "O cliente marca sozinho."
+      tem 24 caracteres contra os 11 de "PCI DSS for". Mantendo a coluna estreita
+      só havia duas saídas — título pequeno ou quebrado em três linhas — e as
+      duas deixavam meia tela de margem vazia à esquerda.
+
+      7% + 43% termina em 50%, e o painel começa em 52%: a coluna cresce até o
+      limite do que existe, sem encostar nele.
     */
-    width: 36%;
+    left: 7%;
+    top: 29.5%;
+    width: 43%;
     padding: 0;
   }
 

@@ -30,24 +30,34 @@ export function Features() {
 
       <div className={`relative ${container}`}>
         <div className="grid items-center gap-10 lg:grid-cols-[0.92fr_1.08fr] lg:gap-16">
-          {/* Visual: forma assimétrica que quebra a grade de retângulos da página */}
-          <div className="relative mx-auto w-full max-w-sm sm:max-w-md lg:mx-0">
-            <div className="gm-grain relative grid aspect-[4/4.3] place-items-center overflow-hidden rounded-[3rem_1.25rem_3rem_1.25rem] bg-[linear-gradient(150deg,#4a4640_0%,#211f1b_40%,#0d0c0a_74%,#000000_100%)] shadow-[0_40px_90px_-45px_rgba(13,12,10,0.95)] sm:aspect-[4/4.6] sm:rounded-[5rem_1.75rem_5rem_1.75rem] lg:rounded-[7rem_2rem_7rem_2rem]">
-              {/* O mock é ônix, como a tela real; o halo o descola do fundo escuro. */}
-              <div className="gm-float relative z-10">
-                <span
-                  aria-hidden="true"
-                  className="pointer-events-none absolute -inset-8 rounded-[3rem] bg-[#f3f1ec]/10 blur-3xl"
-                />
-                <span className="relative block">
-                  <BookingMock />
-                </span>
-              </div>
-            </div>
+          {/*
+            Três temas da MESMA página, em leque.
+
+            A versão anterior era um cartão só, ônix, dentro de uma forma escura
+            decorativa: escuro sobre escuro, e o mock sumia — o halo por trás era
+            remendo. Aqui não há forma nenhuma no meio; o creme da página faz o
+            contraste sozinho, que é o que ele sempre pôde fazer.
+
+            E o leque diz o que o texto ao lado promete e a imagem antiga não
+            dizia: a página fica com as cores da barbearia. Ônix é o padrão real;
+            os outros dois são exemplos de tema de cliente, um colorido e um
+            claro — o componente real suporta os dois.
+          */}
+          <div className="relative mx-auto flex w-full max-w-md justify-center px-2 py-4 sm:px-6 lg:mx-0">
             <div
               aria-hidden="true"
-              className="pointer-events-none absolute -bottom-6 -left-6 size-32 rounded-full bg-[#0d0c0a]/15 blur-[60px]"
+              className="pointer-events-none absolute inset-x-8 bottom-10 top-20 rounded-[3rem] bg-[#0d0c0a]/12 blur-[70px]"
             />
+
+            <div className="absolute left-0 top-12 -rotate-[9deg] scale-[0.82] sm:top-14 sm:scale-90">
+              <BookingMock theme="areia" />
+            </div>
+            <div className="absolute right-0 top-12 rotate-[9deg] scale-[0.82] sm:top-14 sm:scale-90">
+              <BookingMock theme="mata" />
+            </div>
+            <div className="gm-float relative z-10">
+              <BookingMock />
+            </div>
           </div>
 
           {/* Conteúdo: à direita só quando há duas colunas; empilhado, alinha à esquerda */}

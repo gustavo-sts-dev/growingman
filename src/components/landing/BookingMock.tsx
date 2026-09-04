@@ -11,18 +11,59 @@ import { Check, ChevronDown, ChevronLeft, Clock, Scissors } from "lucide-react";
  * Antes o mock era um cartão branco: bonito, e de um produto que não existe.
  */
 
-/** Fatias do tema real, resolvidas em hex — aqui não há tenant para o `color-mix`. */
-const c = {
-  bg: "#080808",
-  title: "#ffffff",
-  text: "#a1a1aa",
-  /** `color-mix(--theme-text 65%, --theme-bg)`, calculado. */
-  muted: "#6b6b71",
-  surface: "rgba(255,255,255,0.06)",
-  surfaceStrong: "rgba(255,255,255,0.12)",
-  border: "rgba(255,255,255,0.18)",
-  borderStrong: "rgba(255,255,255,0.35)",
-};
+/**
+ * Temas de exemplo.
+ *
+ * `onix` é o PADRÃO real da página (`[tenantSlug]/agendar/page.tsx`): fundo
+ * #080808, título branco, texto #A1A1AA, botão branco. Os outros dois existem
+ * porque a barbearia escolhe as próprias cores no painel — inclusive tema claro,
+ * que o componente real suporta via `color-mix`. Mostrar os três lado a lado é a
+ * única forma honesta de provar isso numa imagem parada.
+ *
+ * As cores fora do ônix são do CLIENTE, não nossas: é por isso que aparecem numa
+ * página que no resto é monocromática.
+ */
+const THEMES = {
+  onix: {
+    bg: "#080808",
+    title: "#ffffff",
+    text: "#a1a1aa",
+    /** `color-mix(--theme-text 65%, --theme-bg)`, calculado. */
+    muted: "#6b6b71",
+    surface: "rgba(255,255,255,0.06)",
+    surfaceStrong: "rgba(255,255,255,0.12)",
+    border: "rgba(255,255,255,0.18)",
+    borderStrong: "rgba(255,255,255,0.35)",
+    buttonBg: "#ffffff",
+    buttonText: "#000000",
+  },
+  mata: {
+    bg: "#0a1710",
+    title: "#ffffff",
+    text: "#9dbcab",
+    muted: "#6a8878",
+    surface: "rgba(255,255,255,0.06)",
+    surfaceStrong: "rgba(255,255,255,0.12)",
+    border: "rgba(255,255,255,0.16)",
+    borderStrong: "rgba(74,222,128,0.55)",
+    buttonBg: "#4ade80",
+    buttonText: "#05231a",
+  },
+  areia: {
+    bg: "#f7f3ea",
+    title: "#191512",
+    text: "#6d6357",
+    muted: "#8e8578",
+    surface: "rgba(25,21,18,0.05)",
+    surfaceStrong: "rgba(25,21,18,0.1)",
+    border: "rgba(25,21,18,0.14)",
+    borderStrong: "rgba(25,21,18,0.32)",
+    buttonBg: "#191512",
+    buttonText: "#f7f3ea",
+  },
+} as const;
+
+export type BookingTheme = keyof typeof THEMES;
 
 const services = [
   { name: "Corte Social", time: "40 min", price: "R$ 55,00", active: true },
@@ -37,11 +78,13 @@ const answered = [
   { step: 4, title: "Seus Dados", answer: "João Silva" },
 ];
 
-export function BookingMock() {
+export function BookingMock({ theme = "onix" }: { theme?: BookingTheme }) {
+  const c = THEMES[theme];
+
   return (
     <div
       aria-hidden="true"
-      className="w-56 select-none overflow-hidden rounded-[1.25rem] shadow-[0_40px_80px_-30px_rgba(0,0,0,0.95)] ring-1 ring-white/12 sm:w-64 sm:rounded-[1.4rem] lg:w-[17rem]"
+      className="w-56 select-none overflow-hidden rounded-[1.25rem] shadow-[0_40px_80px_-30px_rgba(13,12,10,0.55)] ring-1 ring-black/5 sm:w-64 sm:rounded-[1.4rem] lg:w-[17rem]"
       style={{ backgroundColor: c.bg }}
     >
       {/* Cabeçalho da página pública: voltar ao site + marca da barbearia */}
@@ -137,7 +180,7 @@ export function BookingMock() {
               <div className="flex items-center gap-2">
                 <span
                   className="grid size-4 shrink-0 place-items-center rounded-full"
-                  style={{ backgroundColor: c.title, color: c.bg }}
+                  style={{ backgroundColor: c.buttonBg, color: c.buttonText }}
                 >
                   <Check className="size-2" strokeWidth={3.5} />
                 </span>
@@ -170,7 +213,7 @@ export function BookingMock() {
 
         <div
           className="mt-2 rounded-xl py-2 text-center text-[0.62rem] font-bold"
-          style={{ backgroundColor: "#ffffff", color: "#000000" }}
+          style={{ backgroundColor: c.buttonBg, color: c.buttonText }}
         >
           Confirmar Agendamento
         </div>
