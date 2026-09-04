@@ -9,6 +9,7 @@ import {
   CheckCircle2,
 } from "lucide-react";
 import { apiUrl } from "@/lib/config";
+import { brazilianDateInput } from "@/lib/format";
 import { useToast } from "@/components/ui/toast";
 
 interface BookingServiceOption {
@@ -241,7 +242,10 @@ export function BookingModal({
                           setFormData({ ...formData, date: e.target.value })
                         }
                         className="bg-zinc-900 border-white/10"
-                        min={new Date().toISOString().split("T")[0]}
+                        // Hoje no fuso da barbearia: em UTC, das 21h BR em diante
+                        // o mínimo virava amanhã e o campo recusava a própria
+                        // data de hoje.
+                        min={brazilianDateInput()}
                       />
                     </div>
                     <div>

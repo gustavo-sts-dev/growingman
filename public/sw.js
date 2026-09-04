@@ -26,7 +26,10 @@ self.addEventListener('push', (event) => {
   const options = {
     body: data.body || '',
     icon: '/icons/icon-192.png',
-    badge: '/icons/icon-192.png',
+    // Ícone da barra de status do Android: o sistema descarta a cor e usa só o
+    // alfa, então precisa ser uma silhueta monocromática — a marca virava um
+    // borrão branco aqui. Sino chapado, branco sobre transparente.
+    badge: '/icons/notification-bell.png',
     // Guarda a rota para o notificationclick abrir/focar.
     data: { url: data.url || '/dashboard' },
     // Vibra no celular; ignorado no desktop.

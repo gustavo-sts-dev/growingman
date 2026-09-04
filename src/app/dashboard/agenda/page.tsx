@@ -5,7 +5,12 @@ import { Button } from "@/components/ui/button";
 import { Modal } from "@/components/ui/modal";
 import { useToast } from "@/components/ui/toast";
 import { apiDelete, apiGet, apiPost, apiPatch } from "@/lib/api";
-import { formatCurrency, formatPhone, onlyDigits } from "@/lib/format";
+import {
+  brazilianDateInput,
+  formatCurrency,
+  formatPhone,
+  onlyDigits,
+} from "@/lib/format";
 import {
   type BookingStatus,
   type BlockedSlot,
@@ -170,9 +175,13 @@ function defaultEndTime(startTime: string, intervalMinutes: number): string {
 
 export default function AgendaPage() {
   const toast = useToast();
-  const [selectedDate, setSelectedDate] = useState(
-    new Date().toISOString().split("T")[0],
-  );
+  // Hoje NO fuso da barbearia, não em UTC. Com `toISOString()` a agenda virava
+  // para o dia seguinte todo dia a partir das 21h BR (UTC-3): a página abria
+  // vazia e o barbeiro via a agenda de amanhã no fim do expediente. O backend
+  // resolve a janela do dia em America/Sao_Paulo (shared/utils/timezone.ts), e
+  // este seletor alimenta /bookings, /day-grid e /availability — os dois lados
+  // precisam do mesmo referencial.
+  const [selectedDate, setSelectedDate] = useState(brazilianDateInput);
   const [barbers, setBarbers] = useState<Barber[]>([]);
   // `null` = ainda carregando; distingue "sem grade" de "fechado nesse dia".
   const [dayGrid, setDayGrid] = useState<DayGrid | null>(null);
@@ -588,8 +597,12 @@ export default function AgendaPage() {
   };
 
   const changeDate = (days: number) => {
-    const d = new Date(selectedDate);
-    d.setDate(d.getDate() + days);
+    // Aritmética inteiramente em UTC: 'AAAA-MM-DD' entra como meia-noite UTC e
+    // sai formatado em UTC. Antes misturava os dois referenciais (parse UTC,
+    // setDate() local), o que só dava certo porque os deslocamentos se
+    // cancelavam — e deixaria de dar num fuso com horário de verão.
+    const d = new Date(`${selectedDate}T00:00:00Z`);
+    d.setUTCDate(d.getUTCDate() + days);
     setSelectedDate(d.toISOString().split("T")[0]);
   };
 
