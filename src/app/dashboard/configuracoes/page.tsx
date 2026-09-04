@@ -13,6 +13,7 @@ import { apiGet, apiPatch, apiDelete } from "@/lib/api";
 import { siteHost } from "@/lib/config";
 import { useToast } from "@/components/ui/toast";
 import { ImageUpload } from "@/components/ui/image-upload";
+import { WhatsappConnectionCard } from "@/components/settings/WhatsappConnectionCard";
 import type { AuthUser, Tenant } from "@/lib/types";
 import { SITE_PRESETS, resolveSitePreset, type SitePresetId } from "@/lib/site-presets";
 import { defaultSiteLayout, normalizeSiteLayout } from "@/lib/site-layout";
@@ -686,6 +687,14 @@ export default function ConfiguracoesPage() {
               </div>
             )}
           </FieldGroup>
+
+          {/*
+            Fica em Perfil, e não em Financeiro (onde mora o Mercado Pago),
+            porque não é cobrança: é por qual número a barbearia fala com o
+            cliente. O cartão some sozinho quando o servidor não tem a conexão
+            configurada.
+          */}
+          <WhatsappConnectionCard />
         </div>
       )}
 
