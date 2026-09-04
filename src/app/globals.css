@@ -257,7 +257,7 @@
   color: #f3f1ec;
 }
 
-/* Malha de gradiente — herói. Preto com brumas off-white desfocadas. */
+/* Malha de gradiente — cartões escuros (números, plano, acesso). */
 .gm-mesh {
   background-color: #0d0c0a;
   background-image:
@@ -283,6 +283,37 @@
     radial-gradient(70% 130% at 88% 0%, rgba(255, 255, 255, 0.12) 0%, rgba(255, 255, 255, 0) 60%),
     radial-gradient(60% 120% at 6% 100%, rgba(243, 241, 236, 0.09) 0%, rgba(243, 241, 236, 0) 62%),
     linear-gradient(180deg, #100f0d 0%, #232019 52%, #0c0b0a 100%);
+}
+
+/* ──────────────────────────────────────────────────────────────────────────
+   Malha do herói.
+
+   A referência acende o rodapé inteiro porque roxo é COR: mesmo fraco, continua
+   sendo roxo. A nossa paleta é neutra, e a mesma rampa em cinza vira NÉVOA —
+   uma mancha suja atravessando o cartão. Luz neutra só lê como luz quando tem
+   um corpo na frente para recortá-la.
+
+   Então a luz aqui não é uma faixa: é uma poça no canto inferior esquerdo, logo
+   atrás da quina do painel. O painel a ocupa, e o que sobra é contorno — que o
+   olho lê como luz por trás de um objeto, não como sujeira no fundo.
+   ────────────────────────────────────────────────────────────────────────── */
+.gm-aurora {
+  background-color: #050504;
+  background-image:
+    /* fio de luz na aresta superior esquerda */
+    radial-gradient(56% 40% at 0% 0%, rgba(255, 255, 255, 0.075) 0%, rgba(255, 255, 255, 0) 62%),
+    /* a poça: núcleo fora do cartão, só a cúpula dela aparece */
+    radial-gradient(
+      62% 40% at 44% 108%,
+      #f7f4ec 0%,
+      rgba(230, 225, 213, 0.6) 19%,
+      rgba(152, 146, 135, 0.3) 41%,
+      rgba(62, 59, 54, 0.1) 62%,
+      rgba(5, 5, 4, 0) 80%
+    ),
+    /* respiro atrás do painel: impede o rodapé direito de morrer no preto chapado */
+    radial-gradient(70% 30% at 82% 108%, rgba(146, 139, 128, 0.22) 0%, rgba(5, 5, 4, 0) 72%),
+    linear-gradient(180deg, #050504 0%, #080807 44%, #0d0b0a 72%, #131110 88%, #191612 100%);
 }
 
 /* Véu radial: garante contraste do texto branco sobre a malha */

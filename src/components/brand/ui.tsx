@@ -10,11 +10,16 @@ import { cn } from "@/lib/utils";
  * O app autenticado continua no tema escuro e não é afetado por nada daqui.
  */
 
-/** Largura e respiro únicos — tudo alinha na mesma coluna. */
-export const container = "mx-auto w-full max-w-[1180px] px-5 sm:px-8";
+/**
+ * Largura e respiro únicos — tudo alinha na mesma coluna: barra do topo, herói,
+ * seções e rodapé. A medida é a do herói (1520px): duas colunas largas não
+ * cabiam nos 1180px anteriores, e uma faixa mais estreita que o primeiro quadro
+ * deixava a página inteira desalinhada dele.
+ */
+export const container = "mx-auto w-full max-w-[1520px] px-5 sm:px-8";
 
 /** Mesma coluna, sem respiro lateral: para seções que já aplicam o próprio padding. */
-export const containerFlush = "mx-auto w-full max-w-[1180px]";
+export const containerFlush = "mx-auto w-full max-w-[1520px]";
 
 /** Ritmo vertical único entre seções. */
 export const sectionPad = "py-16 sm:py-24 lg:py-32";
@@ -135,7 +140,7 @@ export function BrandHeader({
 }) {
   return (
     <header className="sticky top-0 z-50 px-3 pt-3 sm:px-6 sm:pt-5">
-      <div className="mx-auto flex h-14 w-full max-w-[1180px] items-center justify-between gap-2 rounded-[1.15rem] border border-white/70 bg-white/75 px-2.5 shadow-[0_18px_50px_-28px_rgba(13,12,10,0.55)] backdrop-blur-xl sm:h-16 sm:gap-4 sm:px-5">
+      <div className="mx-auto flex h-14 w-full max-w-[1520px] items-center justify-between gap-2 rounded-[1.15rem] border border-white/70 bg-white/75 px-2.5 shadow-[0_18px_50px_-28px_rgba(13,12,10,0.55)] backdrop-blur-xl sm:h-16 sm:gap-4 sm:px-5">
         <Link
           href="/"
           aria-label="Growingman — página inicial"

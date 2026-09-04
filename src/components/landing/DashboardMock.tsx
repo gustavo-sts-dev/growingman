@@ -67,7 +67,7 @@ export function DashboardMock() {
           <span className="size-1.5 rounded-full bg-white/10 sm:size-2" />
         </div>
         <div className="mx-auto rounded-md bg-white/[0.04] px-4 py-0.5 text-center text-[0.5rem] tracking-wide text-neutral-500 sm:px-10 sm:text-[0.55rem] lg:text-[0.62rem]">
-          growingman.app/dashboard
+          growingman.space/dashboard
         </div>
       </div>
 

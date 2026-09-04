@@ -33,8 +33,15 @@ export function Features() {
           {/* Visual: forma assimétrica que quebra a grade de retângulos da página */}
           <div className="relative mx-auto w-full max-w-sm sm:max-w-md lg:mx-0">
             <div className="gm-grain relative grid aspect-[4/4.3] place-items-center overflow-hidden rounded-[3rem_1.25rem_3rem_1.25rem] bg-[linear-gradient(150deg,#4a4640_0%,#211f1b_40%,#0d0c0a_74%,#000000_100%)] shadow-[0_40px_90px_-45px_rgba(13,12,10,0.95)] sm:aspect-[4/4.6] sm:rounded-[5rem_1.75rem_5rem_1.75rem] lg:rounded-[7rem_2rem_7rem_2rem]">
+              {/* O mock é ônix, como a tela real; o halo o descola do fundo escuro. */}
               <div className="gm-float relative z-10">
-                <BookingMock />
+                <span
+                  aria-hidden="true"
+                  className="pointer-events-none absolute -inset-8 rounded-[3rem] bg-[#f3f1ec]/10 blur-3xl"
+                />
+                <span className="relative block">
+                  <BookingMock />
+                </span>
               </div>
             </div>
             <div

@@ -11,7 +11,7 @@ const nav = [
 export function LandingHeader() {
   return (
     <header className="sticky top-0 z-50 px-3 pt-3 sm:px-6 sm:pt-5">
-      <div className="mx-auto flex h-14 w-full max-w-[1180px] items-center justify-between gap-2 rounded-[1.15rem] border border-white/70 bg-white/75 px-2.5 shadow-[0_18px_50px_-28px_rgba(13,12,10,0.55)] backdrop-blur-xl sm:h-16 sm:gap-4 sm:px-5">
+      <div className="mx-auto flex h-14 w-full max-w-[1520px] items-center justify-between gap-2 rounded-[1.15rem] border border-white/70 bg-white/75 px-2.5 shadow-[0_18px_50px_-28px_rgba(13,12,10,0.55)] backdrop-blur-xl sm:h-16 sm:gap-4 sm:px-5">
         <Link
           href="/"
           aria-label="Growingman — página inicial"

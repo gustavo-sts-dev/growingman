@@ -71,7 +71,7 @@ export default function LoginPage() {
           <div className="absolute top-52 -left-20 size-72 rounded-full bg-[#c9c3b6]/50 blur-[110px]" />
         </div>
 
-        <div className="relative mx-auto grid w-full max-w-[1180px] items-stretch gap-3 lg:grid-cols-[1.05fr_0.95fr] lg:gap-5">
+        <div className="relative mx-auto grid w-full max-w-[1520px] items-stretch gap-3 lg:grid-cols-[1.05fr_0.95fr] lg:gap-5">
           {/* Painel de marca: mesma malha, véu e granulação do cartão do herói */}
           <section className="gm-mesh gm-scrim gm-grain relative hidden overflow-hidden rounded-[2rem] p-10 lg:flex lg:flex-col lg:justify-between xl:p-12">
             <div className="relative z-10">

@@ -6,8 +6,7 @@ import { usePathname, useRouter } from "next/navigation";
 import {
   Scissors, Calendar, Users, Briefcase, BarChart3,
   Settings, Bell, Search, LogOut, ExternalLink, Zap, DollarSign, Star, Package, Menu, X, TrendingUp, CornerDownLeft, CreditCard, PieChart,
-  type LucideIcon
-} from "lucide-react";
+  type LucideIcon, MessagesSquare } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Input } from "@/components/ui/input";
 import { TenantLogo } from "@/components/TenantLogo";
@@ -30,6 +29,9 @@ const navItems = [
   { href: "/dashboard/servicos/estoque", growingman: Package, label: "Estoque", short: "Estoque", exact: false },
   { href: "/dashboard/financeiro", growingman: DollarSign, label: "Financeiro & PDV", short: "Caixa", exact: false },
   { href: "/dashboard/clientes", growingman: Star, label: "CRM & Clientes", short: "Clientes", exact: false },
+  // Fora de BARBER_ALLOWED de propósito: o barbeiro vê o próprio dia, não o
+  // histórico de atendimento da casa.
+  { href: "/dashboard/atendimentos", growingman: MessagesSquare, label: "Atendimentos", short: "Conversas", exact: false },
   { href: "/dashboard/analise", growingman: PieChart, label: "Análise", short: "Análise", exact: false },
 ];
 
