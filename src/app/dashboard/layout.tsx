@@ -11,6 +11,7 @@ import { cn } from "@/lib/utils";
 import { Input } from "@/components/ui/input";
 import { TenantLogo } from "@/components/TenantLogo";
 import { PushToggle } from "@/components/PushToggle";
+import { InstallAppButton } from "@/components/InstallAppButton";
 import { apiGet, logoutSession } from "@/lib/api";
 import type { AuthUser, Tenant } from "@/lib/types";
 
@@ -344,6 +345,15 @@ function NotificationsBell() {
   );
 }
 
+/**
+ * Última página do painel, para o app instalado reabrir onde parou.
+ *
+ * Vive no localStorage porque é preferência de UM aparelho: o dono pode deixar
+ * o celular no Financeiro e o tablet do balcão na Agenda, e nenhum dos dois
+ * deve arrastar o outro. Não é dado sensível — é um caminho de rota.
+ */
+const ULTIMA_PAGINA = "gm:ultima-pagina";
+
 export default function DashboardLayout({ children }: { children: React.ReactNode }) {
   const [appSlug, setAppSlug] = React.useState<string | null>(null);
   const [logoUrl, setLogoUrl] = React.useState<string | null>(null);
@@ -354,6 +364,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
   const isNarrow = useIsNarrow();
   const asideRef = React.useRef<HTMLElement>(null);
   const pathname = usePathname();
+  const router = useRouter();
   const title = useCurrentTitle();
   const closeMobile = () => setMobileOpen(false);
 
@@ -386,6 +397,54 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
       window.location.replace("/login");
     }
   };
+
+  /*
+   * Reabrir onde parou — app instalado.
+   *
+   * Este efeito roda UMA vez por carregamento de página: o layout do painel não
+   * remonta quando se navega entre as telas (isso é troca de rota do lado do
+   * cliente). Então cair aqui com o caminho em `/dashboard` significa abertura
+   * fria do app, e não alguém tocando em "Visão Geral" no menu.
+   *
+   * Precisa vir ANTES do gravador abaixo: os efeitos rodam na ordem em que são
+   * declarados, e o gravador sobrescreveria o valor salvo antes desta leitura.
+   *
+   * Recarregar a página estando na Visão Geral não desvia ninguém: o gravador
+   * salvou `/dashboard`, e o destino é igual à origem.
+   */
+  React.useEffect(() => {
+    if (pathname !== "/dashboard") return;
+
+    const instalado =
+      window.matchMedia?.("(display-mode: standalone)").matches ||
+      // iOS não implementa `display-mode`; a marca dele é esta.
+      (window.navigator as { standalone?: boolean }).standalone === true;
+    if (!instalado) return;
+
+    let destino: string | null = null;
+    try {
+      destino = localStorage.getItem(ULTIMA_PAGINA);
+    } catch {
+      // Aba privada ou site data bloqueado: sem memória, abre na Visão Geral.
+    }
+
+    if (destino && destino !== "/dashboard" && destino.startsWith("/dashboard")) {
+      router.replace(destino);
+    }
+    // Só na montagem: `pathname` muda a cada rota, e reagir a ele faria o
+    // desvio disputar com a navegação do usuário.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  /** Grava a tela atual para a próxima abertura do app. */
+  React.useEffect(() => {
+    if (!pathname?.startsWith("/dashboard")) return;
+    try {
+      localStorage.setItem(ULTIMA_PAGINA, pathname);
+    } catch {
+      // Sem localStorage o recurso simplesmente não existe — não é erro.
+    }
+  }, [pathname]);
 
   React.useEffect(() => {
     apiGet<Tenant>("/tenants/my")
@@ -603,6 +662,10 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
 
         {/* Bottom: User + Logout */}
         <div className="shrink-0 space-y-1 border-t border-white/[0.06] p-3">
+          {/* Convite para instalar o painel como app. Some sozinho se já
+              estiver instalado ou se o navegador não instalar nada. */}
+          <InstallAppButton />
+
           {/* Notificações push (agendamento). Some sozinho se o navegador não
               suporta ou a chave VAPID não está configurada. */}
           <PushToggle />
