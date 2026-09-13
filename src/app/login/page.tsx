@@ -65,10 +65,10 @@ export default function LoginPage() {
       <BrandHeader actionHref="/onboarding" actionLabel="Criar conta" />
 
       <main className="relative px-3 pb-16 pt-6 sm:px-6 sm:pb-24 sm:pt-10">
-        {/* Halos desfocados: a mesma profundidade do herói da landing */}
+        {/* Halos: degradê radial, não `filter: blur()` — ver `.gm-halo` em globals.css */}
         <div aria-hidden="true" className="pointer-events-none absolute inset-0">
-          <div className="absolute -top-24 left-1/2 h-[26rem] w-[46rem] -translate-x-1/2 rounded-full bg-[#0d0c0a]/[0.09] blur-[130px]" />
-          <div className="absolute top-52 -left-20 size-72 rounded-full bg-[#c9c3b6]/50 blur-[110px]" />
+          <div className="gm-halo absolute -top-40 left-1/2 h-[34rem] w-[56rem] -translate-x-1/2" />
+          <div className="gm-halo-warm absolute top-24 -left-48 size-[32rem]" />
         </div>
 
         <div className="relative mx-auto grid w-full max-w-[var(--gm-site-max)] items-stretch gap-3 lg:grid-cols-[1.05fr_0.95fr] lg:gap-5">
@@ -104,8 +104,21 @@ export default function LoginPage() {
             </ul>
           </section>
 
-          {/* Formulário */}
-          <section className="rounded-[1.6rem] border border-[#e4e0d8] bg-white p-6 shadow-[0_40px_90px_-55px_rgba(13,12,10,0.75)] sm:rounded-[2rem] sm:p-10 lg:p-12">
+          {/*
+            Formulário.
+
+            Sem a sombra de 90px que havia aqui. Ela era estática, mas o WebKit
+            a redesenhava a cada repintura da página — inclusive a cada tecla
+            digitada nos campos que ela envolve. Medindo no WebKit: repintar UM
+            pixel desta tela custava o mesmo que repintar tudo, e esta sombra
+            respondia por metade desse custo (a outra metade eram os halos
+            acima). Diminuir o raio não adianta: o preço é ter a sombra, não o
+            tamanho dela.
+
+            A borda de 1px já separa o cartão do creme da página, que é o
+            trabalho que a sombra fazia aqui.
+          */}
+          <section className="rounded-[1.6rem] border border-[#e4e0d8] bg-white p-6 sm:rounded-[2rem] sm:p-10 lg:p-12">
             <div className="mx-auto flex h-full max-w-md flex-col justify-center">
               <p className="text-[0.65rem] font-semibold uppercase tracking-[0.22em] text-[#6f6b64] sm:text-[0.68rem]">
                 Acesso

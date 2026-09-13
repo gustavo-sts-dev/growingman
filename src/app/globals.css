@@ -530,6 +530,11 @@
   background: radial-gradient(closest-side, rgba(255, 255, 255, 0.12) 0%, rgba(255, 255, 255, 0) 100%);
 }
 
+/* Mesmo halo, no bege da marca — o segundo foco das telas de acesso. */
+.gm-halo-warm {
+  background: radial-gradient(closest-side, rgba(201, 195, 182, 0.5) 0%, rgba(201, 195, 182, 0) 100%);
+}
+
 @keyframes gm-rise {
   from { opacity: 0; transform: translate3d(0, 20px, 0); }
   to { opacity: 1; transform: none; }

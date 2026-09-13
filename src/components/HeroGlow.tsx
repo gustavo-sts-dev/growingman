@@ -38,12 +38,25 @@ export function HeroGlow({ className }: { className?: string }) {
         }}
       />
 
-      {/* Um halo com blur real: o degradê radial tem borda matemática perfeita,
-          e o desfoque quebra isso, aproximando de luz difusa. */}
+      {/*
+        O terceiro foco, mais fechado que os dois de cima.
+
+        Era um círculo chapado com `blur(120px)`. O desfoque de verdade quebra a
+        borda matemática do degradê e fica mais perto de luz difusa — mas custa
+        caro demais: `filter: blur()` é rasterizado fora da tela num buffer
+        inflado em ~3× o raio para cada lado, em pixels do aparelho, e o WebKit
+        o refaz a CADA repintura da página. Esta é a página que o cliente da
+        barbearia abre no celular; era ela pagando a conta em toda rolagem e em
+        cada tecla digitada no agendamento.
+
+        O degradê radial não tem buffer nenhum. A borda perfeita que o desfoque
+        quebrava fica disfarçada pelas duas camadas de halo acima desta.
+      */}
       <div
-        className="absolute left-[18%] top-[22%] h-[55%] w-[55%] rounded-full blur-[120px]"
+        className="absolute left-[6%] top-[8%] h-[80%] w-[80%]"
         style={{
-          background: "color-mix(in srgb, var(--theme-accent) 12%, transparent)",
+          background:
+            "radial-gradient(closest-side, color-mix(in srgb, var(--theme-accent) 14%, transparent) 0%, transparent 100%)",
         }}
       />
     </div>

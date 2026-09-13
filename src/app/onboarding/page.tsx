@@ -114,8 +114,14 @@ export default function OnboardingFlow() {
     <div className="mx-auto w-full max-w-xl">
       <Stepper current={step} labels={STEP_LABELS} />
 
-      {/* Borda em gradiente: o mesmo destaque do cartão de plano da landing */}
-      <div className="mt-8 rounded-[1.6rem] bg-[linear-gradient(160deg,#c9c3b6_0%,#e4e0d8_45%,rgba(228,224,216,0)_100%)] p-px shadow-[0_40px_90px_-55px_rgba(13,12,10,0.75)] sm:mt-10 sm:rounded-[1.85rem]">
+      {/*
+        Borda em gradiente: o mesmo destaque do cartão de plano da landing — e,
+        desde que a sombra de 90px saiu daqui, é ela sozinha que separa o cartão
+        do fundo. O motivo da remoção está em `app/login/page.tsx`: a sombra era
+        redesenhada a cada tecla digitada nos campos que ela envolve, e este é o
+        formulário mais longo do site.
+      */}
+      <div className="mt-8 rounded-[1.6rem] bg-[linear-gradient(160deg,#c9c3b6_0%,#e4e0d8_45%,rgba(228,224,216,0)_100%)] p-px sm:mt-10 sm:rounded-[1.85rem]">
         <section className="rounded-[1.55rem] bg-white p-6 sm:rounded-[1.8rem] sm:p-10">
           {step === 1 && (
             <div className="space-y-6">
