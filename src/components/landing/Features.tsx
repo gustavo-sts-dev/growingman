@@ -25,7 +25,7 @@ export function Features() {
   return (
     <section id="recursos" className={`relative scroll-mt-24 ${sectionPad}`}>
       <div aria-hidden="true" className="pointer-events-none absolute inset-0">
-        <div className="absolute top-1/4 -left-32 size-[26rem] rounded-full bg-[#0d0c0a]/[0.08] blur-[130px]" />
+        <div className="gm-halo absolute top-1/4 -left-64 size-[42rem]" />
       </div>
 
       <div className={`relative ${container}`}>
@@ -46,7 +46,7 @@ export function Features() {
           <div className="relative mx-auto flex w-full max-w-md justify-center px-2 py-4 sm:px-6 lg:mx-0">
             <div
               aria-hidden="true"
-              className="pointer-events-none absolute inset-x-8 bottom-10 top-20 rounded-[3rem] bg-[#0d0c0a]/12 blur-[70px]"
+              className="gm-halo pointer-events-none absolute inset-x-0 bottom-0 top-8"
             />
 
             <div className="absolute left-0 top-12 -rotate-[9deg] scale-[0.82] sm:top-14 sm:scale-90">

@@ -9,7 +9,7 @@ export function FinalCta() {
         <div className="gm-mesh-deep gm-grain relative overflow-hidden rounded-[1.5rem] px-5 py-12 text-center sm:rounded-[2.25rem] sm:px-12 sm:py-20 lg:rounded-[2.75rem] lg:py-24">
           <div
             aria-hidden="true"
-            className="pointer-events-none absolute -bottom-24 left-1/2 size-[30rem] -translate-x-1/2 rounded-full bg-white/10 blur-[110px]"
+            className="gm-halo-light pointer-events-none absolute -bottom-32 left-1/2 size-[44rem] -translate-x-1/2"
           />
           <div className="relative z-10 mx-auto max-w-2xl">
             <h2 className="text-balance font-heading text-[clamp(1.65rem,3.8vw,3.1rem)] font-semibold leading-[1.12] tracking-[-0.03em] text-white sm:leading-[1.06] sm:tracking-[-0.035em]">

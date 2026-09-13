@@ -40,11 +40,19 @@ export function Steps() {
                 className="absolute inset-x-[12%] top-[3.6rem] hidden border-t border-dashed border-white/20 lg:block"
               />
 
+              {/*
+                Os cartões não levam `backdrop-blur`: atrás deles só existe a
+                malha de gradiente da seção, que já é lisa — desfocar o liso não
+                muda um pixel. E cada `backdrop-filter` obriga o WebKit a
+                fotografar o fundo numa camada própria: eram três camadas pelo
+                mesmo resultado visual, e no iPhone é justamente esse tipo de
+                camada extra que derruba a pintura da página.
+              */}
               <ol className="relative grid gap-3 sm:gap-5 md:grid-cols-3">
                 {steps.map((step) => (
                   <li
                     key={step.number}
-                    className="rounded-[1.25rem] border border-white/15 bg-white/[0.07] p-5 backdrop-blur-xl transition-colors duration-300 hover:border-white/30 hover:bg-white/[0.12] sm:rounded-[1.35rem] sm:p-8"
+                    className="rounded-[1.25rem] border border-white/15 bg-white/[0.07] p-5 transition-colors duration-300 hover:border-white/30 hover:bg-white/[0.12] sm:rounded-[1.35rem] sm:p-8"
                   >
                     <span className="grid size-12 place-items-center rounded-full bg-[linear-gradient(145deg,#5a564e_0%,#1c1a17_60%,#000000_100%)] font-heading text-[0.9rem] font-semibold text-white shadow-[0_12px_28px_-12px_rgba(0,0,0,0.9)] ring-1 ring-white/25 sm:size-[3.25rem] sm:text-[0.95rem]">
                       {step.number}

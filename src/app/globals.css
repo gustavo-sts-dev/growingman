@@ -467,7 +467,27 @@
   background: radial-gradient(72% 58% at 50% 32%, rgba(0, 0, 0, 0.45) 0%, rgba(0, 0, 0, 0) 74%);
 }
 
-/* Granulação sutil: quebra o banding dos gradientes grandes */
+/* ──────────────────────────────────────────────────────────────────────────
+   Granulação sutil: quebra o banding dos gradientes grandes.
+
+   `isolation: isolate` no HOSPEDEIRO não é enfeite — é o que prende a mistura
+   à seção.
+
+   `mix-blend-mode` mistura o pseudo-elemento com o grupo de composição mais
+   próximo, e NENHUMA das seções que usam esta classe abria um: `position:
+   relative` sem `z-index` não abre, `overflow: hidden` também não. Sem isolar,
+   o grupo é a RAIZ — o WebKit passa a precisar do documento inteiro (perto de
+   7000px, ×3 de densidade no iPhone) como fundo de mistura, numa superfície
+   só. No iOS isso estoura o orçamento de memória gráfica da aba, o Safari
+   desiste de pintar fora do quadro visível e o resto da página fica preto ao
+   rolar. `isolate` fecha o grupo na própria seção, que é onde a granulação
+   sempre quis ficar: o resultado visual é o mesmo, o custo deixa de ser o
+   documento todo.
+   ────────────────────────────────────────────────────────────────────────── */
+.gm-grain {
+  isolation: isolate;
+}
+
 .gm-grain::after {
   content: "";
   position: absolute;
@@ -476,6 +496,38 @@
   opacity: 0.11;
   mix-blend-mode: overlay;
   background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.8' numOctaves='3'/%3E%3C/filter%3E%3Crect width='160' height='160' filter='url(%23n)'/%3E%3C/svg%3E");
+}
+
+/* ──────────────────────────────────────────────────────────────────────────
+   Halo decorativo — degradê radial, NUNCA `filter: blur()`.
+
+   Os halos desta página eram círculos chapados borrados com `blur(70px)` a
+   `blur(150px)`. No desktop passa; no iPhone era o que apagava a página.
+
+   `filter: blur(r)` obriga o WebKit a rasterizar o elemento FORA DA TELA, num
+   buffer inflado em cerca de 3r para cada lado e medido em pixels do aparelho.
+   O halo do plano — 38rem de lado, blur de 150px — vira uma textura de mais ou
+   menos 4500 × 4500 num iPhone: ~80 MB, para um borrão que ninguém olha. São
+   cinco deles na página. O orçamento gráfico da aba estoura, o Safari desiste
+   das camadas e sobra o preto do documento em tudo que está fora do quadro
+   visível — exatamente o sintoma relatado.
+
+   Um degradê radial desenha o MESMO borrão direto na camada, sem buffer
+   nenhum: custo de memória zero e resultado equivalente, porque borrar um
+   círculo chapado é precisamente o que um degradê radial já é.
+
+   `closest-side` termina o degradê na borda do elemento, então a medida do
+   halo passa a ser a do próprio box — sem a área invisível que o blur somava
+   por fora. Por isso os tamanhos nas seções cresceram: eles agora dizem a
+   verdade sobre o espaço que o halo ocupa.
+   ────────────────────────────────────────────────────────────────────────── */
+.gm-halo {
+  background: radial-gradient(closest-side, rgba(13, 12, 10, 0.08) 0%, rgba(13, 12, 10, 0) 100%);
+}
+
+/* Mesmo halo, sobre malha escura. */
+.gm-halo-light {
+  background: radial-gradient(closest-side, rgba(255, 255, 255, 0.12) 0%, rgba(255, 255, 255, 0) 100%);
 }
 
 @keyframes gm-rise {

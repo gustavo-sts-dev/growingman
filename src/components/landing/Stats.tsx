@@ -27,7 +27,7 @@ export function Stats() {
   return (
     <section className={`relative ${sectionPad}`}>
       <div aria-hidden="true" className="pointer-events-none absolute inset-x-0 top-1/3 flex justify-center">
-        <div className="size-[34rem] rounded-full bg-[#0d0c0a]/[0.07] blur-[140px]" />
+        <div className="gm-halo size-[52rem] shrink-0" />
       </div>
 
       <div className={`relative ${container}`}>
@@ -63,7 +63,7 @@ export function Stats() {
                     {chips.map((Icon, i) => (
                       <span
                         key={i}
-                        className="grid size-8 place-items-center rounded-full bg-white/20 text-white ring-2 ring-white/40 backdrop-blur-md sm:size-9"
+                        className="grid size-8 place-items-center rounded-full bg-white/20 text-white ring-2 ring-white/40 sm:size-9"
                       >
                         <Icon className="size-3.5 sm:size-4" />
                       </span>

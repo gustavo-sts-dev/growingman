@@ -40,7 +40,13 @@ export function LandingHeader() {
     <header className="sticky top-0 z-50 px-3 pt-3 sm:px-6 sm:pt-5">
       <div
         className={cn(
-          "mx-auto flex h-14 w-full max-w-[var(--gm-site-max)] items-center justify-between gap-2 rounded-[1.15rem] px-2.5 transition-[background-color,border-color,box-shadow,backdrop-filter] duration-300 sm:h-16 sm:gap-4 sm:px-5",
+          // `backdrop-filter` fora da lista de transições de propósito: animar
+          // um desfoque de fundo de 0 a 24px enquanto a página rola obriga o
+          // WebKit a refazer a foto do fundo a cada quadro, e no iPhone é o
+          // suficiente para a pintura da página não acompanhar a rolagem. O
+          // desfoque continua ligado — só aparece de uma vez, junto com as
+          // outras três propriedades, o que ninguém percebe em 300ms.
+          "mx-auto flex h-14 w-full max-w-[var(--gm-site-max)] items-center justify-between gap-2 rounded-[1.15rem] px-2.5 transition-[background-color,border-color,box-shadow] duration-300 sm:h-16 sm:gap-4 sm:px-5",
           scrolled
             ? "border border-white/70 bg-white/75 shadow-[0_18px_50px_-28px_rgba(13,12,10,0.55)] backdrop-blur-xl"
             : "border border-transparent bg-transparent shadow-none",
